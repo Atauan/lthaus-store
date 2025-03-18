@@ -6,12 +6,14 @@ interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
   hoverEffect?: boolean;
+  borderEffect?: boolean;
 }
 
 const GlassCard: React.FC<GlassCardProps> = ({ 
   children, 
   className,
   hoverEffect = false,
+  borderEffect = false,
   ...props 
 }) => {
   return (
@@ -20,6 +22,7 @@ const GlassCard: React.FC<GlassCardProps> = ({
         "glass-effect rounded-lg p-6",
         "shadow-soft transition-all duration-300",
         hoverEffect && "hover:shadow-soft-lg hover:translate-y-[-2px]",
+        borderEffect && "border border-primary/10",
         className
       )}
       {...props}

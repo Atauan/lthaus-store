@@ -12,6 +12,7 @@ import Inventory from "./pages/Inventory";
 import Sales from "./pages/Sales";
 import Suppliers from "./pages/Suppliers";
 import NotFound from "./pages/NotFound";
+import SalesForm from "./components/sales/SalesForm";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/products" element={<Products />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/sales" element={<Sales />} />
+            <Route path="/sales/new" element={<SalesForm />} />
             <Route path="/suppliers" element={<Suppliers />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

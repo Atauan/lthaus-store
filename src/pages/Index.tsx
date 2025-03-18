@@ -7,7 +7,11 @@ import {
   TrendingUp,
   AlertCircle,
   ArrowUpRight,
-  Search
+  Search,
+  Target,
+  CheckCircle,
+  PieChart,
+  Clock
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageTransition from '@/components/layout/PageTransition';
@@ -16,12 +20,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import IconButton from '@/components/ui/custom/IconButton';
+import { Progress } from "@/components/ui/progress";
 
 // Dummy data for demonstration
 const lowStockItems = [
   { id: 1, name: 'Cabo USB-C', category: 'Cabos', stock: 3, image: '/placeholder.svg' },
   { id: 2, name: 'Fone Bluetooth', category: 'Áudio', stock: 2, image: '/placeholder.svg' },
   { id: 3, name: 'Carregador Sem Fio', category: 'Carregadores', stock: 4, image: '/placeholder.svg' },
+  { id: 4, name: 'Película iPhone 14', category: 'Proteção', stock: 5, image: '/placeholder.svg' },
 ];
 
 const topSellingProducts = [
@@ -31,11 +37,22 @@ const topSellingProducts = [
   { id: 4, name: 'Fone TWS Pro', category: 'Áudio', sales: 18, image: '/placeholder.svg' },
 ];
 
+const salesGoals = [
+  { id: 1, category: 'Acessórios', target: 5000, current: 3240, percentage: 65 },
+  { id: 2, category: 'Serviços', target: 3000, current: 2400, percentage: 80 },
+  { id: 3, category: 'Fones de Ouvido', target: 2000, current: 1850, percentage: 93 },
+];
+
 const stats = [
   { id: 1, title: 'Produtos', value: '356', change: '+12%', icon: <Package className="h-4 w-4" /> },
   { id: 2, title: 'Vendas (mês)', value: 'R$ 23.450', change: '+18%', icon: <ShoppingBag className="h-4 w-4" /> },
   { id: 3, title: 'Novos itens', value: '24', change: '+5%', icon: <TrendingUp className="h-4 w-4" /> },
   { id: 4, title: 'Categorias', value: '12', change: '', icon: <BarChart3 className="h-4 w-4" /> },
+];
+
+const pendingRequests = [
+  { id: 1, name: 'Capinha Motorola G73', requestedBy: 'João Silva', date: '2023-07-14T10:30:00' },
+  { id: 2, name: 'Suporte Veicular Magnético', requestedBy: 'Ana Oliveira', date: '2023-07-15T14:15:00' },
 ];
 
 const Dashboard = () => {
@@ -52,6 +69,15 @@ const Dashboard = () => {
       }, 100 * index);
     });
   }, []);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit', 
+      year: 'numeric'
+    }).format(date);
+  };
 
   if (!mounted) return null;
   
@@ -102,9 +128,14 @@ const Dashboard = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <Card className="lg:col-span-2 animate-on-mount opacity-0 border-none shadow-soft">
-              <CardHeader>
-                <CardTitle>Produtos Mais Vendidos</CardTitle>
-                <CardDescription>Os itens com maior volume de vendas este mês</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle>Produtos Mais Vendidos</CardTitle>
+                  <CardDescription>Os itens com maior volume de vendas este mês</CardDescription>
+                </div>
+                <IconButton variant="ghost" size="sm">
+                  <PieChart className="h-4 w-4 text-primary" />
+                </IconButton>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -174,20 +205,93 @@ const Dashboard = () => {
             </Card>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <GlassCard className="lg:col-span-2 animate-on-mount opacity-0" hoverEffect>
-              <h3 className="text-lg font-medium mb-4">Vendas Recentes</h3>
-              <p className="text-muted-foreground">Visualização das vendas mais recentes aparecerá aqui.</p>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+            <GlassCard className="lg:col-span-2 animate-on-mount opacity-0" hoverEffect borderEffect>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium">Metas de Vendas</h3>
+                <IconButton variant="ghost" size="sm">
+                  <Target className="h-4 w-4 text-primary" />
+                </IconButton>
+              </div>
+              <div className="space-y-5">
+                {salesGoals.map((goal) => (
+                  <div key={goal.id}>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm font-medium">{goal.category}</span>
+                      <span className="text-sm font-medium text-primary">{goal.percentage}%</span>
+                    </div>
+                    <div className="space-y-2">
+                      <Progress value={goal.percentage} className="h-2" />
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>R$ {goal.current.toLocaleString('pt-BR')}</span>
+                        <span>Meta: R$ {goal.target.toLocaleString('pt-BR')}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
               <div className="mt-4">
                 <Link to="/sales">
-                  <Button>Ver vendas</Button>
+                  <Button className="w-full">
+                    Adicionar Nova Venda
+                  </Button>
                 </Link>
               </div>
             </GlassCard>
             
-            <GlassCard className="lg:col-span-2 animate-on-mount opacity-0" hoverEffect>
+            <GlassCard className="lg:col-span-2 animate-on-mount opacity-0" hoverEffect borderEffect>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium">Produtos Solicitados</h3>
+                <IconButton variant="ghost" size="sm">
+                  <Clock className="h-4 w-4 text-primary" />
+                </IconButton>
+              </div>
+              
+              {pendingRequests.length > 0 ? (
+                <div className="space-y-3">
+                  {pendingRequests.map((request) => (
+                    <div key={request.id} className="p-3 rounded-md border border-muted bg-muted/20">
+                      <h4 className="font-medium">{request.name}</h4>
+                      <div className="flex justify-between mt-1">
+                        <span className="text-xs text-muted-foreground">
+                          Solicitado por: {request.requestedBy}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDate(request.date)}
+                        </span>
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <Button variant="outline" size="sm" className="flex-1">
+                          Ignorar
+                        </Button>
+                        <Button size="sm" className="flex-1">
+                          <CheckCircle className="mr-1 h-4 w-4" />
+                          Adquirir
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <p>Não há produtos solicitados no momento</p>
+                </div>
+              )}
+              
+              <div className="mt-4">
+                <Link to="/products">
+                  <Button variant="outline" className="w-full">
+                    Gerenciar Produtos
+                  </Button>
+                </Link>
+              </div>
+            </GlassCard>
+          </div>
+          
+          <div className="grid grid-cols-1 gap-6">
+            <GlassCard className="animate-on-mount opacity-0" hoverEffect>
               <h3 className="text-lg font-medium mb-4">Ações Rápidas</h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 <Link to="/products/add">
                   <Button variant="outline" className="w-full justify-start">
                     <Package className="mr-2 h-4 w-4" />
@@ -198,6 +302,18 @@ const Dashboard = () => {
                   <Button variant="outline" className="w-full justify-start">
                     <ShoppingBag className="mr-2 h-4 w-4" />
                     Registrar Venda
+                  </Button>
+                </Link>
+                <Link to="/inventory/add">
+                  <Button variant="outline" className="w-full justify-start">
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    Entrada Estoque
+                  </Button>
+                </Link>
+                <Link to="/sales/reports">
+                  <Button variant="outline" className="w-full justify-start">
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    Relatórios
                   </Button>
                 </Link>
               </div>
