@@ -12,6 +12,10 @@ import {
   Home
 } from 'lucide-react';
 
+interface NavbarProps {
+  storeName?: string;
+}
+
 interface NavItemProps {
   to: string;
   icon: React.ReactNode;
@@ -40,7 +44,7 @@ const NavItem = ({ to, icon, label, isActive, onClick }: NavItemProps) => (
   </Link>
 );
 
-const Navbar = () => {
+const Navbar = ({ storeName = "Accessory Stock" }: NavbarProps) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -82,7 +86,7 @@ const Navbar = () => {
       )}>
         <div className="pt-16 px-6 h-full overflow-auto">
           <div className="mb-8">
-            <h1 className="text-2xl font-semibold">Accessory Stock</h1>
+            <h1 className="text-2xl font-semibold">{storeName}</h1>
             <p className="text-muted-foreground">Gestão de loja</p>
           </div>
           <nav className="flex flex-col gap-2">
@@ -103,8 +107,8 @@ const Navbar = () => {
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:bg-white lg:border-r lg:shadow-soft z-20">
         <div className="p-6">
-          <h1 className="text-2xl font-semibold">Accessory Stock</h1>
-          <p className="text-muted-foreground">Gestão de loja</p>
+          <h1 className="text-2xl font-semibold text-center">{storeName}</h1>
+          <p className="text-muted-foreground text-center">Gestão de loja</p>
         </div>
         <div className="flex-1 px-4">
           <nav className="flex flex-col gap-2">
