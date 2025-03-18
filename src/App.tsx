@@ -23,7 +23,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Navbar />
+        <Navbar storeName="Lthaus Imports" />
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/" element={<Index />} />

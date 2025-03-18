@@ -11,7 +11,12 @@ import {
   Target,
   CheckCircle,
   PieChart,
-  Clock
+  Clock,
+  CreditCard,
+  Smartphone,
+  Banknote,
+  Building,
+  Globe
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageTransition from '@/components/layout/PageTransition';
@@ -21,6 +26,24 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import IconButton from '@/components/ui/custom/IconButton';
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart as RPieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+} from 'recharts';
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 // Dummy data for demonstration
 const lowStockItems = [
@@ -28,6 +51,11 @@ const lowStockItems = [
   { id: 2, name: 'Fone Bluetooth', category: 'Áudio', stock: 2, image: '/placeholder.svg' },
   { id: 3, name: 'Carregador Sem Fio', category: 'Carregadores', stock: 4, image: '/placeholder.svg' },
   { id: 4, name: 'Película iPhone 14', category: 'Proteção', stock: 5, image: '/placeholder.svg' },
+];
+
+const outOfStockItems = [
+  { id: 1, name: 'Capa iPhone 15 Pro Max', category: 'Capas', stock: 0, image: '/placeholder.svg' },
+  { id: 2, name: 'Base Carregador MagSafe', category: 'Carregadores', stock: 0, image: '/placeholder.svg' },
 ];
 
 const topSellingProducts = [
@@ -55,8 +83,52 @@ const pendingRequests = [
   { id: 2, name: 'Suporte Veicular Magnético', requestedBy: 'Ana Oliveira', date: '2023-07-15T14:15:00' },
 ];
 
+// Sales data for charts
+const dailySalesData = [
+  { name: 'Seg', valor: 1200 },
+  { name: 'Ter', valor: 800 },
+  { name: 'Qua', valor: 1500 },
+  { name: 'Qui', valor: 1800 },
+  { name: 'Sex', valor: 2400 },
+  { name: 'Sáb', valor: 3200 },
+  { name: 'Dom', valor: 1100 },
+];
+
+const weeklySalesData = [
+  { name: 'Semana 1', valor: 8000 },
+  { name: 'Semana 2', valor: 7200 },
+  { name: 'Semana 3', valor: 9500 },
+  { name: 'Semana 4', valor: 12800 },
+];
+
+const monthlySalesData = [
+  { name: 'Jan', valor: 28000 },
+  { name: 'Fev', valor: 32000 },
+  { name: 'Mar', valor: 30000 },
+  { name: 'Abr', valor: 34000 },
+  { name: 'Mai', valor: 29000 },
+  { name: 'Jun', valor: 38000 },
+];
+
+const salesTypeData = [
+  { name: 'Interno', value: 35 },
+  { name: 'Externo', value: 65 },
+];
+
+const paymentMethodData = [
+  { name: 'PIX', value: 45 },
+  { name: 'Cartão de Crédito', value: 30 },
+  { name: 'Cartão de Débito', value: 15 },
+  { name: 'Dinheiro', value: 10 },
+];
+
+const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
+const SALES_TYPE_COLORS = ['#0088FE', '#00C49F'];
+const PAYMENT_COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
+
 const Dashboard = () => {
   const [mounted, setMounted] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState('daily');
 
   useEffect(() => {
     setMounted(true);
@@ -77,6 +149,49 @@ const Dashboard = () => {
       month: '2-digit', 
       year: 'numeric'
     }).format(date);
+  };
+
+  const renderActiveChart = () => {
+    if (selectedPeriod === 'daily') {
+      return (
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={dailySalesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip formatter={(value) => [`R$ ${value}`, 'Vendas']} />
+            <Legend />
+            <Bar dataKey="valor" name="Vendas Diárias" fill="#8884d8" />
+          </BarChart>
+        </ResponsiveContainer>
+      );
+    } else if (selectedPeriod === 'weekly') {
+      return (
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={weeklySalesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip formatter={(value) => [`R$ ${value}`, 'Vendas']} />
+            <Legend />
+            <Bar dataKey="valor" name="Vendas Semanais" fill="#82ca9d" />
+          </BarChart>
+        </ResponsiveContainer>
+      );
+    } else {
+      return (
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={monthlySalesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip formatter={(value) => [`R$ ${value}`, 'Vendas']} />
+            <Legend />
+            <Line type="monotone" dataKey="valor" name="Vendas Mensais" stroke="#8884d8" activeDot={{ r: 8 }} />
+          </LineChart>
+        </ResponsiveContainer>
+      );
+    }
   };
 
   if (!mounted) return null;
@@ -125,8 +240,162 @@ const Dashboard = () => {
               </GlassCard>
             ))}
           </div>
+
+          {/* Sales Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <Card className="lg:col-span-2 animate-on-mount opacity-0 border-none shadow-soft">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle>Vendas por Período</CardTitle>
+                  <CardDescription>Visualize o desempenho de vendas por período</CardDescription>
+                </div>
+                <div className="flex space-x-2">
+                  <Button 
+                    variant={selectedPeriod === 'daily' ? 'default' : 'outline'} 
+                    size="sm"
+                    onClick={() => setSelectedPeriod('daily')}
+                  >
+                    Diário
+                  </Button>
+                  <Button 
+                    variant={selectedPeriod === 'weekly' ? 'default' : 'outline'} 
+                    size="sm"
+                    onClick={() => setSelectedPeriod('weekly')}
+                  >
+                    Semanal
+                  </Button>
+                  <Button 
+                    variant={selectedPeriod === 'monthly' ? 'default' : 'outline'} 
+                    size="sm"
+                    onClick={() => setSelectedPeriod('monthly')}
+                  >
+                    Mensal
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4">
+                {renderActiveChart()}
+              </CardContent>
+            </Card>
+            
+            <Card className="animate-on-mount opacity-0 border-none shadow-soft">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle>Tipo de Venda</CardTitle>
+                  <CardDescription>Interno vs Externo</CardDescription>
+                </div>
+                <IconButton variant="ghost" size="sm">
+                  <PieChart className="h-4 w-4 text-primary" />
+                </IconButton>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center">
+                <div className="w-full h-[200px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RPieChart>
+                      <Pie
+                        data={salesTypeData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {salesTypeData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={SALES_TYPE_COLORS[index % SALES_TYPE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </RPieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex justify-center gap-6 mt-4">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-[#0088FE] mr-2"></div>
+                    <span className="text-sm flex items-center gap-1">
+                      <Building className="h-3 w-3" />
+                      Interno
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-[#00C49F] mr-2"></div>
+                    <span className="text-sm flex items-center gap-1">
+                      <Globe className="h-3 w-3" />
+                      Externo
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <Card className="border-none shadow-soft animate-on-mount opacity-0">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle>Métodos de Pagamento</CardTitle>
+                  <CardDescription>Distribuição por forma de pagamento</CardDescription>
+                </div>
+                <IconButton variant="ghost" size="sm">
+                  <CreditCard className="h-4 w-4 text-primary" />
+                </IconButton>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center">
+                <div className="w-full h-[200px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RPieChart>
+                      <Pie
+                        data={paymentMethodData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                      >
+                        {paymentMethodData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={PAYMENT_COLORS[index % PAYMENT_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </RPieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-4 w-full">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-[#8884d8] mr-2"></div>
+                    <span className="text-sm flex items-center gap-1">
+                      <Smartphone className="h-3 w-3" />
+                      PIX
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-[#82ca9d] mr-2"></div>
+                    <span className="text-sm flex items-center gap-1">
+                      <CreditCard className="h-3 w-3" />
+                      Crédito
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-[#ffc658] mr-2"></div>
+                    <span className="text-sm flex items-center gap-1">
+                      <CreditCard className="h-3 w-3" />
+                      Débito
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-[#ff8042] mr-2"></div>
+                    <span className="text-sm flex items-center gap-1">
+                      <Banknote className="h-3 w-3" />
+                      Dinheiro
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
             <Card className="lg:col-span-2 animate-on-mount opacity-0 border-none shadow-soft">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div>
@@ -164,11 +433,13 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
-            
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <Card className="animate-on-mount opacity-0 border-none shadow-soft">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div>
-                  <CardTitle>Estoque Baixo</CardTitle>
+                  <CardTitle>Produtos com Estoque Baixo</CardTitle>
                   <CardDescription>Produtos que precisam ser reabastecidos</CardDescription>
                 </div>
                 <IconButton variant="ghost" size="sm">
@@ -203,6 +474,58 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
+            
+            <Card className="animate-on-mount opacity-0 border-none shadow-soft">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle>Produtos Esgotados</CardTitle>
+                  <CardDescription>Produtos indisponíveis em estoque</CardDescription>
+                </div>
+                <IconButton variant="ghost" size="sm">
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                </IconButton>
+              </CardHeader>
+              <CardContent>
+                {outOfStockItems.length > 0 ? (
+                  <div className="space-y-4">
+                    {outOfStockItems.map((item) => (
+                      <div key={item.id} className="flex items-center gap-3 p-3 rounded-md bg-destructive/10 border border-destructive/20">
+                        <div className="w-10 h-10 rounded-md bg-white flex items-center justify-center overflow-hidden">
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm truncate">{item.name}</h4>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">{item.category}</span>
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-destructive/20 text-destructive">
+                              Sem estoque
+                            </span>
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          Reabastecer
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <Alert>
+                    <CheckCircle className="h-4 w-4" />
+                    <AlertTitle>Tudo certo!</AlertTitle>
+                    <AlertDescription>
+                      Não há produtos esgotados em seu estoque no momento.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                <div className="mt-4">
+                  <Link to="/inventory">
+                    <Button variant="outline" className="w-full">
+                      Ver todos os produtos
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
@@ -231,7 +554,7 @@ const Dashboard = () => {
                 ))}
               </div>
               <div className="mt-4">
-                <Link to="/sales">
+                <Link to="/sales/new">
                   <Button className="w-full">
                     Adicionar Nova Venda
                   </Button>
