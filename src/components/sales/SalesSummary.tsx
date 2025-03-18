@@ -2,7 +2,6 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Percent, DollarSign } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -27,7 +26,7 @@ interface SalesSummaryProps {
   className?: string;
 }
 
-const SalesSummary: React.FC<SalesSummaryProps> = ({ 
+export const SalesSummary: React.FC<SalesSummaryProps> = ({ 
   subtotal, 
   profit, 
   form, 
@@ -119,4 +118,5 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
   );
 };
 
+// Also export as default for backward compatibility
 export default SalesSummary;
