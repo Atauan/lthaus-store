@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { toast } from "sonner";
 import { 
   ShoppingCart, 
-  Tool, 
+  Wrench, 
   User, 
   CheckCircle, 
   CreditCard, 
@@ -34,7 +33,6 @@ import {
 import { useForm } from 'react-hook-form';
 import GlassCard from '@/components/ui/custom/GlassCard';
 
-// Sample product data
 const sampleProducts = [
   { id: 1, name: 'Cabo USB-C', category: 'Cabos', price: 29.90, cost: 15.00, stock: 15 },
   { id: 2, name: 'Capa iPhone 13', category: 'Capas', price: 79.90, cost: 40.00, stock: 8 },
@@ -43,7 +41,6 @@ const sampleProducts = [
   { id: 5, name: 'Fone de Ouvido TWS', category: 'Áudio', price: 149.90, cost: 75.00, stock: 4 },
 ];
 
-// Sample services data
 const sampleServices = [
   { id: 1, name: 'Troca de Tela', category: 'Reparo', price: 199.90 },
   { id: 2, name: 'Troca de Bateria', category: 'Reparo', price: 149.90 },
@@ -135,7 +132,6 @@ const SalesForm = () => {
       return;
     }
 
-    // Here you would save the sale to your backend
     console.log({
       ...data,
       items: selectedItems,
@@ -154,8 +150,6 @@ const SalesForm = () => {
 
   const handleRegisterNewProduct = () => {
     toast.info("Redirecionando para cadastro de novo produto...");
-    // Here you would redirect to the product creation page
-    // with the search query pre-filled
     setShowProductNotFound(false);
   };
 
@@ -176,7 +170,7 @@ const SalesForm = () => {
             onClick={() => setSelectedType('service')}
             className="flex-1"
           >
-            <Tool className="mr-2 h-4 w-4" />
+            <Wrench className="mr-2 h-4 w-4" />
             Serviços
           </Button>
         </div>
