@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageTransition from '@/components/layout/PageTransition';
@@ -29,7 +28,6 @@ import {
 } from '@/components/ui/select';
 import IconButton from '@/components/ui/custom/IconButton';
 
-// Dummy data for demonstration
 const products = [
   { 
     id: 1, 
@@ -116,7 +114,6 @@ const Products = () => {
   });
 
   const handleAddProduct = () => {
-    // In a real app, this would navigate to a product creation form
     navigate('/products/add');
   };
 

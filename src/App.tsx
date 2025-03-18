@@ -8,6 +8,7 @@ import { AnimatePresence } from "framer-motion";
 import Navbar from "@/components/layout/Navbar";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
+import AddProduct from "./pages/AddProduct";
 import Inventory from "./pages/Inventory";
 import Sales from "./pages/Sales";
 import Suppliers from "./pages/Suppliers";
@@ -27,6 +28,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/products" element={<Products />} />
+            <Route path="/products/add" element={<AddProduct />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/sales" element={<Sales />} />
             <Route path="/sales/new" element={<SalesForm />} />
