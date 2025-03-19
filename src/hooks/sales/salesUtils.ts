@@ -103,3 +103,57 @@ export async function getSalesStatistics(period: 'day' | 'week' | 'month' = 'mon
     return { success: false, error };
   }
 }
+
+export async function createSale(
+  sale: Omit<Sale, 'id' | 'created_at' | 'updated_at'>,
+  items: Omit<SaleItem, 'id' | 'created_at' | 'updated_at' | 'sale_id'>[],
+  payments: Omit<SalePayment, 'id' | 'created_at' | 'updated_at' | 'sale_id'>[]
+): Promise<{ success: boolean; data?: SaleDetails; error?: any }> {
+  try {
+    // Start a transaction
+    const { data: saleData, error: saleError } = await supabase
+      .from('sales')
+      .insert([{
+        ...sale,
+        user_id: (await supabase.auth.getUser()).data.user?.id
+      }])
+      .select()
+      .single();
+      
+    if (saleError) throw saleError;
+    
+    const saleId = saleData.id;
+    
+    // Insert items
+    const { error: itemsError } = await supabase
+      .from('sale_items')
+      .insert(
+        items.map(item => ({
+          ...item,
+          sale_id: saleId,
+          user_id: (await supabase.auth.getUser()).data.user?.id
+        }))
+      );
+      
+    if (itemsError) throw itemsError;
+    
+    // Insert payments
+    const { error: paymentsError } = await supabase
+      .from('sale_payments')
+      .insert(
+        payments.map(payment => ({
+          ...payment,
+          sale_id: saleId,
+          user_id: (await supabase.auth.getUser()).data.user?.id
+        }))
+      );
+      
+    if (paymentsError) throw paymentsError;
+    
+    // Return the complete sale details
+    return await getSaleDetails(saleId);
+  } catch (error: any) {
+    toast.error(`Erro ao criar venda: ${error.message}`);
+    return { success: false, error };
+  }
+}

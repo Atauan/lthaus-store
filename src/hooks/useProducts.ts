@@ -2,19 +2,19 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Database } from '@/integrations/supabase/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Product data type
 export interface Product {
   id: number;
   name: string;
-  description: string;
+  description?: string;
   category: string;
   brand: string;
   price: number;
   cost?: number;
   stock: number;
-  image: string;
+  image?: string;
   created_at?: string;
   updated_at?: string;
   user_id?: string;
@@ -24,6 +24,7 @@ export const categories = ['Todas', 'Cabos', 'Capas', 'Áudio', 'Carregadores', 
 export const brands = ['Todas', 'Apple', 'Samsung', 'Anker', 'JBL', 'Generic'];
 
 export function useProducts() {
+  const { session } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,12 +53,16 @@ export function useProducts() {
       }
     };
     
-    fetchProducts();
-  }, []);
+    if (session) {
+      fetchProducts();
+    } else {
+      setLoading(false);
+    }
+  }, [session]);
   
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase());
+                        (product.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
     const matchesCategory = selectedCategory === 'Todas' || product.category === selectedCategory;
     const matchesBrand = selectedBrand === 'Todas' || product.brand === selectedBrand;
     
@@ -65,11 +70,16 @@ export function useProducts() {
   });
 
   // Add a new product
-  const addProduct = async (product: Omit<Product, 'id'>) => {
+  const addProduct = async (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { data, error } = await supabase
         .from('products')
-        .insert([product])
+        .insert([{
+          ...product,
+          user_id: user?.id
+        }])
         .select();
         
       if (error) {
@@ -183,6 +193,7 @@ export function useProducts() {
     updateProduct,
     deleteProduct,
     searchProducts,
-    getLowStockProducts
+    getLowStockProducts,
+    isAuthenticated: !!session
   };
 }

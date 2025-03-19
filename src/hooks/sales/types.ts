@@ -1,4 +1,7 @@
 
+/**
+ * Sale types for interaction with the Supabase database
+ */
 export interface Sale {
   id: number;
   sale_number: number;

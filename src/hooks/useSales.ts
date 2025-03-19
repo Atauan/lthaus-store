@@ -1,12 +1,19 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { fetchSales, getSaleDetails, getSalesStatistics } from './sales/salesUtils';
+import { 
+  fetchSales, 
+  getSaleDetails, 
+  getSalesStatistics, 
+  createSale 
+} from './sales/salesUtils';
 import { useFilterSales } from './sales/useFilterSales';
-import { Sale, DateRange } from './sales/types';
+import { Sale, DateRange, SaleItem, SalePayment } from './sales/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 export type { Sale, SaleItem, SalePayment, DateRange } from './sales/types';
 
 export function useSales() {
+  const { session } = useAuth();
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,8 +36,10 @@ export function useSales() {
       }
     };
     
-    loadSales();
-  }, []);
+    if (session) {
+      loadSales();
+    }
+  }, [session]);
 
   // Use the filtering hook
   const filteredSales = useFilterSales(sales, searchQuery, dateRange);
@@ -38,6 +47,7 @@ export function useSales() {
   // Memoize commonly used functions to prevent unnecessary re-renders
   const getSaleDetailsCallback = useCallback(getSaleDetails, []);
   const getSalesStatisticsCallback = useCallback(getSalesStatistics, []);
+  const createSaleCallback = useCallback(createSale, []);
 
   return {
     sales,
@@ -48,6 +58,8 @@ export function useSales() {
     dateRange,
     setDateRange,
     getSaleDetails: getSaleDetailsCallback,
-    getSalesStatistics: getSalesStatisticsCallback
+    getSalesStatistics: getSalesStatisticsCallback,
+    createSale: createSaleCallback,
+    isAuthenticated: !!session
   };
 }

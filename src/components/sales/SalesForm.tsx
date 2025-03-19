@@ -18,15 +18,21 @@ import {
   generateSaleNumber, 
   calculateSubtotal, 
   calculateProfit, 
-  calculateFinalTotal 
+  calculateFinalTotal,
+  mapSaleFormToDatabase 
 } from './utils/salesUtils';
+import { useSales } from '@/hooks/useSales';
+import { useAuth } from '@/contexts/AuthContext';
 
 const SalesForm = () => {
   const navigate = useNavigate();
+  const { user, isLoading } = useAuth();
+  const { createSale } = useSales();
   const [selectedItems, setSelectedItems] = useState<SaleItem[]>([]);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [saleNumber, setSaleNumber] = useState(generateSaleNumber());
   const [saleData, setSaleData] = useState<SaleData | null>(null);
+  const [savingInProgress, setSavingInProgress] = useState(false);
   
   const form = useForm<SalesFormValues>({
     defaultValues: {
@@ -60,7 +66,7 @@ const SalesForm = () => {
     );
   };
 
-  const onSubmit = (data: SalesFormValues) => {
+  const onSubmit = async (data: SalesFormValues) => {
     if (selectedItems.length === 0) {
       toast.error("Adicione pelo menos um item à venda");
       return;
@@ -88,7 +94,6 @@ const SalesForm = () => {
       date: new Date().toISOString()
     };
     
-    console.log("Sale data submitted:", saleData);
     setSaleData(saleData);
     setIsReceiptModalOpen(true);
   };
@@ -110,11 +115,44 @@ const SalesForm = () => {
     toast.success("Nova venda iniciada!");
   };
 
-  const handleFinishSale = () => {
-    toast.success("Venda finalizada com sucesso!");
-    setIsReceiptModalOpen(false);
-    navigate('/sales');
+  const handleFinishSale = async () => {
+    if (!saleData) return;
+
+    try {
+      setSavingInProgress(true);
+      const mappedData = mapSaleFormToDatabase(saleData, user?.id);
+      
+      const result = await createSale(
+        mappedData.sale,
+        mappedData.items,
+        mappedData.payments
+      );
+
+      if (!result.success) {
+        throw new Error(result.error?.message || 'Erro ao salvar venda');
+      }
+
+      toast.success("Venda finalizada com sucesso!");
+      setIsReceiptModalOpen(false);
+      navigate('/sales');
+    } catch (error: any) {
+      toast.error(`Erro ao finalizar venda: ${error.message}`);
+    } finally {
+      setSavingInProgress(false);
+    }
   };
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isLoading && !user) {
+      toast.error("Você precisa estar logado para acessar esta página");
+      navigate('/auth/login');
+    }
+  }, [user, isLoading, navigate]);
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">Carregando...</div>;
+  }
 
   return (
     <div className="container mx-auto px-4 pb-10 pt-16 lg:pl-64">
@@ -198,6 +236,7 @@ const SalesForm = () => {
           saleData={saleData}
           onNewSale={handleNewSale}
           onFinish={handleFinishSale}
+          savingInProgress={savingInProgress}
         />
       )}
     </div>
