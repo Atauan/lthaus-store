@@ -11,25 +11,28 @@ import SalesForm from './components/sales/SalesForm';
 import NotFound from './pages/NotFound';
 import { Toaster } from './components/ui/sonner';
 import { ThemeProvider } from './hooks/use-theme';
+import { AuthProvider } from './contexts/AuthContext';
 import './App.css';
 
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <Navbar />
-        <Toaster position="top-right" />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/products/add" element={<AddProduct />} />
-          <Route path="/sales" element={<Sales />} />
-          <Route path="/sales/new" element={<SalesForm />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/suppliers" element={<Suppliers />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
+      <AuthProvider>
+        <Router>
+          <Navbar />
+          <Toaster position="top-right" />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/products/add" element={<AddProduct />} />
+            <Route path="/sales" element={<Sales />} />
+            <Route path="/sales/new" element={<SalesForm />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/suppliers" element={<Suppliers />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }
