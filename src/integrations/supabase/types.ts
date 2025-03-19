@@ -9,6 +9,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      cost_change_logs: {
+        Row: {
+          change_percentage: number
+          created_at: string
+          id: string
+          new_cost: number
+          notes: string | null
+          previous_cost: number
+          product_id: number
+          user_id: string
+        }
+        Insert: {
+          change_percentage: number
+          created_at?: string
+          id?: string
+          new_cost: number
+          notes?: string | null
+          previous_cost: number
+          product_id: number
+          user_id: string
+        }
+        Update: {
+          change_percentage?: number
+          created_at?: string
+          id?: string
+          new_cost?: number
+          notes?: string | null
+          previous_cost?: number
+          product_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_change_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           brand: string
@@ -241,6 +282,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      stock_logs: {
+        Row: {
+          change_amount: number
+          created_at: string
+          id: string
+          new_stock: number
+          notes: string | null
+          previous_stock: number
+          product_id: number
+          reference_id: string | null
+          reference_type: string
+          user_id: string
+        }
+        Insert: {
+          change_amount: number
+          created_at?: string
+          id?: string
+          new_stock: number
+          notes?: string | null
+          previous_stock: number
+          product_id: number
+          reference_id?: string | null
+          reference_type: string
+          user_id: string
+        }
+        Update: {
+          change_amount?: number
+          created_at?: string
+          id?: string
+          new_stock?: number
+          notes?: string | null
+          previous_stock?: number
+          product_id?: number
+          reference_id?: string | null
+          reference_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppliers: {
         Row: {

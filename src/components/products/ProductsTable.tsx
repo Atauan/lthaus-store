@@ -7,7 +7,8 @@ import {
   Edit,
   DollarSign,
   Percent,
-  Package
+  Package,
+  Trash2
 } from 'lucide-react';
 import IconButton from '@/components/ui/custom/IconButton';
 import {
@@ -24,9 +25,15 @@ interface ProductsTableProps {
   filteredProducts: Product[];
   totalProducts: number;
   openEditDialog: (product: Product, type: 'price' | 'profit' | 'stock') => void;
+  onDelete: (productId: number) => void;
 }
 
-const ProductsTable = ({ filteredProducts, totalProducts, openEditDialog }: ProductsTableProps) => {
+const ProductsTable = ({ 
+  filteredProducts, 
+  totalProducts, 
+  openEditDialog,
+  onDelete
+}: ProductsTableProps) => {
   const navigate = useNavigate();
 
   return (
@@ -113,11 +120,15 @@ const ProductsTable = ({ filteredProducts, totalProducts, openEditDialog }: Prod
                           Atualizar estoque
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate('/products/add', { state: { duplicateFrom: product } })}>
                           <Copy className="mr-2 h-4 w-4" />
                           Duplicar produto
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
+                        <DropdownMenuItem 
+                          className="text-red-600"
+                          onClick={() => onDelete(product.id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
                           Excluir produto
                         </DropdownMenuItem>
                       </DropdownMenuContent>

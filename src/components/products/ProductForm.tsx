@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -16,7 +17,6 @@ import {
   Save,
   Undo,
   RefreshCw,
-  WandSparkles,
   Plus
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -51,6 +51,8 @@ import IconButton from '@/components/ui/custom/IconButton';
 import NewCategoryDialog from './NewCategoryDialog';
 import NewBrandDialog from './NewBrandDialog';
 import NewSupplierDialog from './NewSupplierDialog';
+import ProductAutoFill from './ProductAutoFill';
+import { useProducts } from '@/hooks/useProducts';
 
 // Sample categories, brands and suppliers for demonstration
 const categories = ['Cabos', 'Capas', 'Áudio', 'Carregadores', 'Proteção', 'Acessórios'];
@@ -71,6 +73,7 @@ interface ProductFormValues {
 
 const ProductForm = () => {
   const navigate = useNavigate();
+  const { addProduct } = useProducts();
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [profit, setProfit] = useState<number>(0);
@@ -190,48 +193,66 @@ const ProductForm = () => {
     });
   };
 
-  // Auto-fill product using AI (simulation)
-  const handleAutoFill = () => {
-    toast.info("Processando dados do produto com IA...");
+  // Handle auto-fill
+  const handleAutoFill = (productData: any) => {
+    form.setValue('name', productData.name);
+    form.setValue('description', productData.description);
+    form.setValue('category', productData.category);
+    form.setValue('brand', productData.brand);
     
-    // Simulate AI processing delay
-    setTimeout(() => {
-      form.setValue('name', 'Cabo USB-C para iPhone');
-      form.setValue('description', 'Cabo USB-C para carregamento rápido de iPhone. Compatível com modelos a partir do iPhone 8. Comprimento: 1 metro.');
-      form.setValue('costPrice', 19.99);
-      form.setValue('category', 'Cabos');
-      form.setValue('brand', 'Generic');
-      form.setValue('stock', 15);
-      
-      // Update sale price and profit
-      const calculatedSalePrice = calculateSalePrice(19.99, profitMargin);
-      form.setValue('salePrice', calculatedSalePrice);
-      setProfit(calculatedSalePrice - 19.99);
-      
-      toast.success("Produto preenchido automaticamente!");
-    }, 1500);
+    // Set cost price (if available)
+    if (productData.cost) {
+      form.setValue('costPrice', productData.cost);
+    }
+    
+    // Set sale price
+    form.setValue('salePrice', productData.price);
+    
+    // Update profit margin if we have both cost and price
+    if (productData.cost && productData.price) {
+      const newMargin = ((productData.price - productData.cost) / productData.cost) * 100;
+      setProfitMargin(parseFloat(newMargin.toFixed(0)));
+      setProfit(productData.price - productData.cost);
+    }
   };
 
   // Handle form submission
-  const onSubmit = (data: ProductFormValues) => {
-    // In a real app, this would send the data to your backend
-    console.log("Product data:", data);
-    console.log("Images:", selectedImages);
-    
-    toast.success("Produto adicionado com sucesso!");
-    
-    // Reset the form or redirect
-    handleResetForm();
-    
-    // Simulate redirect after 2 seconds
-    setTimeout(() => {
-      navigate('/products');
-    }, 2000);
+  const onSubmit = async (data: ProductFormValues) => {
+    try {
+      // Map form data to product structure
+      const productData = {
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        brand: data.brand,
+        price: data.salePrice,
+        cost: data.costPrice > 0 ? data.costPrice : null,
+        stock: data.stock
+      };
+      
+      // Call the addProduct function from useProducts hook
+      const result = await addProduct(productData);
+      
+      if (result.success) {
+        toast.success("Produto adicionado com sucesso!");
+        
+        // Reset the form
+        handleResetForm();
+        
+        // Redirect after 2 seconds
+        setTimeout(() => {
+          navigate('/products');
+        }, 2000);
+      } else {
+        toast.error(`Erro ao adicionar produto: ${result.error?.message || 'Erro desconhecido'}`);
+      }
+    } catch (error: any) {
+      toast.error(`Erro ao adicionar produto: ${error.message}`);
+    }
   };
 
   // Add new category
   const handleAddCategory = (newCategory: string) => {
-    // In a real app, you would save this to your backend
     console.log("New category to add:", newCategory);
     toast.success(`Categoria "${newCategory}" adicionada com sucesso!`);
     form.setValue('category', newCategory);
@@ -240,7 +261,6 @@ const ProductForm = () => {
 
   // Add new brand
   const handleAddBrand = (newBrand: string) => {
-    // In a real app, you would save this to your backend
     console.log("New brand to add:", newBrand);
     toast.success(`Marca "${newBrand}" adicionada com sucesso!`);
     form.setValue('brand', newBrand);
@@ -249,7 +269,6 @@ const ProductForm = () => {
 
   // Add new supplier
   const handleAddSupplier = (newSupplier: string) => {
-    // In a real app, you would save this to your backend
     console.log("New supplier to add:", newSupplier);
     toast.success(`Fornecedor "${newSupplier}" adicionado com sucesso!`);
     form.setValue('supplier', newSupplier);
@@ -513,20 +532,7 @@ const ProductForm = () => {
               {/* AI Auto-fill card */}
               <GlassCard borderEffect hoverEffect className="bg-blue-50/30">
                 <div className="text-center">
-                  <WandSparkles className="h-10 w-10 mx-auto text-blue-500 mb-3" />
-                  <h3 className="text-lg font-medium mb-2">Preenchimento Inteligente</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Deixe nossa IA preencher automaticamente os detalhes do produto para você.
-                  </p>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="w-full border-blue-200 hover:bg-blue-100/50"
-                    onClick={handleAutoFill}
-                  >
-                    <WandSparkles className="mr-2 h-4 w-4" />
-                    Auto Preencher
-                  </Button>
+                  <ProductAutoFill onAutoFill={handleAutoFill} />
                 </div>
               </GlassCard>
 
