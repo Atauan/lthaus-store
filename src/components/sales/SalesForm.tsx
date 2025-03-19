@@ -186,6 +186,7 @@ const SalesForm = () => {
             profit={profit}
             form={form}
             calculateFinalTotal={getFinalTotal}
+            onNewSale={handleNewSale}
           />
         </div>
       </div>
