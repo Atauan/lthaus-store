@@ -1,9 +1,9 @@
 
 import { useState } from 'react';
-import { DateRange } from './types';
+import { Sale, DateRange } from './types';
 import { useFilterSales } from './useFilterSales';
 
-export function useSalesFiltering(sales: any[]) {
+export function useSalesFiltering(sales: Sale[]) {
   const [searchQuery, setSearchQuery] = useState('');
   const [dateRange, setDateRange] = useState<DateRange>({});
   
