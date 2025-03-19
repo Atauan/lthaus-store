@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageTransition from '@/components/layout/PageTransition';
 import { 
   Search, 
@@ -25,7 +25,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GlassCard from '@/components/ui/custom/GlassCard';
 
-// Dummy data for demonstration
 const salesData = [
   { 
     id: 1, 
@@ -108,6 +107,7 @@ const paymentNames = {
 };
 
 const Sales = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDateRange, setSelectedDateRange] = useState('7dias');
   const [selectedPayment, setSelectedPayment] = useState('todos');
@@ -116,7 +116,6 @@ const Sales = () => {
     setSearchQuery(e.target.value);
   };
   
-  // Format date string to a more readable format
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('pt-BR', {
@@ -162,11 +161,14 @@ const Sales = () => {
     return matchesSearch && matchesDate && matchesPayment;
   });
   
-  // Calculate totals for the current filter
   const totalSales = filteredSales.length;
   const totalRevenue = filteredSales.reduce((sum, sale) => sum + sale.total, 0);
   const productsSold = filteredSales.reduce((sum, sale) => 
     sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0);
+  
+  const handleNewSale = () => {
+    navigate('/sales/new');
+  };
   
   return (
     <PageTransition>
@@ -178,7 +180,7 @@ const Sales = () => {
               <p className="text-muted-foreground mt-1">Gerencie e analise suas vendas</p>
             </div>
             
-            <Button>
+            <Button onClick={handleNewSale}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Nova Venda
             </Button>

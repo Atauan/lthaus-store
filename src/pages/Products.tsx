@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageTransition from '@/components/layout/PageTransition';
@@ -8,7 +9,11 @@ import {
   SlidersHorizontal,
   ChevronDown,
   MoreVertical,
-  Copy
+  Copy,
+  Edit,
+  DollarSign,
+  Percent,
+  Package
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -17,6 +22,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import {
   Select,
@@ -26,6 +32,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import IconButton from '@/components/ui/custom/IconButton';
 
 const products = [
@@ -99,6 +115,10 @@ const Products = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todas');
   const [selectedBrand, setSelectedBrand] = useState('Todas');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editType, setEditType] = useState<'price' | 'profit' | 'stock'>('price');
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [editValue, setEditValue] = useState<string>('');
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -115,6 +135,80 @@ const Products = () => {
 
   const handleAddProduct = () => {
     navigate('/products/add');
+  };
+
+  const openEditDialog = (product: any, type: 'price' | 'profit' | 'stock') => {
+    setSelectedProduct(product);
+    setEditType(type);
+    
+    if (type === 'price') {
+      setEditValue(product.price.toString());
+    } else if (type === 'stock') {
+      setEditValue(product.stock.toString());
+    } else if (type === 'profit') {
+      // Calculate profit percentage if cost exists
+      if (product.cost) {
+        const profitMargin = ((product.price - product.cost) / product.cost) * 100;
+        setEditValue(profitMargin.toFixed(2));
+      } else {
+        setEditValue('0');
+      }
+    }
+    
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSave = () => {
+    if (!selectedProduct) return;
+    
+    try {
+      const numericValue = parseFloat(editValue);
+      
+      if (isNaN(numericValue)) {
+        toast.error("O valor inserido não é válido");
+        return;
+      }
+      
+      // Create a copy of the products array
+      const updatedProducts = [...products];
+      const productIndex = updatedProducts.findIndex(p => p.id === selectedProduct.id);
+      
+      if (productIndex === -1) return;
+      
+      if (editType === 'price') {
+        if (numericValue <= 0) {
+          toast.error("O preço deve ser maior que zero");
+          return;
+        }
+        updatedProducts[productIndex].price = numericValue;
+        toast.success(`Preço do produto "${selectedProduct.name}" atualizado para R$ ${numericValue.toFixed(2)}`);
+      } 
+      else if (editType === 'stock') {
+        if (numericValue < 0 || !Number.isInteger(numericValue)) {
+          toast.error("A quantidade em estoque deve ser um número inteiro positivo");
+          return;
+        }
+        updatedProducts[productIndex].stock = numericValue;
+        toast.success(`Estoque do produto "${selectedProduct.name}" atualizado para ${numericValue} unidades`);
+      } 
+      else if (editType === 'profit') {
+        if (!selectedProduct.cost) {
+          toast.error("Não é possível definir margem de lucro sem o custo do produto");
+          return;
+        }
+        
+        // Calculate new price based on cost and profit margin
+        const newPrice = selectedProduct.cost * (1 + numericValue / 100);
+        updatedProducts[productIndex].price = newPrice;
+        toast.success(`Margem de lucro do produto "${selectedProduct.name}" definida para ${numericValue}%`);
+      }
+      
+      // In a real app, you would update the database here
+      
+      setEditDialogOpen(false);
+    } catch (error) {
+      toast.error("Ocorreu um erro ao salvar as alterações");
+    }
   };
 
   return (
@@ -244,12 +338,23 @@ const Products = () => {
                               </IconButton>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => navigate(`/products/edit/${product.id}`)}>
+                                <Edit className="mr-2 h-4 w-4" />
                                 Editar produto
                               </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                Gerenciar estoque
+                              <DropdownMenuItem onClick={() => openEditDialog(product, 'price')}>
+                                <DollarSign className="mr-2 h-4 w-4" />
+                                Alterar preço
                               </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => openEditDialog(product, 'profit')}>
+                                <Percent className="mr-2 h-4 w-4" />
+                                Definir margem de lucro
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => openEditDialog(product, 'stock')}>
+                                <Package className="mr-2 h-4 w-4" />
+                                Atualizar estoque
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
                               <DropdownMenuItem>
                                 <Copy className="mr-2 h-4 w-4" />
                                 Duplicar produto
@@ -289,6 +394,46 @@ const Products = () => {
           </div>
         </div>
       </div>
+
+      {/* Dialog para editar preço, lucro ou estoque */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>
+              {editType === 'price' && 'Alterar Preço'}
+              {editType === 'profit' && 'Definir Margem de Lucro'}
+              {editType === 'stock' && 'Atualizar Estoque'}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedProduct && (
+                <span>Produto: {selectedProduct.name}</span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-value" className="text-right">
+                {editType === 'price' && 'Preço (R$)'}
+                {editType === 'profit' && 'Margem (%)'}
+                {editType === 'stock' && 'Quantidade'}
+              </Label>
+              <Input
+                id="edit-value"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                className="col-span-3"
+                type="number"
+                step={editType === 'stock' ? "1" : "0.01"}
+                min={editType === 'stock' ? "0" : undefined}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleEditSave}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageTransition>
   );
 };
