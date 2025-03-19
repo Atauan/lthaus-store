@@ -38,30 +38,6 @@ serve(async (req) => {
       }
     );
     
-    // Get the current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser();
-    
-    if (userError) {
-      console.error("Auth error:", userError.message);
-      throw new Error(`Error getting user: ${userError.message}`);
-    }
-    
-    if (!user) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Unauthorized",
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 401,
-        }
-      );
-    }
-    
     // Get request body
     const body: RequestBody = await req.json();
     console.log("Request body:", JSON.stringify(body));

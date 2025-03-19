@@ -30,6 +30,7 @@ export function useProductAutoFill() {
       });
       
       if (error) {
+        console.error('Error calling analyze-product function:', error);
         throw new Error(error.message);
       }
       
@@ -58,17 +59,20 @@ export function useProductAutoFill() {
     try {
       setLoading(true);
       
+      console.log('Analyzing product name:', productName);
+      
       // Call the Supabase Edge Function to analyze the product name
       const { data, error } = await supabase.functions.invoke('analyze-product', {
         body: { productName }
       });
       
       if (error) {
+        console.error('Error calling analyze-product function:', error);
         throw new Error(error.message);
       }
       
-      if (!data.success) {
-        throw new Error(data.error || 'Falha ao analisar o nome do produto');
+      if (!data || !data.success) {
+        throw new Error(data?.error || 'Falha ao analisar o nome do produto');
       }
       
       return {

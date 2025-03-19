@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Undo, RefreshCw, Save } from 'lucide-react';
+import { Undo, RefreshCw, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface FormButtonsProps {
@@ -40,7 +40,11 @@ const FormButtons: React.FC<FormButtonsProps> = ({
         type="submit"
         disabled={isLoading}
       >
-        <Save className="mr-2 h-4 w-4" />
+        {isLoading ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : (
+          <Save className="mr-2 h-4 w-4" />
+        )}
         {isLoading ? 'Salvando...' : 'Salvar Produto'}
       </Button>
     </div>

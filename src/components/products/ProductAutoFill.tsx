@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { WandSparkles, Upload, Search } from 'lucide-react';
+import { WandSparkles, Upload, Search, Loader2 } from 'lucide-react';
 import { useProductAutoFill } from '@/hooks/useProductAutoFill';
 
 interface ProductAutoFillProps {
@@ -75,8 +75,12 @@ const ProductAutoFill = ({ onAutoFill }: ProductAutoFillProps) => {
               onClick={handleProductNameAnalysis}
               disabled={loading}
             >
-              <Search className="mr-2 h-4 w-4" />
-              Analisar
+              {loading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Search className="mr-2 h-4 w-4" />
+              )}
+              {loading ? 'Analisando...' : 'Analisar'}
             </Button>
           </div>
           <Button 
@@ -84,6 +88,7 @@ const ProductAutoFill = ({ onAutoFill }: ProductAutoFillProps) => {
             variant="link" 
             onClick={() => setShowNameInput(false)}
             className="self-start text-xs"
+            disabled={loading}
           >
             Voltar
           </Button>
@@ -108,8 +113,12 @@ const ProductAutoFill = ({ onAutoFill }: ProductAutoFillProps) => {
               className="w-full border-blue-200 hover:bg-blue-100/50"
               disabled={loading}
             >
-              <Upload className="mr-2 h-4 w-4" />
-              Auto Preencher por Imagem
+              {loading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="mr-2 h-4 w-4" />
+              )}
+              {loading ? 'Analisando...' : 'Auto Preencher por Imagem'}
               <input 
                 type="file" 
                 accept="image/*" 
