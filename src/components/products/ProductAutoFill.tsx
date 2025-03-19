@@ -26,7 +26,7 @@ const ProductAutoFill = ({ onAutoFill }: ProductAutoFillProps) => {
       return;
     }
     
-    toast.info("Analisando imagem do produto usando DeepSeek...", { duration: 3000 });
+    toast.info("Analisando imagem do produto usando IA...", { duration: 3000 });
     
     const result = await analyzeProductImage(file);
     
@@ -44,7 +44,7 @@ const ProductAutoFill = ({ onAutoFill }: ProductAutoFillProps) => {
       return;
     }
     
-    toast.info("Analisando nome do produto usando DeepSeek...", { duration: 3000 });
+    toast.info("Analisando nome do produto usando IA...", { duration: 3000 });
     
     const result = await analyzeProductName(productName);
     

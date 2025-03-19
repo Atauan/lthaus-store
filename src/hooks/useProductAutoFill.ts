@@ -17,7 +17,7 @@ export function useProductAutoFill() {
   
   const analyzeProductImage = async (
     imageFile: File
-  ): Promise<{ success: boolean; data?: ProductData; error?: string }> => {
+  ): Promise<{ success: boolean; data?: ProductData; error?: string; warning?: string }> => {
     try {
       setLoading(true);
       
@@ -34,13 +34,19 @@ export function useProductAutoFill() {
         throw new Error(error.message);
       }
       
-      if (!data.success) {
-        throw new Error(data.error || 'Falha ao analisar a imagem do produto');
+      if (!data || !data.success) {
+        throw new Error(data?.error || 'Falha ao analisar a imagem do produto');
+      }
+      
+      // Check if there's a warning from the fallback mechanism
+      if (data.warning) {
+        toast.warning(data.warning, { duration: 5000 });
       }
       
       return {
         success: true,
-        data: data.productData
+        data: data.productData,
+        warning: data.warning
       };
     } catch (error: any) {
       console.error('Error analyzing product image:', error);
@@ -55,7 +61,7 @@ export function useProductAutoFill() {
   
   const analyzeProductName = async (
     productName: string
-  ): Promise<{ success: boolean; data?: ProductData; error?: string }> => {
+  ): Promise<{ success: boolean; data?: ProductData; error?: string; warning?: string }> => {
     try {
       setLoading(true);
       
@@ -75,9 +81,15 @@ export function useProductAutoFill() {
         throw new Error(data?.error || 'Falha ao analisar o nome do produto');
       }
       
+      // Check if there's a warning from the fallback mechanism
+      if (data.warning) {
+        toast.warning(data.warning, { duration: 5000 });
+      }
+      
       return {
         success: true,
-        data: data.productData
+        data: data.productData,
+        warning: data.warning
       };
     } catch (error: any) {
       console.error('Error analyzing product name:', error);

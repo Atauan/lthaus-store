@@ -60,38 +60,72 @@ serve(async (req) => {
     
     let productData: ProductData;
     
-    if (body.image) {
-      console.log("Analyzing product image...");
-      // Analyze image using DeepSeek's Vision API
-      productData = await analyzeProductImage(body.image, deepseekApiKey);
-    } else if (body.productName) {
-      console.log("Analyzing product name:", body.productName);
-      // Analyze product name using DeepSeek's Chat API
-      productData = await analyzeProductName(body.productName, deepseekApiKey);
-    } else {
+    try {
+      if (body.image) {
+        console.log("Analyzing product image...");
+        // Analyze image using DeepSeek's Vision API
+        productData = await analyzeProductImage(body.image, deepseekApiKey);
+      } else if (body.productName) {
+        console.log("Analyzing product name:", body.productName);
+        // Analyze product name using DeepSeek's Chat API
+        productData = await analyzeProductName(body.productName, deepseekApiKey);
+      } else {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "No image or product name provided",
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400,
+          }
+        );
+      }
+      
+      console.log("Analysis successful:", JSON.stringify(productData));
       return new Response(
         JSON.stringify({
-          success: false,
-          error: "No image or product name provided",
+          success: true,
+          productData,
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
+          status: 200,
+        }
+      );
+    } catch (error) {
+      console.error("Error in analysis:", error);
+      
+      // Check if it's an insufficient balance error
+      if (error.message && error.message.includes("Insufficient Balance")) {
+        // Use our fallback generator for simple product info
+        const productName = body.productName || "Unknown Product";
+        const fallbackData = generateFallbackProductData(productName);
+        
+        return new Response(
+          JSON.stringify({
+            success: true,
+            productData: fallbackData,
+            warning: "Used fallback data generation due to DeepSeek API credit limit. Consider recharging your DeepSeek account."
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          }
+        );
+      }
+      
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: error.message || "Unknown error occurred",
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
         }
       );
     }
-    
-    console.log("Analysis successful:", JSON.stringify(productData));
-    return new Response(
-      JSON.stringify({
-        success: true,
-        productData,
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      }
-    );
   } catch (error) {
     console.error("Error processing request:", error);
     
@@ -107,6 +141,60 @@ serve(async (req) => {
     );
   }
 });
+
+// Fallback data generation function when AI API fails
+function generateFallbackProductData(productName: string): ProductData {
+  // Extract potential category and brand from the product name
+  const lowerName = productName.toLowerCase();
+  
+  // Try to determine category
+  let category = "Acessórios";
+  if (lowerName.includes("cabo") || lowerName.includes("carregador") || lowerName.includes("usb")) {
+    category = "Cabos";
+  } else if (lowerName.includes("capa") || lowerName.includes("case") || lowerName.includes("protetor")) {
+    category = "Capas";
+  } else if (lowerName.includes("fone") || lowerName.includes("áudio") || lowerName.includes("audio")) {
+    category = "Áudio";
+  } else if (lowerName.includes("carregador") || lowerName.includes("fonte") || lowerName.includes("adaptador")) {
+    category = "Carregadores";
+  } else if (lowerName.includes("película") || lowerName.includes("pelicula") || lowerName.includes("proteção")) {
+    category = "Proteção";
+  }
+  
+  // Try to extract brand
+  let brand = "Generic";
+  const commonBrands = ["apple", "samsung", "xiaomi", "motorola", "jbl", "huawei", "anker", "baseus"];
+  for (const brandName of commonBrands) {
+    if (lowerName.includes(brandName)) {
+      brand = brandName.charAt(0).toUpperCase() + brandName.slice(1);
+      break;
+    }
+  }
+  
+  // Generate baseline price based on category
+  let basePrice = 39.90;
+  if (category === "Capas") basePrice = 29.90;
+  if (category === "Proteção") basePrice = 19.90;
+  if (category === "Carregadores") basePrice = 59.90;
+  if (category === "Áudio") basePrice = 79.90;
+  
+  // Add premium if it's a known brand
+  if (brand !== "Generic") {
+    basePrice *= 1.5;
+  }
+  
+  // Round to 2 decimal places
+  basePrice = Math.round(basePrice * 100) / 100;
+  
+  return {
+    name: productName,
+    description: `${productName} - ${category} para smartphones e dispositivos eletrônicos.`,
+    category: category,
+    brand: brand,
+    price: basePrice,
+    cost: basePrice * 0.6,
+  };
+}
 
 async function analyzeProductImage(
   base64Image: string,
