@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { UserProfile, AuthContextType } from '@/types/auth';
+import { UserProfile, AuthContextType, UserRole } from '@/types/auth';
 import { toast } from 'sonner';
 
 const AuthContext = createContext<AuthContextType>({
@@ -12,6 +12,8 @@ const AuthContext = createContext<AuthContextType>({
   signUp: async () => ({ error: null }),
   signOut: async () => {},
   updateProfile: async () => ({ error: null }),
+  updateUserRole: async () => ({ error: null }),
+  getUsers: async () => ({ data: null, error: null }),
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -129,6 +131,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // New function to update a user's role (admin only)
+  const updateUserRole = async (userId: string, role: UserRole) => {
+    try {
+      if (!user?.role || user.role !== 'admin') {
+        throw new Error('Permissão negada. Apenas administradores podem alterar funções.');
+      }
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role })
+        .eq('id', userId);
+      
+      if (error) throw error;
+      
+      toast.success(`Função do usuário atualizada para ${role}`);
+      return { error: null };
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao atualizar função do usuário');
+      return { error };
+    }
+  };
+
+  // New function to get all users (admin only)
+  const getUsers = async () => {
+    try {
+      if (!user?.role || user.role !== 'admin') {
+        throw new Error('Permissão negada. Apenas administradores podem visualizar todos os usuários.');
+      }
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      return { data: data as UserProfile[], error: null };
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao buscar usuários');
+      return { data: null, error };
+    }
+  };
+
   const value = {
     user,
     session,
@@ -137,6 +182,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUp,
     signOut,
     updateProfile,
+    updateUserRole,
+    getUsers,
   };
 
   return (

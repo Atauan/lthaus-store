@@ -7,6 +7,7 @@ import AddProduct from './pages/AddProduct';
 import Sales from './pages/Sales';
 import Inventory from './pages/Inventory';
 import Suppliers from './pages/Suppliers';
+import UserManagement from './pages/UserManagement';
 import SalesForm from './components/sales/SalesForm';
 import NotFound from './pages/NotFound';
 import Login from './pages/Auth/Login';
@@ -18,9 +19,15 @@ import { ThemeProvider } from './hooks/use-theme';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './App.css';
 
-// Protected route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { session, isLoading } = useAuth();
+// Protected route component with role-based access
+const ProtectedRoute = ({ 
+  children, 
+  requiredRoles = [] 
+}: { 
+  children: React.ReactNode, 
+  requiredRoles?: Array<'admin' | 'manager' | 'salesperson'> 
+}) => {
+  const { session, isLoading, user } = useAuth();
   
   if (isLoading) {
     return <div className="flex items-center justify-center h-screen">Carregando...</div>;
@@ -28,6 +35,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (!session) {
     return <Navigate to="/auth/login" replace />;
+  }
+  
+  // If specific roles are required, check if the user has the required role
+  if (requiredRoles.length > 0 && user) {
+    const hasRequiredRole = requiredRoles.includes(user.role);
+    if (!hasRequiredRole) {
+      return <Navigate to="/" replace />;
+    }
   }
   
   return <>{children}</>;
@@ -45,11 +60,12 @@ function AppRoutes() {
       {/* Protected routes */}
       <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
       <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
-      <Route path="/products/add" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
+      <Route path="/products/add" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><AddProduct /></ProtectedRoute>} />
       <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
       <Route path="/sales/new" element={<ProtectedRoute><SalesForm /></ProtectedRoute>} />
       <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
-      <Route path="/suppliers" element={<ProtectedRoute><Suppliers /></ProtectedRoute>} />
+      <Route path="/suppliers" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><Suppliers /></ProtectedRoute>} />
+      <Route path="/users" element={<ProtectedRoute requiredRoles={['admin']}><UserManagement /></ProtectedRoute>} />
       
       {/* Not found */}
       <Route path="*" element={<NotFound />} />
