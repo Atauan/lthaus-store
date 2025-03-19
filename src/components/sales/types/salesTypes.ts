@@ -6,6 +6,7 @@ export type SaleItem = {
   price: number;
   cost?: number;
   quantity: number;
+  custom_price?: boolean;
 };
 
 export type PaymentMethod = {
@@ -22,6 +23,8 @@ export type SalesFormValues = {
   discount: number;
   discountType: 'percentage' | 'fixed';
   notes: string;
+  deliveryAddress?: string;
+  deliveryFee?: number;
 };
 
 export type SaleData = SalesFormValues & {

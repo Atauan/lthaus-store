@@ -16,12 +16,12 @@ export function calculateProfit(items: SaleItem[]) {
   }, 0);
 }
 
-export function calculateFinalTotal(subtotal: number, discountType: 'percentage' | 'fixed', discount: number) {
+export function calculateFinalTotal(subtotal: number, discountType: 'percentage' | 'fixed', discount: number, deliveryFee: number = 0) {
   const discountValue = discountType === 'percentage' 
     ? subtotal * (discount / 100)
     : discount;
   
-  return Math.max(0, subtotal - discountValue);
+  return Math.max(0, subtotal - discountValue + deliveryFee);
 }
 
 export function mapSaleFormToDatabase(
@@ -42,6 +42,8 @@ export function mapSaleFormToDatabase(
       final_total: saleData.finalTotal,
       profit: saleData.profit,
       sale_date: saleData.date,
+      delivery_address: saleData.deliveryAddress || null,
+      delivery_fee: saleData.deliveryFee || 0,
       user_id: userId
     },
     items: saleData.items.map((item: any) => ({
@@ -51,6 +53,7 @@ export function mapSaleFormToDatabase(
       cost: item.cost,
       quantity: item.quantity,
       type: item.type,
+      custom_price: item.custom_price || false,
       user_id: userId
     })),
     payments: saleData.paymentMethods.map((payment: any) => ({

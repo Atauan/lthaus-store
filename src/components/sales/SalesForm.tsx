@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner";
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,6 +13,8 @@ import SalesSummary from './SalesSummary';
 import PaymentMethodsSection from './PaymentMethodsSection';
 import SaleReceiptModal from './SaleReceiptModal';
 import QuickActionsSidebar from './QuickActionsSidebar';
+import DeliverySection from './DeliverySection';
+import AddTemporaryProductDialog from './AddTemporaryProductDialog';
 import { SaleItem, SalesFormValues, SaleData } from './types/salesTypes';
 import { 
   generateSaleNumber, 
@@ -33,6 +35,7 @@ const SalesForm = () => {
   const [saleNumber, setSaleNumber] = useState(generateSaleNumber());
   const [saleData, setSaleData] = useState<SaleData | null>(null);
   const [savingInProgress, setSavingInProgress] = useState(false);
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   
   const form = useForm<SalesFormValues>({
     defaultValues: {
@@ -44,6 +47,8 @@ const SalesForm = () => {
       discount: 0,
       discountType: 'percentage',
       notes: '',
+      deliveryAddress: '',
+      deliveryFee: 0,
     },
   });
 
@@ -57,12 +62,14 @@ const SalesForm = () => {
 
   const subtotal = calculateSubtotal(selectedItems);
   const profit = calculateProfit(selectedItems);
+  const deliveryFee = form.watch('deliveryFee') || 0;
 
   const getFinalTotal = () => {
     return calculateFinalTotal(
       subtotal, 
       form.watch('discountType'), 
-      form.watch('discount')
+      form.watch('discount'),
+      deliveryFee
     );
   };
 
@@ -111,6 +118,8 @@ const SalesForm = () => {
       discount: 0,
       discountType: 'percentage',
       notes: '',
+      deliveryAddress: '',
+      deliveryFee: 0,
     });
     toast.success("Nova venda iniciada!");
   };
@@ -142,6 +151,10 @@ const SalesForm = () => {
     }
   };
 
+  const handleAddTemporaryProduct = (item: SaleItem) => {
+    setSelectedItems([...selectedItems, item]);
+  };
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!isLoading && !user) {
@@ -163,6 +176,14 @@ const SalesForm = () => {
         </div>
         
         <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setIsAddProductOpen(true)}
+            className="flex items-center gap-1"
+          >
+            <Plus className="h-4 w-4" />
+            Produto/Serviço Temporário
+          </Button>
           <Button variant="outline" onClick={() => navigate('/sales')}>
             Cancelar
           </Button>
@@ -184,11 +205,14 @@ const SalesForm = () => {
                 setSelectedItems={setSelectedItems} 
               />
               
+              <DeliverySection form={form} saleChannel={form.watch('saleChannel')} />
+              
               <SalesSummary 
                 subtotal={subtotal}
                 profit={profit}
                 form={form}
                 calculateFinalTotal={getFinalTotal}
+                deliveryFee={deliveryFee}
               />
               
               <PaymentMethodsSection 
@@ -239,6 +263,12 @@ const SalesForm = () => {
           savingInProgress={savingInProgress}
         />
       )}
+      
+      <AddTemporaryProductDialog
+        isOpen={isAddProductOpen}
+        onClose={() => setIsAddProductOpen(false)}
+        onAddItem={handleAddTemporaryProduct}
+      />
     </div>
   );
 };

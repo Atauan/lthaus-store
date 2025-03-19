@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Coins } from 'lucide-react';
+import { Coins, Truck } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -24,6 +24,7 @@ interface SalesSummaryProps {
   form: UseFormReturn<SalesFormValues>;
   calculateFinalTotal: () => number;
   className?: string;
+  deliveryFee?: number;
 }
 
 export const SalesSummary: React.FC<SalesSummaryProps> = ({
@@ -32,6 +33,7 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({
   form,
   calculateFinalTotal,
   className = "",
+  deliveryFee = 0
 }) => {
   const { control, watch } = form;
   const discountType = watch('discountType');
@@ -118,6 +120,17 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({
                 - R$ {(discountType === 'percentage' 
                   ? (subtotal * (discount / 100)) 
                   : discount).toFixed(2)}
+              </span>
+            </div>
+          )}
+          
+          {(deliveryFee > 0) && (
+            <div className="flex justify-between items-center">
+              <span className="text-sm flex items-center gap-1">
+                <Truck className="h-4 w-4" /> Taxa de Entrega:
+              </span>
+              <span className="font-medium">
+                + R$ {deliveryFee.toFixed(2)}
               </span>
             </div>
           )}

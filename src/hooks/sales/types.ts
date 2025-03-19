@@ -18,6 +18,8 @@ export interface Sale {
   created_at?: string;
   updated_at?: string;
   user_id?: string;
+  delivery_address?: string;
+  delivery_fee?: number;
 }
 
 export interface SaleItem {
@@ -32,6 +34,7 @@ export interface SaleItem {
   created_at?: string;
   updated_at?: string;
   user_id?: string;
+  custom_price?: boolean;
 }
 
 export interface SalePayment {
