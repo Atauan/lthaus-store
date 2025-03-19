@@ -79,11 +79,19 @@ serve(async (req) => {
       return createErrorResponse(validationError, 400);
     }
     
-    // Verify DeepSeek API key is configured
+    // Check if DeepSeek API key is configured
     const deepseekApiKey = Deno.env.get("DEEPSEEK_API_KEY");
     if (!deepseekApiKey) {
-      console.error("DeepSeek API key is not configured");
-      return createErrorResponse("DeepSeek API key is not configured", 500);
+      console.log("DeepSeek API key is not configured, using fallback generator");
+      // Use fallback generator for product info
+      const productName = body.productName || "Unknown Product";
+      const fallbackData = generateFallbackProductData(productName);
+      
+      return createApiResponse({
+        success: true,
+        productData: fallbackData,
+        warning: "Using fallback data generation. No DeepSeek API key provided."
+      });
     }
     
     // Process the request and analyze product
@@ -114,10 +122,50 @@ async function processProductAnalysisRequest(body: RequestBody, deepseekApiKey: 
     
     if (body.image) {
       console.log("Analyzing product image...");
-      productData = await analyzeProductImage(body.image, deepseekApiKey);
+      try {
+        productData = await analyzeProductImage(body.image, deepseekApiKey);
+      } catch (error) {
+        console.error("Error analyzing image, using fallback:", error);
+        const productName = "Unknown Product"; 
+        productData = generateFallbackProductData(productName);
+        return createApiResponse({
+          success: true,
+          productData,
+          warning: "Image analysis failed. Using fallback data generation: " + error.message
+        });
+      }
     } else if (body.productName) {
       console.log("Analyzing product name:", body.productName);
-      productData = await analyzeProductName(body.productName, deepseekApiKey);
+      try {
+        // First try to check if product already exists in database
+        productData = await findExistingProduct(body.productName);
+        
+        if (productData) {
+          console.log("Found existing product in database");
+          return createApiResponse({
+            success: true,
+            productData,
+            warning: "Used existing product data from database"
+          });
+        }
+        
+        // If not in database, try DeepSeek
+        productData = await analyzeProductName(body.productName, deepseekApiKey);
+      } catch (error) {
+        console.error("Error analyzing product name:", error);
+        
+        // Use our fallback generator for simple product info
+        const productName = body.productName || "Unknown Product";
+        const fallbackData = generateFallbackProductData(productName);
+        
+        return createApiResponse({
+          success: true,
+          productData: fallbackData,
+          warning: error.message.includes("Insufficient Balance") 
+            ? "Used fallback data generation due to DeepSeek API credit limit. Consider recharging your DeepSeek account."
+            : "Used fallback data generation: " + error.message
+        });
+      }
     } else {
       // This should never happen due to earlier validation
       return createErrorResponse("No image or product name provided", 400);
@@ -145,6 +193,49 @@ async function processProductAnalysisRequest(body: RequestBody, deepseekApiKey: 
     }
     
     return createErrorResponse(error.message || "Unknown error occurred", 500);
+  }
+}
+
+// Try to find existing product in database based on name similarity
+async function findExistingProduct(productName: string): Promise<ProductData | null> {
+  try {
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    
+    // Search for similar product names
+    const { data, error } = await supabaseClient
+      .from('products')
+      .select('*')
+      .textSearch('name', productName, { 
+        type: 'plain',
+        config: 'portuguese'
+      });
+      
+    if (error) {
+      console.error("Error searching products:", error);
+      return null;
+    }
+    
+    if (data && data.length > 0) {
+      // Get the most relevant product (first result)
+      const product = data[0];
+      
+      return {
+        name: product.name,
+        description: product.description || "",
+        category: product.category,
+        brand: product.brand,
+        price: product.price,
+        cost: product.cost || product.price * 0.6,
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error finding existing product:", error);
+    return null;
   }
 }
 
