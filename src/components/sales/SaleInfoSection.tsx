@@ -9,7 +9,6 @@ import {
   Instagram, 
   MessageSquare 
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -58,7 +57,6 @@ const SaleInfoSection: React.FC<SaleInfoSectionProps> = ({ form }) => {
                     {saleChannels.map((channel) => (
                       <SelectItem key={channel.id} value={channel.id}>
                         <div className="flex items-center gap-2">
-                          {/* Render the icon based on the channel icon name */}
                           {channel.icon === 'Store' && <Store className="h-4 w-4" />}
                           {channel.icon === 'ShoppingBag' && <ShoppingBag className="h-4 w-4" />}
                           {channel.icon === 'Instagram' && <Instagram className="h-4 w-4" />}
