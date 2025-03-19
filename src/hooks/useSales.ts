@@ -8,12 +8,10 @@ import {
 } from './sales/salesUtils';
 import { useFilterSales } from './sales/useFilterSales';
 import { Sale, DateRange, SaleItem, SalePayment, SaleDetails } from './sales/types';
-import { useAuth } from '@/contexts/AuthContext';
 
 export type { Sale, SaleItem, SalePayment, DateRange, SaleDetails } from './sales/types';
 
 export function useSales() {
-  const { session } = useAuth();
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,10 +34,8 @@ export function useSales() {
       }
     };
     
-    if (session) {
-      loadSales();
-    }
-  }, [session]);
+    loadSales(); // Carrega as vendas sem verificar autenticação
+  }, []);
 
   // Use the filtering hook
   const filteredSales = useFilterSales(sales, searchQuery, dateRange);
@@ -60,6 +56,6 @@ export function useSales() {
     getSaleDetails: getSaleDetailsCallback,
     getSalesStatistics: getSalesStatisticsCallback,
     createSale: createSaleCallback,
-    isAuthenticated: !!session
+    isAuthenticated: true // Sempre retorna como autenticado até que o sistema de login esteja pronto
   };
 }
