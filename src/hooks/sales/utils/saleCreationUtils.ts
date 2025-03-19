@@ -1,20 +1,21 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Sale, SaleItem, SalePayment } from '../types';
 import { toast } from 'sonner';
-import { getSaleDetails } from './saleDetailsUtils';
+import { Sale, SaleItem, SalePayment } from '../types';
 
 export async function createSale(
   sale: Omit<Sale, 'id' | 'created_at' | 'updated_at'>,
   items: Omit<SaleItem, 'id' | 'created_at' | 'updated_at' | 'sale_id'>[],
   payments: Omit<SalePayment, 'id' | 'created_at' | 'updated_at' | 'sale_id'>[]
-): Promise<{ success: boolean; data?: any; error?: any }> {
+) {
   try {
-    // Get current user
     const { data: { user } } = await supabase.auth.getUser();
     const userId = user?.id;
+    
+    if (!userId) {
+      throw new Error('Usuário não autenticado');
+    }
 
-    // Start a transaction
     const { data: saleData, error: saleError } = await supabase
       .from('sales')
       .insert([{
@@ -28,7 +29,6 @@ export async function createSale(
     
     const saleId = saleData.id;
     
-    // Insert items
     const { error: itemsError } = await supabase
       .from('sale_items')
       .insert(
@@ -41,7 +41,6 @@ export async function createSale(
       
     if (itemsError) throw itemsError;
     
-    // Insert payments
     const { error: paymentsError } = await supabase
       .from('sale_payments')
       .insert(
@@ -77,8 +76,29 @@ export async function createSale(
       }
     }
     
-    // Return the complete sale details
-    return await getSaleDetails(saleId);
+    // Get the complete sale details for returning
+    const { data: saleItemsData, error: saleItemsError } = await supabase
+      .from('sale_items')
+      .select('*')
+      .eq('sale_id', saleId);
+      
+    if (saleItemsError) throw saleItemsError;
+    
+    const { data: salePaymentsData, error: salePaymentsError } = await supabase
+      .from('sale_payments')
+      .select('*')
+      .eq('sale_id', saleId);
+      
+    if (salePaymentsError) throw salePaymentsError;
+    
+    return {
+      success: true,
+      data: {
+        sale: saleData,
+        items: saleItemsData || [],
+        payments: salePaymentsData || []
+      }
+    };
   } catch (error: any) {
     toast.error(`Erro ao criar venda: ${error.message}`);
     return { success: false, error };
