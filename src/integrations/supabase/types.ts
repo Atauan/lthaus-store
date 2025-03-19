@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      products: {
+        Row: {
+          brand: string
+          category: string
+          cost: number | null
+          created_at: string | null
+          description: string | null
+          id: number
+          image: string | null
+          name: string
+          price: number
+          stock: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          brand: string
+          category: string
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          image?: string | null
+          name: string
+          price: number
+          stock?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          brand?: string
+          category?: string
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          image?: string | null
+          name?: string
+          price?: number
+          stock?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -33,6 +78,194 @@ export type Database = {
           id?: string
           last_name?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      sale_items: {
+        Row: {
+          cost: number | null
+          created_at: string | null
+          id: number
+          name: string
+          price: number
+          product_id: number | null
+          quantity: number
+          sale_id: number | null
+          type: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          cost?: number | null
+          created_at?: string | null
+          id?: number
+          name: string
+          price: number
+          product_id?: number | null
+          quantity: number
+          sale_id?: number | null
+          type: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          cost?: number | null
+          created_at?: string | null
+          id?: number
+          name?: string
+          price?: number
+          product_id?: number | null
+          quantity?: number
+          sale_id?: number | null
+          type?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sale_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: number
+          method: string
+          sale_id: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: number
+          method: string
+          sale_id?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: number
+          method?: string
+          sale_id?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_payments_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales: {
+        Row: {
+          created_at: string | null
+          customer_contact: string | null
+          customer_name: string | null
+          discount: number | null
+          final_total: number
+          id: number
+          notes: string | null
+          payment_method: string
+          profit: number | null
+          sale_channel: string | null
+          sale_date: string | null
+          sale_number: number
+          subtotal: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_contact?: string | null
+          customer_name?: string | null
+          discount?: number | null
+          final_total: number
+          id?: number
+          notes?: string | null
+          payment_method: string
+          profit?: number | null
+          sale_channel?: string | null
+          sale_date?: string | null
+          sale_number: number
+          subtotal: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_contact?: string | null
+          customer_name?: string | null
+          discount?: number | null
+          final_total?: number
+          id?: number
+          notes?: string | null
+          payment_method?: string
+          profit?: number | null
+          sale_channel?: string | null
+          sale_date?: string | null
+          sale_number?: number
+          subtotal?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          contact_name: string | null
+          created_at: string | null
+          email: string | null
+          id: number
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: number
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: number
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

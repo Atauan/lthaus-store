@@ -39,7 +39,7 @@ export function useProducts() {
         }
         
         if (data) {
-          setProducts(data as Product[]);
+          setProducts(data as unknown as Product[]);
         }
       } catch (error: any) {
         toast.error(`Erro ao carregar produtos: ${error.message}`);
@@ -66,16 +66,15 @@ export function useProducts() {
       const { data, error } = await supabase
         .from('products')
         .insert([product])
-        .select()
-        .single();
+        .select();
         
       if (error) {
         throw error;
       }
       
-      if (data) {
-        setProducts(prev => [...prev, data as Product]);
-        return { success: true, data };
+      if (data && data.length > 0) {
+        setProducts(prev => [...prev, data[0] as unknown as Product]);
+        return { success: true, data: data[0] };
       }
       
       return { success: false, error: new Error('Falha ao adicionar produto') };
@@ -90,7 +89,7 @@ export function useProducts() {
     try {
       const { error } = await supabase
         .from('products')
-        .update(updatedProduct)
+        .update(updatedProduct as any)
         .eq('id', updatedProduct.id);
         
       if (error) {
