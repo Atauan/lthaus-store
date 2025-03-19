@@ -12,18 +12,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  category: string;
-  brand: string;
-  price: number;
-  cost?: number;
-  stock: number;
-  image: string;
-}
+import { Product } from '@/hooks/useProducts';
 
 interface EditProductDialogProps {
   open: boolean;

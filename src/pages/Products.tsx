@@ -7,7 +7,7 @@ import ProductsHeader from '@/components/products/ProductsHeader';
 import ProductsFilters from '@/components/products/ProductsFilters';
 import ProductsTable from '@/components/products/ProductsTable';
 import EditProductDialog from '@/components/products/EditProductDialog';
-import { useProducts, categories, brands } from '@/hooks/useProducts';
+import { useProducts, categories, brands, Product } from '@/hooks/useProducts';
 
 const Products = () => {
   const navigate = useNavigate();
@@ -25,14 +25,14 @@ const Products = () => {
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editType, setEditType] = useState<'price' | 'profit' | 'stock'>('price');
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [editValue, setEditValue] = useState<string>('');
 
   const handleAddProduct = () => {
     navigate('/products/add');
   };
 
-  const openEditDialog = (product: any, type: 'price' | 'profit' | 'stock') => {
+  const openEditDialog = (product: Product, type: 'price' | 'profit' | 'stock') => {
     setSelectedProduct(product);
     setEditType(type);
     

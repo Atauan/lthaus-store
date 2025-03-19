@@ -18,18 +18,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  category: string;
-  brand: string;
-  price: number;
-  cost?: number;
-  stock: number;
-  image: string;
-}
+import { Product } from '@/hooks/useProducts';
 
 interface ProductsTableProps {
   filteredProducts: Product[];
@@ -65,14 +54,14 @@ const ProductsTable = ({ filteredProducts, totalProducts, openEditDialog }: Prod
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded bg-secondary flex-shrink-0 overflow-hidden">
                         <img 
-                          src={product.image} 
+                          src={product.image || '/placeholder.svg'} 
                           alt={product.name} 
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div>
                         <h4 className="font-medium">{product.name}</h4>
-                        <p className="text-xs text-muted-foreground line-clamp-1">{product.description}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-1">{product.description || ''}</p>
                       </div>
                     </div>
                   </td>
