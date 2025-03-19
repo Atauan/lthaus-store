@@ -21,7 +21,7 @@ export interface Sale {
 }
 
 export interface SaleItem {
-  id: number;
+  id?: number;
   sale_id?: number;
   product_id?: number;
   name: string;
@@ -35,7 +35,7 @@ export interface SaleItem {
 }
 
 export interface SalePayment {
-  id: number;
+  id?: number;
   sale_id?: number;
   method: string;
   amount: number;

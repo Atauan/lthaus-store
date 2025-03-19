@@ -1,18 +1,19 @@
 
-import React from 'react';
-import { CreditCard, Banknote, Smartphone } from 'lucide-react';
-
-type SaleItem = {
-  name: string;
-  quantity: number;
-  price: number;
-};
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Eye, FileDown } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Sale = {
   id: number;
   date: string;
   customer: string;
-  items: SaleItem[];
+  items: {
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
   paymentMethod: string;
   total: number;
 };
@@ -20,70 +21,79 @@ type Sale = {
 interface SalesTableProps {
   sales: Sale[];
   formatDate: (dateString: string) => string;
+  isLoading?: boolean;
 }
 
-const SalesTable: React.FC<SalesTableProps> = ({ sales, formatDate }) => {
-  const paymentIcons = {
-    cartao: <CreditCard className="h-4 w-4" />,
-    dinheiro: <Banknote className="h-4 w-4" />,
-    pix: <Smartphone className="h-4 w-4" />,
-  };
+const SalesTable = ({ sales, formatDate, isLoading = false }: SalesTableProps) => {
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-4">
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
-  const paymentNames = {
-    cartao: 'Cartão',
-    dinheiro: 'Dinheiro',
-    pix: 'PIX',
-  };
+  if (sales.length === 0) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-muted-foreground">Nenhuma venda encontrada.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b bg-muted/30">
-            <th className="text-left py-3 px-4">Venda</th>
-            <th className="text-left py-3 px-4">Data</th>
-            <th className="text-left py-3 px-4 hidden md:table-cell">Cliente</th>
-            <th className="text-left py-3 px-4">Itens</th>
-            <th className="text-left py-3 px-4 hidden md:table-cell">Pagamento</th>
-            <th className="text-right py-3 px-4">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sales.length > 0 ? (
-            sales.map((sale) => (
-              <tr key={sale.id} className="border-b hover:bg-muted/20 transition-colors">
-                <td className="py-3 px-4 font-medium">#{sale.id.toString().padStart(4, '0')}</td>
-                <td className="py-3 px-4 text-muted-foreground">{formatDate(sale.date)}</td>
-                <td className="py-3 px-4 hidden md:table-cell">{sale.customer}</td>
-                <td className="py-3 px-4">
-                  <div className="flex flex-col">
-                    {sale.items.map((item, idx) => (
-                      <span key={idx} className="text-sm">
-                        {item.quantity}x {item.name}
-                      </span>
-                    ))}
-                  </div>
-                </td>
-                <td className="py-3 px-4 hidden md:table-cell">
-                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-secondary">
-                    {paymentIcons[sale.paymentMethod as keyof typeof paymentIcons]}
-                    {paymentNames[sale.paymentMethod as keyof typeof paymentNames]}
-                  </span>
-                </td>
-                <td className="py-3 px-4 text-right font-semibold">
-                  R$ {sale.total.toFixed(2)}
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                Nenhuma venda encontrada. Tente ajustar os filtros.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+    <div className="overflow-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[100px]">ID</TableHead>
+            <TableHead>Data</TableHead>
+            <TableHead>Cliente</TableHead>
+            <TableHead>Itens</TableHead>
+            <TableHead>Pagamento</TableHead>
+            <TableHead className="text-right">Total</TableHead>
+            <TableHead className="text-right">Ações</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sales.map((sale) => (
+            <TableRow key={sale.id}>
+              <TableCell className="font-medium">{sale.id}</TableCell>
+              <TableCell>{formatDate(sale.date)}</TableCell>
+              <TableCell>{sale.customer}</TableCell>
+              <TableCell>
+                {sale.items.map((item, index) => (
+                  <Badge key={index} variant="outline" className="mr-1 mb-1">
+                    {item.quantity}x {item.name}
+                  </Badge>
+                ))}
+              </TableCell>
+              <TableCell>
+                <Badge variant="secondary">{sale.paymentMethod}</Badge>
+              </TableCell>
+              <TableCell className="text-right font-medium">
+                R$ {sale.total.toFixed(2)}
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  <Button size="icon" variant="outline">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button size="icon" variant="outline">
+                    <FileDown className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 };

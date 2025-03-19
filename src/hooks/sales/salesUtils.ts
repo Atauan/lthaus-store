@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Sale, SaleDetails, SalesStatistics } from './types';
+import { Sale, SaleDetails, SalesStatistics, SaleItem, SalePayment } from './types';
 import { toast } from 'sonner';
 
 export async function fetchSales(): Promise<{ data: Sale[] | null; error: any }> {
@@ -52,8 +52,8 @@ export async function getSaleDetails(saleId: number): Promise<{ success: boolean
       success: true,
       data: {
         sale: saleData as Sale,
-        items: itemsData,
-        payments: paymentsData
+        items: itemsData as SaleItem[],
+        payments: paymentsData as SalePayment[]
       }
     };
   } catch (error: any) {
@@ -110,12 +110,16 @@ export async function createSale(
   payments: Omit<SalePayment, 'id' | 'created_at' | 'updated_at' | 'sale_id'>[]
 ): Promise<{ success: boolean; data?: SaleDetails; error?: any }> {
   try {
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id;
+
     // Start a transaction
     const { data: saleData, error: saleError } = await supabase
       .from('sales')
       .insert([{
         ...sale,
-        user_id: (await supabase.auth.getUser()).data.user?.id
+        user_id: userId
       }])
       .select()
       .single();
@@ -131,7 +135,7 @@ export async function createSale(
         items.map(item => ({
           ...item,
           sale_id: saleId,
-          user_id: (await supabase.auth.getUser()).data.user?.id
+          user_id: userId
         }))
       );
       
@@ -144,7 +148,7 @@ export async function createSale(
         payments.map(payment => ({
           ...payment,
           sale_id: saleId,
-          user_id: (await supabase.auth.getUser()).data.user?.id
+          user_id: userId
         }))
       );
       

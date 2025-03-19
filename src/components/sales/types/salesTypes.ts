@@ -1,6 +1,6 @@
 
 export type SaleItem = {
-  id: number;
+  id?: number;
   type: 'product' | 'service';
   name: string;
   price: number;

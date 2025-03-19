@@ -26,6 +26,7 @@ interface SalesTabsProps {
   setSelectedDateRange: (value: string) => void;
   setSelectedPayment: (value: string) => void;
   filteredSales: Sale[];
+  loading?: boolean;
   formatDate: (dateString: string) => string;
 }
 
@@ -37,6 +38,7 @@ const SalesTabs: React.FC<SalesTabsProps> = ({
   setSelectedDateRange,
   setSelectedPayment,
   filteredSales,
+  loading = false,
   formatDate
 }) => {
   return (
@@ -61,7 +63,7 @@ const SalesTabs: React.FC<SalesTabsProps> = ({
         </div>
         
         <TabsContent value="list" className="mt-0">
-          <SalesTable sales={filteredSales} formatDate={formatDate} />
+          <SalesTable sales={filteredSales} formatDate={formatDate} isLoading={loading} />
         </TabsContent>
         
         <TabsContent value="reports" className="p-6">

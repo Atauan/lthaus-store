@@ -7,10 +7,10 @@ import {
   createSale 
 } from './sales/salesUtils';
 import { useFilterSales } from './sales/useFilterSales';
-import { Sale, DateRange, SaleItem, SalePayment } from './sales/types';
+import { Sale, DateRange, SaleItem, SalePayment, SaleDetails } from './sales/types';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type { Sale, SaleItem, SalePayment, DateRange } from './sales/types';
+export type { Sale, SaleItem, SalePayment, DateRange, SaleDetails } from './sales/types';
 
 export function useSales() {
   const { session } = useAuth();

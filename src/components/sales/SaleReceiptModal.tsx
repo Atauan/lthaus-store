@@ -19,7 +19,8 @@ import {
   ShoppingBag,
   FileText,
   CreditCard,
-  Banknote
+  Banknote,
+  Loader2
 } from 'lucide-react';
 
 interface SaleReceiptModalProps {
@@ -28,6 +29,7 @@ interface SaleReceiptModalProps {
   saleData: any;
   onNewSale: () => void;
   onFinish: () => void;
+  savingInProgress?: boolean;
 }
 
 const SaleReceiptModal: React.FC<SaleReceiptModalProps> = ({
@@ -35,7 +37,8 @@ const SaleReceiptModal: React.FC<SaleReceiptModalProps> = ({
   onClose,
   saleData,
   onNewSale,
-  onFinish
+  onFinish,
+  savingInProgress = false
 }) => {
   if (!saleData) return null;
   
@@ -246,8 +249,16 @@ const SaleReceiptModal: React.FC<SaleReceiptModalProps> = ({
               Nova Venda
             </Button>
             
-            <Button className="flex-1" onClick={onFinish}>
-              <CheckCircle className="mr-2 h-4 w-4" />
+            <Button 
+              className="flex-1" 
+              onClick={onFinish}
+              disabled={savingInProgress}
+            >
+              {savingInProgress ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle className="mr-2 h-4 w-4" />
+              )}
               Finalizar
             </Button>
           </div>
