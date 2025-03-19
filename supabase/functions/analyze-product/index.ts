@@ -66,14 +66,14 @@ serve(async (req) => {
     const body: RequestBody = await req.json();
     console.log("Request body:", JSON.stringify(body));
     
-    // Check if we have the OpenAI API key
-    const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
-    if (!openaiApiKey) {
-      console.error("OpenAI API key is not configured");
+    // Check if we have the DeepSeek API key
+    const deepseekApiKey = Deno.env.get("DEEPSEEK_API_KEY");
+    if (!deepseekApiKey) {
+      console.error("DeepSeek API key is not configured");
       return new Response(
         JSON.stringify({
           success: false,
-          error: "OpenAI API key is not configured",
+          error: "DeepSeek API key is not configured",
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -86,12 +86,12 @@ serve(async (req) => {
     
     if (body.image) {
       console.log("Analyzing product image...");
-      // Analyze image using OpenAI's Vision API
-      productData = await analyzeProductImage(body.image, openaiApiKey);
+      // Analyze image using DeepSeek's Vision API
+      productData = await analyzeProductImage(body.image, deepseekApiKey);
     } else if (body.productName) {
       console.log("Analyzing product name:", body.productName);
-      // Analyze product name using OpenAI's Chat API
-      productData = await analyzeProductName(body.productName, openaiApiKey);
+      // Analyze product name using DeepSeek's Chat API
+      productData = await analyzeProductName(body.productName, deepseekApiKey);
     } else {
       return new Response(
         JSON.stringify({
@@ -138,7 +138,7 @@ async function analyzeProductImage(
 ): Promise<ProductData> {
   try {
     const payload = {
-      model: "gpt-4o",
+      model: "deepseek-vision",
       messages: [
         {
           role: "user",
@@ -159,8 +159,8 @@ async function analyzeProductImage(
       max_tokens: 500
     };
     
-    console.log("Sending request to OpenAI for image analysis...");
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    console.log("Sending request to DeepSeek for image analysis...");
+    const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -171,13 +171,13 @@ async function analyzeProductImage(
     
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("OpenAI API Error:", errorData);
-      throw new Error(`OpenAI API Error: ${errorData.error?.message || response.statusText}`);
+      console.error("DeepSeek API Error:", errorData);
+      throw new Error(`DeepSeek API Error: ${errorData.error?.message || response.statusText}`);
     }
     
     const data = await response.json();
     const content = data.choices[0].message.content;
-    console.log("OpenAI response:", content);
+    console.log("DeepSeek response:", content);
     
     // Extract JSON from the response
     let jsonMatch = content.match(/\{.*\}/s);
@@ -213,7 +213,7 @@ async function analyzeProductName(
 ): Promise<ProductData> {
   try {
     const payload = {
-      model: "gpt-4o-mini",
+      model: "deepseek-chat",
       messages: [
         {
           role: "user",
@@ -225,8 +225,8 @@ async function analyzeProductName(
       max_tokens: 500
     };
     
-    console.log("Sending request to OpenAI for product name analysis...");
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    console.log("Sending request to DeepSeek for product name analysis...");
+    const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -237,13 +237,13 @@ async function analyzeProductName(
     
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("OpenAI API Error:", errorData);
-      throw new Error(`OpenAI API Error: ${errorData.error?.message || response.statusText}`);
+      console.error("DeepSeek API Error:", errorData);
+      throw new Error(`DeepSeek API Error: ${errorData.error?.message || response.statusText}`);
     }
     
     const data = await response.json();
     const content = data.choices[0].message.content;
-    console.log("OpenAI response:", content);
+    console.log("DeepSeek response:", content);
     
     // Extract JSON from the response
     let jsonMatch = content.match(/\{.*\}/s);

@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button';
 interface FormButtonsProps {
   onCancel: () => void;
   onReset: () => void;
+  isLoading?: boolean;
 }
 
 const FormButtons: React.FC<FormButtonsProps> = ({
   onCancel,
-  onReset
+  onReset,
+  isLoading = false
 }) => {
   return (
     <div className="flex flex-col sm:flex-row gap-3 justify-end">
@@ -18,6 +20,7 @@ const FormButtons: React.FC<FormButtonsProps> = ({
         type="button" 
         variant="outline" 
         onClick={onCancel}
+        disabled={isLoading}
       >
         <Undo className="mr-2 h-4 w-4" />
         Cancelar
@@ -27,14 +30,18 @@ const FormButtons: React.FC<FormButtonsProps> = ({
         type="button" 
         variant="secondary" 
         onClick={onReset}
+        disabled={isLoading}
       >
         <RefreshCw className="mr-2 h-4 w-4" />
         Limpar Campos
       </Button>
       
-      <Button type="submit">
+      <Button 
+        type="submit"
+        disabled={isLoading}
+      >
         <Save className="mr-2 h-4 w-4" />
-        Salvar Produto
+        {isLoading ? 'Salvando...' : 'Salvar Produto'}
       </Button>
     </div>
   );
