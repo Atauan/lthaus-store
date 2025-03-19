@@ -1,7 +1,14 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { User, Phone } from 'lucide-react';
+import { 
+  User, 
+  Phone, 
+  Store, 
+  ShoppingBag, 
+  Instagram, 
+  MessageSquare 
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -51,11 +58,11 @@ const SaleInfoSection: React.FC<SaleInfoSectionProps> = ({ form }) => {
                     {saleChannels.map((channel) => (
                       <SelectItem key={channel.id} value={channel.id}>
                         <div className="flex items-center gap-2">
-                          {/* Dynamically import icons based on the channel icon name */}
-                          {(() => {
-                            const LucideIcon = require('lucide-react')[channel.icon];
-                            return <LucideIcon className="h-4 w-4" />;
-                          })()}
+                          {/* Render the icon based on the channel icon name */}
+                          {channel.icon === 'Store' && <Store className="h-4 w-4" />}
+                          {channel.icon === 'ShoppingBag' && <ShoppingBag className="h-4 w-4" />}
+                          {channel.icon === 'Instagram' && <Instagram className="h-4 w-4" />}
+                          {channel.icon === 'MessageSquare' && <MessageSquare className="h-4 w-4" />}
                           <span>{channel.name}</span>
                         </div>
                       </SelectItem>

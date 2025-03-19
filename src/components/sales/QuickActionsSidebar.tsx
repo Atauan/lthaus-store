@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Receipt, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SalesSummary } from './SalesSummary';
+import SalesSummary from './SalesSummary';
 import { UseFormReturn } from 'react-hook-form';
 import { SalesFormValues } from './types/salesTypes';
 
