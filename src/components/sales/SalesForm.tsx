@@ -24,11 +24,9 @@ import {
   mapSaleFormToDatabase 
 } from './utils/salesUtils';
 import { useSales } from '@/hooks/useSales';
-import { useAuth } from '@/contexts/AuthContext';
 
 const SalesForm = () => {
   const navigate = useNavigate();
-  const { user, isLoading } = useAuth();
   const { createSale } = useSales();
   const [selectedItems, setSelectedItems] = useState<SaleItem[]>([]);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
@@ -129,7 +127,7 @@ const SalesForm = () => {
 
     try {
       setSavingInProgress(true);
-      const mappedData = mapSaleFormToDatabase(saleData, user?.id);
+      const mappedData = mapSaleFormToDatabase(saleData);
       
       const result = await createSale(
         mappedData.sale,
@@ -154,18 +152,6 @@ const SalesForm = () => {
   const handleAddTemporaryProduct = (item: SaleItem) => {
     setSelectedItems([...selectedItems, item]);
   };
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!isLoading && !user) {
-      toast.error("Você precisa estar logado para acessar esta página");
-      navigate('/auth/login');
-    }
-  }, [user, isLoading, navigate]);
-
-  if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">Carregando...</div>;
-  }
 
   return (
     <div className="container mx-auto px-4 pb-10 pt-16 lg:pl-64">
