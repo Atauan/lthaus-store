@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner";
 import { CheckCircle } from 'lucide-react';
@@ -41,6 +41,14 @@ const SalesForm = () => {
     },
   });
 
+  // Make sure the form is initialized
+  useEffect(() => {
+    // Force re-render after form initialization
+    if (form) {
+      form.reset(form.getValues());
+    }
+  }, []);
+
   const subtotal = calculateSubtotal(selectedItems);
   const profit = calculateProfit(selectedItems);
 
@@ -80,7 +88,7 @@ const SalesForm = () => {
       date: new Date().toISOString()
     };
     
-    console.log(saleData);
+    console.log("Sale data submitted:", saleData);
     setSaleData(saleData);
     setIsReceiptModalOpen(true);
   };
@@ -178,7 +186,6 @@ const SalesForm = () => {
             profit={profit}
             form={form}
             calculateFinalTotal={getFinalTotal}
-            onNewSale={handleNewSale}
           />
         </div>
       </div>

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Coins, Calculator } from 'lucide-react';
+import { Coins } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -33,8 +33,9 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({
   calculateFinalTotal,
   className = "",
 }) => {
-  const discountType = form.watch('discountType');
-  const discount = form.watch('discount');
+  const { control, watch } = form;
+  const discountType = watch('discountType');
+  const discount = watch('discount');
   
   return (
     <div className={`bg-white rounded-lg shadow-soft p-6 ${className}`}>
@@ -43,7 +44,7 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <FormField
-            control={form.control}
+            control={control}
             name="discountType"
             render={({ field }) => (
               <FormItem>
@@ -67,7 +68,7 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({
           />
           
           <FormField
-            control={form.control}
+            control={control}
             name="discount"
             render={({ field }) => (
               <FormItem>

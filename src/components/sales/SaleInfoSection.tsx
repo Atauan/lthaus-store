@@ -32,13 +32,15 @@ interface SaleInfoSectionProps {
 }
 
 const SaleInfoSection: React.FC<SaleInfoSectionProps> = ({ form }) => {
+  const { control } = form;
+  
   return (
     <div className="bg-white rounded-lg shadow-soft p-6">
       <h2 className="text-xl font-semibold mb-4">Informações da Venda</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
-          control={form.control}
+          control={control}
           name="saleChannel"
           render={({ field }) => (
             <FormItem>
@@ -74,7 +76,7 @@ const SaleInfoSection: React.FC<SaleInfoSectionProps> = ({ form }) => {
         
         {form.watch('saleChannel') === 'other' && (
           <FormField
-            control={form.control}
+            control={control}
             name="otherChannel"
             render={({ field }) => (
               <FormItem>
@@ -88,7 +90,7 @@ const SaleInfoSection: React.FC<SaleInfoSectionProps> = ({ form }) => {
         )}
       
         <FormField
-          control={form.control}
+          control={control}
           name="customerName"
           render={({ field }) => (
             <FormItem>
@@ -104,7 +106,7 @@ const SaleInfoSection: React.FC<SaleInfoSectionProps> = ({ form }) => {
         />
         
         <FormField
-          control={form.control}
+          control={control}
           name="customerContact"
           render={({ field }) => (
             <FormItem>

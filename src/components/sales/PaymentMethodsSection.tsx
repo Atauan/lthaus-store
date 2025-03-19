@@ -25,14 +25,16 @@ import {
   FormItem,
   FormLabel,
 } from '@/components/ui/form';
+import { SalesFormValues } from './types/salesTypes';
 
 interface PaymentMethodsSectionProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<SalesFormValues>;
   total: number;
 }
 
 const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({ form, total }) => {
-  const paymentMethods = form.watch('paymentMethods');
+  const { control, watch, setValue, getValues } = form;
+  const paymentMethods = watch('paymentMethods');
   
   const paymentOptions = [
     { id: 'pix', name: 'PIX', icon: <Smartphone className="h-4 w-4" /> },
@@ -43,17 +45,17 @@ const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({ form, tot
   ];
   
   const addPaymentMethod = () => {
-    const currentPayments = form.getValues('paymentMethods');
-    form.setValue('paymentMethods', [
+    const currentPayments = getValues('paymentMethods');
+    setValue('paymentMethods', [
       ...currentPayments,
       { method: 'pix', amount: 0 }
     ]);
   };
   
   const removePaymentMethod = (index: number) => {
-    const currentPayments = form.getValues('paymentMethods');
+    const currentPayments = getValues('paymentMethods');
     if (currentPayments.length > 1) {
-      form.setValue('paymentMethods', currentPayments.filter((_, i) => i !== index));
+      setValue('paymentMethods', currentPayments.filter((_, i) => i !== index));
     }
   };
   
@@ -65,7 +67,7 @@ const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({ form, tot
     const numericValue = parseFloat(value || '0');
     const newPaymentMethods = [...paymentMethods];
     newPaymentMethods[index].amount = numericValue;
-    form.setValue('paymentMethods', newPaymentMethods);
+    setValue('paymentMethods', newPaymentMethods);
   };
   
   const remainingTotal = total - calculateTotalPaid();
@@ -90,7 +92,7 @@ const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({ form, tot
         {paymentMethods.map((payment: any, index: number) => (
           <div key={index} className="flex gap-4 items-end">
             <FormField
-              control={form.control}
+              control={control}
               name={`paymentMethods.${index}.method`}
               render={({ field }) => (
                 <FormItem className="flex-1">
