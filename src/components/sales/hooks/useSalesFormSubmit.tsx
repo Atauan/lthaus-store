@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner";
 import { SalesFormValues, SaleData, SaleItem } from '../types/salesTypes';
-import { generateSaleNumber, mapSaleFormToDatabase } from '../utils/salesUtils';
+import { generateSaleNumber } from '@/hooks/sales/utils/saleCalculations';
+import { mapSaleFormToDatabase } from '@/hooks/sales/utils/saleDataMappers';
 import { useSales } from '@/hooks/useSales';
 
 export function useSalesFormSubmit() {

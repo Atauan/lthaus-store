@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { SaleItem, SalesFormValues } from './types/salesTypes';
-import { calculateSubtotal, calculateProfit } from './utils/salesUtils';
+import { calculateSubtotal, calculateProfit } from '@/hooks/sales/utils/saleCalculations';
 import SaleInfoSection from './SaleInfoSection';
 import ItemsSection from './ItemsSection';
 import SalesSummary from './SalesSummary';
