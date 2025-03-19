@@ -7,10 +7,24 @@ import SalesTabs from '@/components/sales/SalesTabs';
 import { useSales } from '@/hooks/useSales';
 import { formatDate } from '@/components/sales/utils/salesFilterUtils';
 
+// Add this type to bridge the gap between our backend and UI types
+type SaleForUI = {
+  id: number;
+  date: string;
+  customer: string;
+  items: {
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
+  paymentMethod: string;
+  total: number;
+};
+
 const Sales = () => {
   const { 
     loading,
-    filteredSales,
+    filteredSales: backendSales,
     searchQuery, 
     setSearchQuery,
     dateRange,
@@ -22,6 +36,26 @@ const Sales = () => {
   const [totalSales, setTotalSales] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [productsSold, setProductsSold] = useState(0);
+  const [uiSales, setUiSales] = useState<SaleForUI[]>([]);
+  
+  // Convert backend sales to UI format
+  useEffect(() => {
+    const mappedSales = backendSales.map(sale => ({
+      id: sale.id,
+      date: sale.sale_date || '',
+      customer: sale.customer_name || 'Cliente não identificado',
+      // Since we don't have actual items in the current data, we're creating a placeholder
+      items: [{ 
+        name: 'Item da venda', 
+        quantity: 1, 
+        price: sale.final_total 
+      }],
+      paymentMethod: sale.payment_method,
+      total: sale.final_total
+    }));
+    
+    setUiSales(mappedSales);
+  }, [backendSales]);
   
   useEffect(() => {
     const loadStatistics = async () => {
@@ -90,7 +124,7 @@ const Sales = () => {
             handleSearch={handleSearch}
             setSelectedDateRange={handleDateRangeChange}
             setSelectedPayment={setSelectedPayment}
-            filteredSales={filteredSales}
+            filteredSales={uiSales}
             loading={loading}
             formatDate={formatDate}
           />
