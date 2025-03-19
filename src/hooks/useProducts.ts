@@ -30,8 +30,9 @@ export function useProducts() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        // Using type assertion to work around TypeScript issue
         const { data, error } = await supabase
-          .from('products')
+          .from('products' as any)
           .select('*');
           
         if (error) {
@@ -39,6 +40,7 @@ export function useProducts() {
         }
         
         if (data) {
+          // Assert data as Product array
           setProducts(data as unknown as Product[]);
         }
       } catch (error: any) {
@@ -63,9 +65,10 @@ export function useProducts() {
   // Add a new product
   const addProduct = async (product: Omit<Product, 'id'>) => {
     try {
+      // Using type assertion to work around TypeScript issue
       const { data, error } = await supabase
-        .from('products')
-        .insert([product])
+        .from('products' as any)
+        .insert([product as any])
         .select();
         
       if (error) {
@@ -73,8 +76,9 @@ export function useProducts() {
       }
       
       if (data && data.length > 0) {
+        // Assert first item of data as Product
         setProducts(prev => [...prev, data[0] as unknown as Product]);
-        return { success: true, data: data[0] };
+        return { success: true, data: data[0] as unknown as Product };
       }
       
       return { success: false, error: new Error('Falha ao adicionar produto') };
@@ -87,10 +91,11 @@ export function useProducts() {
   // Update an existing product
   const updateProduct = async (updatedProduct: Product) => {
     try {
+      // Using type assertion to work around TypeScript issue
       const { error } = await supabase
-        .from('products')
+        .from('products' as any)
         .update(updatedProduct as any)
-        .eq('id', updatedProduct.id);
+        .eq('id', updatedProduct.id as any);
         
       if (error) {
         throw error;
@@ -110,10 +115,11 @@ export function useProducts() {
   // Delete a product
   const deleteProduct = async (id: number) => {
     try {
+      // Using type assertion to work around TypeScript issue
       const { error } = await supabase
-        .from('products')
+        .from('products' as any)
         .delete()
-        .eq('id', id);
+        .eq('id', id as any);
         
       if (error) {
         throw error;
