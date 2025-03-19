@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageTransition from '@/components/layout/PageTransition';
 import { 
@@ -13,7 +13,10 @@ import {
   Edit,
   DollarSign,
   Percent,
-  Package
+  Package,
+  RefreshCw,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -43,7 +46,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import IconButton from '@/components/ui/custom/IconButton';
+import { useTheme } from '@/hooks/use-theme';
 
+// Using the same product data, but you would typically fetch this from an API
 const products = [
   { 
     id: 1, 
@@ -52,6 +57,7 @@ const products = [
     category: 'Cabos',
     brand: 'Generic',
     price: 29.90,
+    cost: 15.50,
     stock: 45,
     image: '/placeholder.svg'
   },
@@ -62,6 +68,7 @@ const products = [
     category: 'Capas',
     brand: 'Apple',
     price: 79.90,
+    cost: 45.00,
     stock: 23,
     image: '/placeholder.svg'
   },
@@ -72,6 +79,7 @@ const products = [
     category: 'Áudio',
     brand: 'JBL',
     price: 149.90,
+    cost: 85.50,
     stock: 12,
     image: '/placeholder.svg'
   },
@@ -82,6 +90,7 @@ const products = [
     category: 'Carregadores',
     brand: 'Anker',
     price: 89.90,
+    cost: 55.00,
     stock: 18,
     image: '/placeholder.svg'
   },
@@ -92,6 +101,7 @@ const products = [
     category: 'Proteção',
     brand: 'Generic', 
     price: 19.90,
+    cost: 8.50,
     stock: 56,
     image: '/placeholder.svg'
   },
@@ -102,6 +112,7 @@ const products = [
     category: 'Acessórios',
     brand: 'Generic',
     price: 49.90,
+    cost: 22.50,
     stock: 9,
     image: '/placeholder.svg'
   },
@@ -119,6 +130,8 @@ const Products = () => {
   const [editType, setEditType] = useState<'price' | 'profit' | 'stock'>('price');
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -135,6 +148,20 @@ const Products = () => {
 
   const handleAddProduct = () => {
     navigate('/products/add');
+  };
+
+  const handleSyncProducts = () => {
+    setIsSyncing(true);
+    
+    // Simulate syncing with inventory
+    setTimeout(() => {
+      toast.success("Produtos sincronizados com o estoque com sucesso!");
+      setIsSyncing(false);
+    }, 1500);
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   const openEditDialog = (product: any, type: 'price' | 'profit' | 'stock') => {
@@ -221,18 +248,39 @@ const Products = () => {
               <p className="text-muted-foreground mt-1">Gerencie seu catálogo de produtos</p>
             </div>
 
-            <Button onClick={handleAddProduct} className="shrink-0">
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Produto
-            </Button>
+            <div className="flex gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={toggleTheme}
+                className="border-primary/20"
+              >
+                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={handleSyncProducts} 
+                disabled={isSyncing}
+                className="border-primary/20"
+              >
+                <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                Sincronizar com Estoque
+              </Button>
+              
+              <Button onClick={handleAddProduct} className="shrink-0">
+                <Plus className="mr-2 h-4 w-4" />
+                Adicionar Produto
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
-            <div className="relative col-span-2">
+            <div className="relative col-span-1 lg:col-span-2">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input 
                 placeholder="Buscar produtos..." 
-                className="pl-9"
+                className="pl-9 border-white"
                 value={searchQuery}
                 onChange={handleSearch}
               />
@@ -240,7 +288,7 @@ const Products = () => {
 
             <div>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger>
+                <SelectTrigger className="border-white">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4" />
                     <SelectValue placeholder="Categoria" />
@@ -260,7 +308,7 @@ const Products = () => {
 
             <div>
               <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                <SelectTrigger>
+                <SelectTrigger className="border-white">
                   <div className="flex items-center gap-2">
                     <SlidersHorizontal className="h-4 w-4" />
                     <SelectValue placeholder="Marca" />
@@ -279,11 +327,11 @@ const Products = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-soft overflow-hidden animate-scale-in">
+          <div className="bg-card border-primary/20 border rounded-lg shadow-soft overflow-hidden animate-scale-in">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b">
+                  <tr className="border-b border-primary/10">
                     <th className="text-left p-4">Produto</th>
                     <th className="text-left p-4 hidden md:table-cell">Categoria</th>
                     <th className="text-left p-4 hidden md:table-cell">Marca</th>
@@ -297,7 +345,7 @@ const Products = () => {
                     filteredProducts.map((product) => (
                       <tr 
                         key={product.id} 
-                        className="border-b hover:bg-muted/30 transition-colors"
+                        className="border-b border-primary/10 hover:bg-muted/30 transition-colors"
                       >
                         <td className="p-4">
                           <div className="flex items-center gap-3">
@@ -320,7 +368,14 @@ const Products = () => {
                           </span>
                         </td>
                         <td className="p-4 hidden md:table-cell">{product.brand}</td>
-                        <td className="p-4 text-right font-medium">R$ {product.price.toFixed(2)}</td>
+                        <td className="p-4 text-right font-medium">
+                          <div>R$ {product.price.toFixed(2)}</div>
+                          {product.cost && (
+                            <div className="text-xs text-green-600">
+                              Lucro: {(((product.price - product.cost) / product.cost) * 100).toFixed(0)}%
+                            </div>
+                          )}
+                        </td>
                         <td className="p-4 text-right">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                             product.stock <= 5 ? 'bg-red-100 text-red-800' : 
@@ -378,15 +433,15 @@ const Products = () => {
               </table>
             </div>
             
-            <div className="p-4 border-t flex items-center justify-between">
+            <div className="p-4 border-t border-primary/10 flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
                 Mostrando {filteredProducts.length} de {products.length} produtos
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" disabled>
+                <Button variant="outline" size="sm" disabled className="border-white">
                   Anterior
                 </Button>
-                <Button variant="outline" size="sm" disabled>
+                <Button variant="outline" size="sm" disabled className="border-white">
                   Próximo
                 </Button>
               </div>
@@ -397,7 +452,7 @@ const Products = () => {
 
       {/* Dialog para editar preço, lucro ou estoque */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] border-primary/20">
           <DialogHeader>
             <DialogTitle>
               {editType === 'price' && 'Alterar Preço'}
@@ -421,7 +476,7 @@ const Products = () => {
                 id="edit-value"
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-                className="col-span-3"
+                className="col-span-3 border-white"
                 type="number"
                 step={editType === 'stock' ? "1" : "0.01"}
                 min={editType === 'stock' ? "0" : undefined}
@@ -429,7 +484,7 @@ const Products = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)} className="border-white">Cancelar</Button>
             <Button onClick={handleEditSave}>Salvar</Button>
           </DialogFooter>
         </DialogContent>
