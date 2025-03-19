@@ -1,167 +1,35 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageTransition from '@/components/layout/PageTransition';
-import { 
-  Search, 
-  Plus, 
-  Filter, 
-  SlidersHorizontal,
-  ChevronDown,
-  MoreVertical,
-  Copy,
-  Edit,
-  DollarSign,
-  Percent,
-  Package,
-  RefreshCw,
-  Moon,
-  Sun
-} from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import IconButton from '@/components/ui/custom/IconButton';
-import { useTheme } from '@/hooks/use-theme';
-
-// Using the same product data, but you would typically fetch this from an API
-const products = [
-  { 
-    id: 1, 
-    name: 'Cabo Lightning', 
-    description: 'Cabo para iPhone com conector Lightning',
-    category: 'Cabos',
-    brand: 'Generic',
-    price: 29.90,
-    cost: 15.50,
-    stock: 45,
-    image: '/placeholder.svg'
-  },
-  { 
-    id: 2, 
-    name: 'Capa iPhone 13', 
-    description: 'Capa transparente para iPhone 13',
-    category: 'Capas',
-    brand: 'Apple',
-    price: 79.90,
-    cost: 45.00,
-    stock: 23,
-    image: '/placeholder.svg'
-  },
-  { 
-    id: 3, 
-    name: 'Fone de Ouvido Bluetooth', 
-    description: 'Fone sem fio com cancelamento de ruído',
-    category: 'Áudio',
-    brand: 'JBL',
-    price: 149.90,
-    cost: 85.50,
-    stock: 12,
-    image: '/placeholder.svg'
-  },
-  { 
-    id: 4, 
-    name: 'Carregador 20W', 
-    description: 'Carregador rápido USB-C',
-    category: 'Carregadores',
-    brand: 'Anker',
-    price: 89.90,
-    cost: 55.00,
-    stock: 18,
-    image: '/placeholder.svg'
-  },
-  { 
-    id: 5, 
-    name: 'Película de Vidro', 
-    description: 'Película de vidro temperado para Samsung',
-    category: 'Proteção',
-    brand: 'Generic', 
-    price: 19.90,
-    cost: 8.50,
-    stock: 56,
-    image: '/placeholder.svg'
-  },
-  { 
-    id: 6, 
-    name: 'Suporte para Carro', 
-    description: 'Suporte veicular magnético',
-    category: 'Acessórios',
-    brand: 'Generic',
-    price: 49.90,
-    cost: 22.50,
-    stock: 9,
-    image: '/placeholder.svg'
-  },
-];
-
-const categories = ['Todas', 'Cabos', 'Capas', 'Áudio', 'Carregadores', 'Proteção', 'Acessórios'];
-const brands = ['Todas', 'Apple', 'Samsung', 'Anker', 'JBL', 'Generic'];
+import ProductsHeader from '@/components/products/ProductsHeader';
+import ProductsFilters from '@/components/products/ProductsFilters';
+import ProductsTable from '@/components/products/ProductsTable';
+import EditProductDialog from '@/components/products/EditProductDialog';
+import { useProducts, categories, brands } from '@/hooks/useProducts';
 
 const Products = () => {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Todas');
-  const [selectedBrand, setSelectedBrand] = useState('Todas');
+  const {
+    products,
+    filteredProducts,
+    searchQuery,
+    setSearchQuery,
+    selectedCategory,
+    setSelectedCategory,
+    selectedBrand,
+    setSelectedBrand,
+    updateProduct
+  } = useProducts();
+
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editType, setEditType] = useState<'price' | 'profit' | 'stock'>('price');
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [editValue, setEditValue] = useState<string>('');
-  const [isSyncing, setIsSyncing] = useState(false);
-  const { theme, setTheme } = useTheme();
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'Todas' || product.category === selectedCategory;
-    const matchesBrand = selectedBrand === 'Todas' || product.brand === selectedBrand;
-    
-    return matchesSearch && matchesCategory && matchesBrand;
-  });
 
   const handleAddProduct = () => {
     navigate('/products/add');
-  };
-
-  const handleSyncProducts = () => {
-    setIsSyncing(true);
-    
-    // Simulate syncing with inventory
-    setTimeout(() => {
-      toast.success("Produtos sincronizados com o estoque com sucesso!");
-      setIsSyncing(false);
-    }, 1500);
-  };
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   const openEditDialog = (product: any, type: 'price' | 'profit' | 'stock') => {
@@ -196,18 +64,14 @@ const Products = () => {
         return;
       }
       
-      // Create a copy of the products array
-      const updatedProducts = [...products];
-      const productIndex = updatedProducts.findIndex(p => p.id === selectedProduct.id);
-      
-      if (productIndex === -1) return;
+      const updatedProduct = { ...selectedProduct };
       
       if (editType === 'price') {
         if (numericValue <= 0) {
           toast.error("O preço deve ser maior que zero");
           return;
         }
-        updatedProducts[productIndex].price = numericValue;
+        updatedProduct.price = numericValue;
         toast.success(`Preço do produto "${selectedProduct.name}" atualizado para R$ ${numericValue.toFixed(2)}`);
       } 
       else if (editType === 'stock') {
@@ -215,7 +79,7 @@ const Products = () => {
           toast.error("A quantidade em estoque deve ser um número inteiro positivo");
           return;
         }
-        updatedProducts[productIndex].stock = numericValue;
+        updatedProduct.stock = numericValue;
         toast.success(`Estoque do produto "${selectedProduct.name}" atualizado para ${numericValue} unidades`);
       } 
       else if (editType === 'profit') {
@@ -226,11 +90,12 @@ const Products = () => {
         
         // Calculate new price based on cost and profit margin
         const newPrice = selectedProduct.cost * (1 + numericValue / 100);
-        updatedProducts[productIndex].price = newPrice;
+        updatedProduct.price = newPrice;
         toast.success(`Margem de lucro do produto "${selectedProduct.name}" definida para ${numericValue}%`);
       }
       
-      // In a real app, you would update the database here
+      // Update the product in our state
+      updateProduct(updatedProduct);
       
       setEditDialogOpen(false);
     } catch (error) {
@@ -242,253 +107,36 @@ const Products = () => {
     <PageTransition>
       <div className="min-h-screen lg:pl-64 pt-16">
         <div className="container mx-auto px-4 pb-10">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Produtos</h1>
-              <p className="text-muted-foreground mt-1">Gerencie seu catálogo de produtos</p>
-            </div>
+          <ProductsHeader handleAddProduct={handleAddProduct} />
 
-            <div className="flex gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={toggleTheme}
-                className="border-primary/20"
-              >
-                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                onClick={handleSyncProducts} 
-                disabled={isSyncing}
-                className="border-primary/20"
-              >
-                <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                Sincronizar com Estoque
-              </Button>
-              
-              <Button onClick={handleAddProduct} className="shrink-0">
-                <Plus className="mr-2 h-4 w-4" />
-                Adicionar Produto
-              </Button>
-            </div>
-          </div>
+          <ProductsFilters
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            selectedBrand={selectedBrand}
+            setSelectedBrand={setSelectedBrand}
+            categories={categories}
+            brands={brands}
+          />
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
-            <div className="relative col-span-1 lg:col-span-2">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input 
-                placeholder="Buscar produtos..." 
-                className="pl-9 border-white"
-                value={searchQuery}
-                onChange={handleSearch}
-              />
-            </div>
-
-            <div>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="border-white">
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4" />
-                    <SelectValue placeholder="Categoria" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {categories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                <SelectTrigger className="border-white">
-                  <div className="flex items-center gap-2">
-                    <SlidersHorizontal className="h-4 w-4" />
-                    <SelectValue placeholder="Marca" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {brands.map(brand => (
-                      <SelectItem key={brand} value={brand}>
-                        {brand}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="bg-card border-primary/20 border rounded-lg shadow-soft overflow-hidden animate-scale-in">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-primary/10">
-                    <th className="text-left p-4">Produto</th>
-                    <th className="text-left p-4 hidden md:table-cell">Categoria</th>
-                    <th className="text-left p-4 hidden md:table-cell">Marca</th>
-                    <th className="text-right p-4">Preço</th>
-                    <th className="text-right p-4">Estoque</th>
-                    <th className="text-center p-4 w-16">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.length > 0 ? (
-                    filteredProducts.map((product) => (
-                      <tr 
-                        key={product.id} 
-                        className="border-b border-primary/10 hover:bg-muted/30 transition-colors"
-                      >
-                        <td className="p-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded bg-secondary flex-shrink-0 overflow-hidden">
-                              <img 
-                                src={product.image} 
-                                alt={product.name} 
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div>
-                              <h4 className="font-medium">{product.name}</h4>
-                              <p className="text-xs text-muted-foreground line-clamp-1">{product.description}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-4 hidden md:table-cell">
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-secondary">
-                            {product.category}
-                          </span>
-                        </td>
-                        <td className="p-4 hidden md:table-cell">{product.brand}</td>
-                        <td className="p-4 text-right font-medium">
-                          <div>R$ {product.price.toFixed(2)}</div>
-                          {product.cost && (
-                            <div className="text-xs text-green-600">
-                              Lucro: {(((product.price - product.cost) / product.cost) * 100).toFixed(0)}%
-                            </div>
-                          )}
-                        </td>
-                        <td className="p-4 text-right">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            product.stock <= 5 ? 'bg-red-100 text-red-800' : 
-                            product.stock <= 15 ? 'bg-amber-100 text-amber-800' : 
-                            'bg-green-100 text-green-800'
-                          }`}>
-                            {product.stock} unidades
-                          </span>
-                        </td>
-                        <td className="p-4 text-center">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <IconButton variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </IconButton>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem onClick={() => navigate(`/products/edit/${product.id}`)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar produto
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => openEditDialog(product, 'price')}>
-                                <DollarSign className="mr-2 h-4 w-4" />
-                                Alterar preço
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => openEditDialog(product, 'profit')}>
-                                <Percent className="mr-2 h-4 w-4" />
-                                Definir margem de lucro
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => openEditDialog(product, 'stock')}>
-                                <Package className="mr-2 h-4 w-4" />
-                                Atualizar estoque
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem>
-                                <Copy className="mr-2 h-4 w-4" />
-                                Duplicar produto
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-600">
-                                Excluir produto
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                        Nenhum produto encontrado. Tente ajustar os filtros.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-            
-            <div className="p-4 border-t border-primary/10 flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
-                Mostrando {filteredProducts.length} de {products.length} produtos
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" disabled className="border-white">
-                  Anterior
-                </Button>
-                <Button variant="outline" size="sm" disabled className="border-white">
-                  Próximo
-                </Button>
-              </div>
-            </div>
-          </div>
+          <ProductsTable 
+            filteredProducts={filteredProducts}
+            totalProducts={products.length}
+            openEditDialog={openEditDialog}
+          />
         </div>
       </div>
 
-      {/* Dialog para editar preço, lucro ou estoque */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] border-primary/20">
-          <DialogHeader>
-            <DialogTitle>
-              {editType === 'price' && 'Alterar Preço'}
-              {editType === 'profit' && 'Definir Margem de Lucro'}
-              {editType === 'stock' && 'Atualizar Estoque'}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedProduct && (
-                <span>Produto: {selectedProduct.name}</span>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-value" className="text-right">
-                {editType === 'price' && 'Preço (R$)'}
-                {editType === 'profit' && 'Margem (%)'}
-                {editType === 'stock' && 'Quantidade'}
-              </Label>
-              <Input
-                id="edit-value"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                className="col-span-3 border-white"
-                type="number"
-                step={editType === 'stock' ? "1" : "0.01"}
-                min={editType === 'stock' ? "0" : undefined}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)} className="border-white">Cancelar</Button>
-            <Button onClick={handleEditSave}>Salvar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <EditProductDialog
+        open={editDialogOpen}
+        setOpen={setEditDialogOpen}
+        selectedProduct={selectedProduct}
+        editType={editType}
+        editValue={editValue}
+        setEditValue={setEditValue}
+        onSave={handleEditSave}
+      />
     </PageTransition>
   );
 };
