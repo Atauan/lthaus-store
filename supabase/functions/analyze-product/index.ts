@@ -14,7 +14,7 @@ interface RequestBody {
 
 interface ProductData {
   name: string;
-  description: string;
+  description?: string;
   category: string;
   brand: string;
   price: number;
@@ -64,13 +64,13 @@ serve(async (req) => {
     // Get request body
     const body: RequestBody = await req.json();
     
-    // Check if we have the OpenAI API key
-    const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
-    if (!openaiApiKey) {
+    // Check if we have the DeepSeek API key
+    const deepSeekApiKey = Deno.env.get("DEEPSEEK_API_KEY");
+    if (!deepSeekApiKey) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "OpenAI API key is not configured",
+          error: "DeepSeek API key is not configured",
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -82,11 +82,11 @@ serve(async (req) => {
     let productData: ProductData;
     
     if (body.image) {
-      // Analyze image using OpenAI's Vision API
-      productData = await analyzeProductImage(body.image, openaiApiKey);
+      // Analyze image using DeepSeek's API
+      productData = await analyzeProductImage(body.image, deepSeekApiKey);
     } else if (body.productName) {
-      // Analyze product name using OpenAI's Chat API
-      productData = await analyzeProductName(body.productName, openaiApiKey);
+      // Analyze product name using DeepSeek's API
+      productData = await analyzeProductName(body.productName, deepSeekApiKey);
     } else {
       return new Response(
         JSON.stringify({
@@ -131,7 +131,7 @@ async function analyzeProductImage(
   apiKey: string
 ): Promise<ProductData> {
   const payload = {
-    model: "gpt-4-vision-preview",
+    model: "deepseek-vision",
     messages: [
       {
         role: "user",
@@ -152,7 +152,7 @@ async function analyzeProductImage(
     max_tokens: 500
   };
   
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -163,7 +163,7 @@ async function analyzeProductImage(
   
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(`OpenAI API Error: ${errorData.error?.message || response.statusText}`);
+    throw new Error(`DeepSeek API Error: ${errorData.error?.message || response.statusText}`);
   }
   
   const data = await response.json();
@@ -198,7 +198,7 @@ async function analyzeProductName(
   apiKey: string
 ): Promise<ProductData> {
   const payload = {
-    model: "gpt-4",
+    model: "deepseek-chat",
     messages: [
       {
         role: "user",
@@ -210,7 +210,7 @@ async function analyzeProductName(
     max_tokens: 500
   };
   
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -221,7 +221,7 @@ async function analyzeProductName(
   
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(`OpenAI API Error: ${errorData.error?.message || response.statusText}`);
+    throw new Error(`DeepSeek API Error: ${errorData.error?.message || response.statusText}`);
   }
   
   const data = await response.json();
