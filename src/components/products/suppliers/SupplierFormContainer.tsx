@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSuppliers } from '@/hooks/products/useSuppliers';
+import { useCategoriesAndBrands } from '@/hooks/products/useCategoriesAndBrands';
 import {
   Dialog,
   DialogContent,
@@ -43,7 +44,9 @@ const SupplierFormContainer: React.FC<SupplierFormContainerProps> = ({
   const [address, setAddress] = useState('');
   const [error, setError] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const { allCategories, addCategory } = useSuppliers();
+  
+  // Use the shared categories from product system
+  const { categories } = useCategoriesAndBrands();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,17 +76,6 @@ const SupplierFormContainer: React.FC<SupplierFormContainerProps> = ({
     setAddress('');
     setSelectedCategories([]);
     setError('');
-  };
-
-  const handleAddCategory = async (newCategory: string) => {
-    if (!newCategory.trim()) return;
-    
-    const success = await addCategory(newCategory.trim());
-    if (success) {
-      setSelectedCategories(prev => [...prev, newCategory.trim()]);
-      return true;
-    }
-    return false;
   };
 
   return (
@@ -122,8 +114,7 @@ const SupplierFormContainer: React.FC<SupplierFormContainerProps> = ({
             <CategoriesSection 
               selectedCategories={selectedCategories}
               setSelectedCategories={setSelectedCategories}
-              allCategories={allCategories}
-              onAddCategory={handleAddCategory}
+              allCategories={categories}
             />
           </div>
           

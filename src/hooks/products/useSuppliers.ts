@@ -2,6 +2,7 @@
 import { useFetchSuppliers } from './suppliers/useFetchSuppliers';
 import { useCategories } from './suppliers/useCategories';
 import { useSupplierOperations } from './suppliers/useSupplierOperations';
+import { useCategoriesAndBrands } from './useCategoriesAndBrands';
 
 // Re-export types
 export type { Supplier } from './suppliers/types';
@@ -14,10 +15,8 @@ export function useSuppliers() {
     loading 
   } = useFetchSuppliers();
   
-  const {
-    allCategories,
-    addCategory
-  } = useCategories();
+  // Use shared categories from the products system
+  const { categories: allCategories } = useCategoriesAndBrands();
   
   const {
     addSupplier,
@@ -34,7 +33,6 @@ export function useSuppliers() {
     // Operations
     addSupplier,
     updateSupplier,
-    deleteSupplier,
-    addCategory
+    deleteSupplier
   };
 }
