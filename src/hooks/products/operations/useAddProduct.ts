@@ -7,7 +7,7 @@ import { uploadProductImage } from './useImageUpload';
 export function useAddProduct() {
   const addProduct = async (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>, imageFile?: File) => {
     try {
-      let imageUrl = product.image;
+      let imageUrl = null;
       
       // If there's an image file, upload it to Storage first
       if (imageFile) {

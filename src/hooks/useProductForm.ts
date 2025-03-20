@@ -15,6 +15,7 @@ export type { ProductFormValues } from './products/types';
 export function useProductForm() {
   const navigate = useNavigate();
   const { addProduct } = useProducts();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<ProductFormValues>({
     defaultValues: {
@@ -100,6 +101,8 @@ export function useProductForm() {
   // Handle form submission
   const onSubmit = async (data: ProductFormValues) => {
     try {
+      setIsSubmitting(true);
+      
       // Map form data to product structure
       const productData = {
         name: data.name,
@@ -111,8 +114,11 @@ export function useProductForm() {
         stock: data.stock
       };
       
-      // Call the addProduct function from useProducts hook
-      const result = await addProduct(productData);
+      // Get the image file from the first selected image if available
+      const imageFile = selectedImages.length > 0 ? selectedImages[0] : undefined;
+      
+      // Call the addProduct function from useProducts hook with image file
+      const result = await addProduct(productData, imageFile);
       
       if (result.success) {
         toast.success("Produto adicionado com sucesso!");
@@ -129,6 +135,8 @@ export function useProductForm() {
       }
     } catch (error: any) {
       toast.error(`Erro ao adicionar produto: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -154,6 +162,7 @@ export function useProductForm() {
     handleAddBrand,
     handleAddSupplier,
     onSubmit: form.handleSubmit(onSubmit),
-    navigate
+    navigate,
+    isSubmitting
   };
 }

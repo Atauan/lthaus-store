@@ -6,9 +6,9 @@ export async function uploadProductImage(imageFile: File): Promise<string | null
   try {
     const fileExt = imageFile.name.split('.').pop();
     const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `products/${fileName}`;
+    const filePath = `${fileName}`;
     
-    console.log('Starting image upload to Supabase storage...');
+    console.log('Starting image upload to Supabase storage...', filePath);
     
     // Upload the image to Storage
     const { data: uploadData, error: uploadError } = await supabase

@@ -38,7 +38,8 @@ const ProductForm = () => {
     handleAddBrand,
     handleAddSupplier,
     onSubmit,
-    navigate
+    navigate,
+    isSubmitting
   } = useProductForm();
 
   return (
@@ -93,6 +94,7 @@ const ProductForm = () => {
           <FormButtons 
             onCancel={() => navigate('/products')}
             onReset={handleResetForm}
+            isLoading={isSubmitting}
           />
         </form>
       </Form>
