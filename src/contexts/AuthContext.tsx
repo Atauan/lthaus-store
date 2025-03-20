@@ -1,12 +1,11 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile, AuthContextType, UserRole } from '@/types/auth';
 import { toast } from 'sonner';
 
-// Create a default user for development
+// Create a default user for development with proper UUID format
 const defaultDevUser: UserProfile = {
-  id: 'dev-user-id',
+  id: '00000000-0000-0000-0000-000000000000', // Valid UUID format
   first_name: 'Developer',
   last_name: 'User',
   role: 'admin', // Give admin role for development
@@ -17,7 +16,7 @@ const defaultDevUser: UserProfile = {
 const defaultDevSession = {
   user: {
     id: defaultDevUser.id,
-    email: 'dev@example.com',
+    email: 'dev@gmail.com', // Updated email as requested
   }
 };
 

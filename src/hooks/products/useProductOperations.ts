@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -7,8 +8,8 @@ export function useProductOperations(products: Product[], setProducts: React.Dis
   // Add a new product
   const addProduct = async (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      // For development, use a fixed user ID
-      const devUserId = 'dev-user-id';
+      // Use a proper UUID format for development user ID
+      const devUserId = '00000000-0000-0000-0000-000000000000';
       
       const { data, error } = await supabase
         .from('products')
