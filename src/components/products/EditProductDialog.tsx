@@ -1,16 +1,13 @@
 
 import React, { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { Product } from '@/hooks/useProducts';
 import SimpleEditForm from './dialog/SimpleEditForm';
 import FullEditForm from './dialog/FullEditForm';
+import DialogTitleSection from './dialog/DialogTitleSection';
 
 interface EditProductDialogProps {
   open: boolean;
@@ -162,28 +159,13 @@ const EditProductDialog = ({
     onSave();
   };
 
-  const getDialogTitle = () => {
-    switch (editType) {
-      case 'price': return 'Alterar Preço';
-      case 'profit': return 'Definir Margem de Lucro';
-      case 'stock': return 'Atualizar Estoque';
-      case 'cost': return 'Alterar Custo';
-      case 'full': return 'Editar Produto';
-      default: return '';
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[550px] border-primary/20">
-        <DialogHeader>
-          <DialogTitle>{getDialogTitle()}</DialogTitle>
-          <DialogDescription>
-            {selectedProduct && (
-              <span>Produto: {selectedProduct.name}</span>
-            )}
-          </DialogDescription>
-        </DialogHeader>
+        <DialogTitleSection 
+          editType={editType}
+          selectedProduct={selectedProduct}
+        />
         
         {editType === 'full' && fullEditProduct ? (
           <FullEditForm

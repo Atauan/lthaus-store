@@ -2,7 +2,8 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Upload, X } from 'lucide-react';
+import { Upload } from 'lucide-react';
+import ImagePreview from './ImagePreview';
 
 interface ProductImageUploadProps {
   previewUrl: string | null;
@@ -58,27 +59,11 @@ const ProductImageUpload: React.FC<ProductImageUploadProps> = ({
         </div>
       </div>
       
-      {previewUrl && (
-        <div className="mt-3 relative inline-block">
-          <div className="w-24 h-24 rounded border overflow-hidden">
-            <img 
-              src={previewUrl} 
-              alt={productName} 
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/placeholder.svg';
-              }}
-            />
-          </div>
-          <button 
-            type="button" 
-            onClick={onClearImage}
-            className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
+      <ImagePreview 
+        previewUrl={previewUrl}
+        productName={productName}
+        onClearImage={onClearImage}
+      />
     </div>
   );
 };
