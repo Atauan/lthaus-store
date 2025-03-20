@@ -40,11 +40,15 @@ const Products = () => {
     setEditValue,
     openEditDialog,
     handleEditSave,
-    handleFullEditSave
+    handleFullEditSave,
+    isSaving,
+    isTransitioning,
+    setIsTransitioning
   } = useProductEditing(updateProduct, updateCost, fetchCostChangeLogs);
 
   const [recentCostChanges, setRecentCostChanges] = useState<any[]>([]);
 
+  // Fetch cost changes when component mounts
   useEffect(() => {
     fetchCostChangeLogs().then(logs => {
       const recentChanges = logs.slice(0, 5);
@@ -52,6 +56,7 @@ const Products = () => {
     });
   }, [fetchCostChangeLogs]);
 
+  // Update cost logs after dialog closes if we made changes
   useEffect(() => {
     if (!editDialogOpen && (editType === 'cost' || editType === 'profit' || (editType === 'price' && selectedProduct?.cost))) {
       // Update cost logs after closing dialog if we made changes that could affect costs
@@ -128,6 +133,8 @@ const Products = () => {
         setEditValue={setEditValue}
         onSave={handleEditSave}
         onFullSave={handleFullEditSave}
+        isTransitioning={isTransitioning}
+        setIsTransitioning={setIsTransitioning}
       />
     </PageTransition>
   );

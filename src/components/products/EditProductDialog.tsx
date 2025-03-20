@@ -21,6 +21,8 @@ interface EditProductDialogProps {
   setEditValue: (value: string) => void;
   onSave: () => void;
   onFullSave?: (updatedProduct: Product) => void;
+  isTransitioning?: boolean;
+  setIsTransitioning?: (value: boolean) => void;
 }
 
 const EditProductDialog = ({
@@ -31,12 +33,23 @@ const EditProductDialog = ({
   editValue,
   setEditValue,
   onSave,
-  onFullSave
+  onFullSave,
+  isTransitioning,
+  setIsTransitioning
 }: EditProductDialogProps) => {
   const [fullEditProduct, setFullEditProduct] = useState<Product | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [localIsTransitioning, setLocalIsTransitioning] = useState(false);
+
+  // Use either the prop or local state for transitioning
+  const isInTransition = isTransitioning || localIsTransitioning;
+  const updateTransitioning = (value: boolean) => {
+    if (setIsTransitioning) {
+      setIsTransitioning(value);
+    }
+    setLocalIsTransitioning(value);
+  };
 
   // Reset state when dialog opens or closes
   useEffect(() => {
@@ -50,7 +63,7 @@ const EditProductDialog = ({
         setSelectedFile(null);
         setPreviewUrl(null);
         setFullEditProduct(null);
-        setIsTransitioning(false);
+        updateTransitioning(false);
       }, 300);
     } else if (editType === 'full' && selectedProduct) {
       setFullEditProduct({...selectedProduct});
@@ -61,9 +74,9 @@ const EditProductDialog = ({
   // Handle closing the dialog
   const handleClose = () => {
     // Prevent multiple close attempts
-    if (isTransitioning) return;
+    if (isInTransition) return;
     
-    setIsTransitioning(true);
+    updateTransitioning(true);
     
     // Make sure we clean up resources
     if (previewUrl && selectedFile) {
@@ -132,7 +145,7 @@ const EditProductDialog = ({
   const handleFullSave = () => {
     if (fullEditProduct && onFullSave) {
       // Set transitioning state to prevent double-clicks
-      setIsTransitioning(true);
+      updateTransitioning(true);
       
       const productToSave = {
         ...fullEditProduct,
@@ -145,7 +158,7 @@ const EditProductDialog = ({
 
   const handleSimpleSave = () => {
     // Set transitioning state to prevent double-clicks
-    setIsTransitioning(true);
+    updateTransitioning(true);
     onSave();
   };
 

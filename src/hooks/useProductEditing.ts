@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from "sonner";
 import { Product } from '@/hooks/useProducts';
 
@@ -13,6 +13,19 @@ export function useProductEditing(
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [shouldRefresh, setShouldRefresh] = useState(false);
+  
+  useEffect(() => {
+    // When dialog closes, trigger a refresh if needed
+    if (!editDialogOpen && shouldRefresh) {
+      // Reset the refresh flag
+      setShouldRefresh(false);
+      
+      // Force a reload of the current page
+      window.location.reload();
+    }
+  }, [editDialogOpen, shouldRefresh]);
   
   const openEditDialog = (product: Product, type: 'price' | 'profit' | 'stock' | 'cost' | 'full') => {
     setSelectedProduct(product);
@@ -34,15 +47,21 @@ export function useProductEditing(
     }
     
     setEditDialogOpen(true);
+    setIsTransitioning(false);
+    setShouldRefresh(false);
   };
 
   const cleanupAfterSave = () => {
     // Ensure we reset all state properly
     setIsSaving(false);
+    // Mark that we should refresh the page when dialog fully closes
+    setShouldRefresh(true);
+    
     // Add a small delay to ensure dialog is closed before resetting state
     setTimeout(() => {
       setSelectedProduct(null);
       setEditValue('');
+      setIsTransitioning(false);
     }, 300);
   };
 
@@ -156,6 +175,8 @@ export function useProductEditing(
     openEditDialog,
     handleEditSave,
     handleFullEditSave,
-    isSaving
+    isSaving,
+    isTransitioning,
+    setIsTransitioning
   };
 }
