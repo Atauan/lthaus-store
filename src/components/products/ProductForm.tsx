@@ -39,7 +39,10 @@ const ProductForm = () => {
     handleAddSupplier,
     onSubmit,
     navigate,
-    isSubmitting
+    isSubmitting,
+    // Get the dynamic categories and brands lists
+    categories,
+    brands
   } = useProductForm();
 
   return (
@@ -54,6 +57,8 @@ const ProductForm = () => {
                 form={form} 
                 onAddCategory={() => setIsNewCategoryDialogOpen(true)}
                 onAddBrand={() => setIsNewBrandDialogOpen(true)}
+                categories={categories}
+                brands={brands}
               />
 
               {/* Pricing and inventory card */}

@@ -29,20 +29,20 @@ import {
 import { UseFormReturn } from 'react-hook-form';
 import { ProductFormValues } from '@/hooks/useProductForm';
 
-// Sample categories and brands
-const categories = ['Cabos', 'Capas', 'Áudio', 'Carregadores', 'Proteção', 'Acessórios'];
-const brands = ['Apple', 'Samsung', 'Anker', 'JBL', 'Generic', 'Xiaomi'];
-
 interface ProductInfoSectionProps {
   form: UseFormReturn<ProductFormValues>;
   onAddCategory: () => void;
   onAddBrand: () => void;
+  categories: string[];  // Add this prop
+  brands: string[];      // Add this prop
 }
 
 const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
   form,
   onAddCategory,
-  onAddBrand
+  onAddBrand,
+  categories,
+  brands
 }) => {
   return (
     <Card>

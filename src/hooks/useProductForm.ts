@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -57,7 +56,9 @@ export function useProductForm() {
     setIsNewSupplierDialogOpen,
     handleAddCategory,
     handleAddBrand,
-    handleAddSupplier
+    handleAddSupplier,
+    categories,
+    brands
   } = useProductFormDialogs(form);
 
   // Reset the form
@@ -163,6 +164,8 @@ export function useProductForm() {
     handleAddSupplier,
     onSubmit: form.handleSubmit(onSubmit),
     navigate,
-    isSubmitting
+    isSubmitting,
+    categories,
+    brands
   };
 }
