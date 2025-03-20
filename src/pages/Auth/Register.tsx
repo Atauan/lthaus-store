@@ -29,15 +29,10 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const { error } = await signUp(email, password, {
-        first_name: firstName,
-        last_name: lastName
+      await signUp(email, password, {
+        firstName: firstName,
+        lastName: lastName
       });
-      
-      if (error) {
-        setError(error.message);
-        return;
-      }
       
       toast.success('Cadastro realizado com sucesso! Verifique seu email.');
       navigate('/auth/login');

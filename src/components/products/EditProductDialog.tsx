@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { toast } from 'sonner';
 import {
@@ -43,17 +42,14 @@ const EditProductDialog = ({
   onSave,
   onFullSave
 }: EditProductDialogProps) => {
-  // Estado para edição completa do produto
   const [fullEditProduct, setFullEditProduct] = React.useState<Product | null>(null);
 
-  // Inicializar o produto completo quando o diálogo é aberto
   useEffect(() => {
     if (open && editType === 'full' && selectedProduct) {
       setFullEditProduct({...selectedProduct});
     }
   }, [open, editType, selectedProduct]);
 
-  // Função para atualizar campos do produto na edição completa
   const handleFullEditChange = (field: keyof Product, value: any) => {
     if (fullEditProduct) {
       setFullEditProduct({
@@ -63,15 +59,13 @@ const EditProductDialog = ({
     }
   };
 
-  // Função para salvar a edição completa
   const handleFullSave = () => {
     if (fullEditProduct && onFullSave) {
       onFullSave(fullEditProduct);
       setOpen(false);
     }
   };
-  
-  // Renderiza o diálogo de edição simples (preço, lucro, estoque, custo)
+
   const renderSimpleEdit = () => (
     <>
       <div className="grid gap-4 py-4">
@@ -100,7 +94,6 @@ const EditProductDialog = ({
     </>
   );
 
-  // Renderiza o diálogo de edição completa
   const renderFullEdit = () => (
     <>
       {fullEditProduct && (
@@ -242,7 +235,7 @@ const EditProductDialog = ({
       </DialogFooter>
     </>
   );
-  
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-[550px] border-primary/20">

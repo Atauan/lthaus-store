@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageTransition from '@/components/layout/PageTransition';
@@ -55,11 +54,13 @@ const UserManagement = () => {
     // Fetch users
     const fetchUsers = async () => {
       setLoading(true);
-      const { data, error } = await getUsers();
-      if (error) {
-        toast.error('Erro ao carregar usuários');
-      } else if (data) {
-        setUsers(data);
+      if (getUsers) {
+        const { data, error } = await getUsers();
+        if (error) {
+          toast.error('Erro ao carregar usuários');
+        } else if (data) {
+          setUsers(data);
+        }
       }
       setLoading(false);
     };
@@ -70,7 +71,7 @@ const UserManagement = () => {
   }, [user, getUsers, navigate]);
 
   const handleRoleChange = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser || !updateUserRole) return;
     
     const { error } = await updateUserRole(selectedUser.id, selectedRole);
     
@@ -182,7 +183,7 @@ const UserManagement = () => {
                             {userProfile.id}
                           </TableCell>
                           <TableCell>
-                            {getRoleBadge(userProfile.role)}
+                            {getRoleBadge(userProfile.role as UserRole)}
                           </TableCell>
                           <TableCell>
                             {userProfile.created_at ? new Date(userProfile.created_at).toLocaleDateString() : '-'}

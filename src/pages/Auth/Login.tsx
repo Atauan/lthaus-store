@@ -27,12 +27,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const { error } = await signIn(email, password);
-      if (error) {
-        setError(error.message);
-        return;
-      }
-      
+      await signIn(email, password);
       toast.success('Login realizado com sucesso!');
       navigate('/');
     } catch (err: any) {

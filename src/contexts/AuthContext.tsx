@@ -24,13 +24,14 @@ const defaultDevSession = {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
-  isLoading: true,
-  signIn: async () => ({ error: null }),
-  signUp: async () => ({ error: null }),
+  loading: true,
+  error: null,
+  signIn: async () => {},
+  signUp: async () => {},
   signOut: async () => {},
-  updateProfile: async () => ({ error: null }),
-  updateUserRole: async () => ({ error: null }),
-  getUsers: async () => ({ data: null, error: null }),
+  requestPasswordReset: async () => {},
+  updatePassword: async () => {},
+  clearError: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -40,20 +41,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user] = useState<UserProfile | null>(defaultDevUser);
   const [session] = useState<any | null>(defaultDevSession);
   const [isLoading] = useState(false);
+  const [loading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   // Mock authentication functions for development
   const signIn = async () => {
     toast.success('Login realizado com sucesso! (modo desenvolvimento)');
-    return { error: null };
   };
 
   const signUp = async () => {
     toast.success('Conta criada com sucesso! (modo desenvolvimento)');
-    return { error: null };
   };
 
   const signOut = async () => {
     toast.info('Logout realizado (modo desenvolvimento)');
+  };
+
+  const requestPasswordReset = async () => {
+    toast.success('Instruções de recuperação de senha enviadas! (modo desenvolvimento)');
+  };
+
+  const updatePassword = async () => {
+    toast.success('Senha atualizada com sucesso! (modo desenvolvimento)');
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   const updateProfile = async () => {
@@ -92,6 +105,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = {
     user,
     session,
+    loading,
+    error,
     isLoading,
     signIn,
     signUp,
@@ -99,6 +114,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateProfile,
     updateUserRole,
     getUsers,
+    requestPasswordReset,
+    updatePassword,
+    clearError,
   };
 
   return (

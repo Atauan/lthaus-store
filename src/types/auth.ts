@@ -1,6 +1,8 @@
 
 import { Session, User } from '@supabase/supabase-js';
 
+export type UserRole = 'admin' | 'manager' | 'salesperson';
+
 export interface AuthUser {
   id: string;
   email?: string;
@@ -23,15 +25,20 @@ export interface AuthContextType extends AuthState {
   requestPasswordReset: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   clearError: () => void;
+  // Additional functions for UserManagement
+  updateProfile?: (data: Partial<UserProfile>) => Promise<{error: any | null}>;
+  updateUserRole?: (userId: string, role: UserRole) => Promise<{error: any | null}>;
+  getUsers?: () => Promise<{data: UserProfile[] | null, error: any | null}>;
+  isLoading?: boolean;
 }
 
-// Esta é uma interface temporária para representar o perfil do usuário
-// já que não temos acesso ao tipo completo em Database
+// Interface for user profile with created_at field
 export interface UserProfile {
   id: string;
   first_name?: string;
   last_name?: string;
-  role?: string;
+  role?: UserRole;
+  created_at?: string;
 }
 
 export type { Session, User };
