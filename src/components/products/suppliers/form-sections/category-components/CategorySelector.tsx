@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, Tag } from 'lucide-react';
+import { Check, Tag, X } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/popover";
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { toast } from 'sonner';
+import { useCategoriesAndBrands } from '@/hooks/products/useCategoriesAndBrands';
 
 interface CategorySelectorProps {
   selectedCategories: string[];
@@ -23,6 +25,19 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
 }) => {
   // Count how many categories are selected
   const selectedCount = selectedCategories.length;
+  const { deleteCategory } = useCategoriesAndBrands();
+  
+  const handleDeleteCategory = async (category: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    if (confirm(`Deseja realmente excluir a categoria "${category}"?`)) {
+      const success = await deleteCategory(category);
+      if (success) {
+        toast.success(`Categoria "${category}" excluída com sucesso!`);
+      }
+    }
+  };
   
   return (
     <Popover>
@@ -47,17 +62,25 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
               <CommandItem
                 key={category}
                 onSelect={() => onSelectCategory(category)}
-                className="flex items-center"
+                className="flex items-center justify-between group"
               >
-                <div className={cn(
-                  "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                  selectedCategories.includes(category) ? "bg-primary text-primary-foreground" : "opacity-50"
-                )}>
-                  {selectedCategories.includes(category) && (
-                    <Check className="h-3 w-3" />
-                  )}
+                <div className="flex items-center">
+                  <div className={cn(
+                    "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                    selectedCategories.includes(category) ? "bg-primary text-primary-foreground" : "opacity-50"
+                  )}>
+                    {selectedCategories.includes(category) && (
+                      <Check className="h-3 w-3" />
+                    )}
+                  </div>
+                  <span>{category}</span>
                 </div>
-                <span>{category}</span>
+                <button 
+                  onClick={(e) => handleDeleteCategory(category, e)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity ml-2"
+                >
+                  <X className="h-4 w-4 text-red-500 hover:text-red-700" />
+                </button>
               </CommandItem>
             ))}
           </CommandGroup>

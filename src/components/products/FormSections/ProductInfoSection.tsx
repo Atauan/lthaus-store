@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Package, Plus } from 'lucide-react';
+import { Package, Plus, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useProductFormContext } from '@/contexts/ProductFormContext';
+import { toast } from 'sonner';
+import { useCategoriesAndBrands } from '@/hooks/products/useCategoriesAndBrands';
 
 const ProductInfoSection: React.FC = () => {
   const { 
@@ -36,6 +38,24 @@ const ProductInfoSection: React.FC = () => {
     categories,
     brands 
   } = useProductFormContext();
+
+  const { deleteCategory } = useCategoriesAndBrands();
+
+  const handleDeleteCategory = async (category: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (confirm(`Deseja realmente excluir a categoria "${category}"?`)) {
+      const success = await deleteCategory(category);
+      if (success) {
+        toast.success(`Categoria "${category}" excluída com sucesso!`);
+        // If the current form value matches the deleted category, reset it
+        if (form.getValues("category") === category) {
+          form.setValue("category", "");
+        }
+      }
+    }
+  };
 
   return (
     <Card>
@@ -102,8 +122,20 @@ const ProductInfoSection: React.FC = () => {
                       <SelectContent>
                         <SelectGroup>
                           {categories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
+                            <SelectItem 
+                              key={category} 
+                              value={category}
+                              className="flex justify-between group"
+                            >
+                              <div className="flex justify-between w-full pr-2">
+                                <span>{category}</span>
+                                <button 
+                                  onClick={(e) => handleDeleteCategory(category, e)}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <X className="h-4 w-4 text-red-500 hover:text-red-700" />
+                                </button>
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectGroup>
