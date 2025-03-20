@@ -24,7 +24,7 @@ const DeleteSupplierDialog: React.FC<DeleteSupplierDialogProps> = ({
   onConfirmDelete,
 }) => {
   return (
-    <AlertDialog open={!!supplier} onOpenChange={(open) => !open && onOpenChange(false)}>
+    <AlertDialog open={!!supplier} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Excluir fornecedor</AlertDialogTitle>

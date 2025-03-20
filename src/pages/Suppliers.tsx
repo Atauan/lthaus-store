@@ -52,6 +52,13 @@ const Suppliers = () => {
       setSupplierToDelete(null);
     }
   };
+
+  // Handler for the delete dialog's open state changes
+  const handleDeleteDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      setSupplierToDelete(null);
+    }
+  };
   
   return (
     <PageTransition>
@@ -77,7 +84,7 @@ const Suppliers = () => {
 
       <DeleteSupplierDialog
         supplier={supplierToDelete}
-        onOpenChange={setSupplierToDelete}
+        onOpenChange={handleDeleteDialogOpenChange}
         onConfirmDelete={handleDeleteSupplier}
       />
     </PageTransition>
