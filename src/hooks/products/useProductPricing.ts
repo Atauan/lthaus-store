@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { ProductFormValues } from './types';
+import { ProductFormValues } from './useProductTypes';
 
 export function useProductPricing(form: UseFormReturn<ProductFormValues>) {
   const [profit, setProfit] = useState<number>(0);

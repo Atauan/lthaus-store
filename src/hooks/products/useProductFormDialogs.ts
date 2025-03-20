@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { UseFormReturn } from 'react-hook-form';
-import { ProductFormValues } from './types';
+import { ProductFormValues } from './useProductTypes';
 
 export function useProductFormDialogs(form: UseFormReturn<ProductFormValues>) {
   const [isNewCategoryDialogOpen, setIsNewCategoryDialogOpen] = useState(false);

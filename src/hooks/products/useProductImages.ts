@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ProductImage } from './types';
+import { ProductImage } from './useProductTypes';
 
 export function useProductImages() {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);

@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Product } from './types';
+import { Product } from './useProductTypes';
 
 export function useProductFilters(products: Product[]) {
   const [searchQuery, setSearchQuery] = useState('');

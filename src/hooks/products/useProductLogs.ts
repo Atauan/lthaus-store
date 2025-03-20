@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { StockLog, CostChangeLog } from './types';
+import { StockLog, CostChangeLog } from './useProductTypes';
 
 export function useProductLogs() {
   const [stockLogs, setStockLogs] = useState<StockLog[]>([]);

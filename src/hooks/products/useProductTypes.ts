@@ -1,0 +1,62 @@
+
+// Types for product-related functionality
+export interface ProductFormValues {
+  name: string;
+  description: string;
+  costPrice: number;
+  salePrice: number;
+  category: string;
+  brand: string;
+  stock: number;
+  supplier?: string;
+  productType: 'internal' | 'external';
+  image?: File;
+}
+
+export interface ProductImage {
+  file: File;
+  previewUrl: string;
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  description?: string;
+  category: string;
+  brand: string;
+  price: number;
+  cost?: number;
+  stock: number;
+  image?: string;
+  image_url?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface StockLog {
+  id: string;
+  product_id: number;
+  previous_stock: number;
+  new_stock: number;
+  change_amount: number;
+  reference_type: string;
+  reference_id?: string;
+  notes?: string;
+  created_at: string;
+  product_name?: string; // For UI display
+}
+
+export interface CostChangeLog {
+  id: string;
+  product_id: number;
+  previous_cost: number;
+  new_cost: number;
+  change_percentage: number;
+  notes?: string;
+  created_at: string;
+  product_name?: string; // For UI display
+}
+
+// Common constants
+export const categories = ['Todas', 'Cabos', 'Capas', 'Áudio', 'Carregadores', 'Proteção', 'Acessórios'];
+export const brands = ['Todas', 'Apple', 'Samsung', 'Anker', 'JBL', 'Generic'];
