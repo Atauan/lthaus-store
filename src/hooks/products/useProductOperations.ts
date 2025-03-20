@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { Product } from './useProductTypes';
 import { useAddProduct } from './operations/useAddProduct';
 import { useUpdateProduct } from './operations/useUpdateProduct';
