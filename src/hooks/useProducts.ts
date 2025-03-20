@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { supabase, adminSupabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductFilters } from './products/useProductFilters';
@@ -12,10 +12,6 @@ import { Product, categories, brands } from './products/types';
 // Re-export types from our types file
 export type { Product, StockLog, CostChangeLog } from './products/types';
 export { categories, brands } from './products/types';
-
-// Use this for development to bypass RLS
-const useDevMode = true;
-const db = useDevMode ? adminSupabase : supabase;
 
 export function useProducts() {
   const { session } = useAuth();
@@ -52,12 +48,12 @@ export function useProducts() {
     getLowStockProducts
   } = useProductSearch();
   
-  // Fetch products from the database - will work even without authentication now
+  // Fetch products from the database - now works without any authentication
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const { data, error } = await db
+        const { data, error } = await supabase
           .from('products')
           .select('*')
           .order('name');
@@ -76,7 +72,6 @@ export function useProducts() {
       }
     };
     
-    // Always fetch products, regardless of session
     fetchProducts();
   }, []);
 
@@ -100,6 +95,6 @@ export function useProducts() {
     getLowStockProducts,
     fetchStockLogs,
     fetchCostChangeLogs,
-    isAuthenticated: true // Force this to always be true for development
+    isAuthenticated: true // Always true now since we don't need authentication
   };
 }
