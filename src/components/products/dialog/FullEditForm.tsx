@@ -13,30 +13,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Product, categories, brands } from '@/hooks/useProducts';
-import ProductImageUpload from './ProductImageUpload';
+import ImageManager from './ImageManager';
 
 interface FullEditFormProps {
   product: Product;
   onProductChange: (field: keyof Product, value: any) => void;
   onSave: () => void;
   onCancel: () => void;
-  selectedFile: File | null;
-  previewUrl: string | null;
-  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onUrlChange: (url: string) => void;
-  onClearImage: () => void;
 }
 
 const FullEditForm: React.FC<FullEditFormProps> = ({
   product,
   onProductChange,
   onSave,
-  onCancel,
-  selectedFile,
-  previewUrl,
-  onFileChange,
-  onUrlChange,
-  onClearImage
+  onCancel
 }) => {
   return (
     <>
@@ -145,13 +135,9 @@ const FullEditForm: React.FC<FullEditFormProps> = ({
             />
           </div>
 
-          <ProductImageUpload
-            previewUrl={previewUrl}
-            onFileChange={onFileChange}
-            onUrlChange={onUrlChange}
-            onClearImage={onClearImage}
-            productName={product.name}
-            imageUrl={product.image_url || ''}
+          <ImageManager
+            product={product}
+            onProductChange={onProductChange}
           />
         </div>
       </div>

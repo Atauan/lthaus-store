@@ -37,14 +37,9 @@ const EditProductDialog = ({
 }: EditProductDialogProps) => {
   const {
     fullEditProduct,
-    selectedFile,
-    previewUrl,
     localIsTransitioning,
     setLocalIsTransitioning,
     handleFullEditChange,
-    handleFileChange,
-    handleImageUrlChange,
-    clearImage,
     handleFullSave
   } = useEditProductDialog(selectedProduct, editType, open, onFullSave);
 
@@ -91,11 +86,6 @@ const EditProductDialog = ({
             onProductChange={handleFullEditChange}
             onSave={handleFullSave}
             onCancel={handleClose}
-            selectedFile={selectedFile}
-            previewUrl={previewUrl}
-            onFileChange={handleFileChange}
-            onUrlChange={handleImageUrlChange}
-            onClearImage={clearImage}
           />
         ) : (
           <SimpleEditForm
