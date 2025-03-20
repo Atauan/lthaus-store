@@ -6,7 +6,7 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
 interface SimpleEditFormProps {
-  editType: 'price' | 'profit' | 'stock' | 'cost';
+  editType: 'price' | 'profit' | 'stock' | 'cost' | 'full';
   editValue: string;
   setEditValue: (value: string) => void;
   onSave: () => void;
