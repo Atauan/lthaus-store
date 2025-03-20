@@ -9,6 +9,7 @@ export interface ProductFormValues {
   stock: number;
   supplier?: string;
   productType: 'internal' | 'external';
+  image?: File;
 }
 
 export interface ProductImage {
@@ -26,6 +27,7 @@ export interface Product {
   cost?: number;
   stock: number;
   image?: string;
+  image_url?: string;
   created_at?: string;
   updated_at?: string;
 }

@@ -32,37 +32,25 @@ const Products = () => {
   } = useProducts();
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editType, setEditType] = useState<'price' | 'profit' | 'stock'>('price');
+  const [editType, setEditType] = useState<'price' | 'profit' | 'stock' | 'cost' | 'full'>('price');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [recentCostChanges, setRecentCostChanges] = useState<any[]>([]);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-  // Check authentication
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      setIsAuthenticated(!!data.session);
-    };
-    checkAuth();
-  }, []);
-  
   // Fetch recent cost changes
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchCostChangeLogs().then(logs => {
-        // Get the 5 most recent cost changes
-        const recentChanges = logs.slice(0, 5);
-        setRecentCostChanges(recentChanges);
-      });
-    }
-  }, [fetchCostChangeLogs, isAuthenticated]);
+    fetchCostChangeLogs().then(logs => {
+      // Get the 5 most recent cost changes
+      const recentChanges = logs.slice(0, 5);
+      setRecentCostChanges(recentChanges);
+    });
+  }, [fetchCostChangeLogs]);
 
   const handleAddProduct = () => {
     navigate('/products/add');
   };
 
-  const openEditDialog = (product: Product, type: 'price' | 'profit' | 'stock') => {
+  const openEditDialog = (product: Product, type: 'price' | 'profit' | 'stock' | 'cost' | 'full') => {
     setSelectedProduct(product);
     setEditType(type);
     
@@ -70,6 +58,8 @@ const Products = () => {
       setEditValue(product.price.toString());
     } else if (type === 'stock') {
       setEditValue(product.stock.toString());
+    } else if (type === 'cost') {
+      setEditValue((product.cost || 0).toString());
     } else if (type === 'profit') {
       // Calculate profit percentage if cost exists
       if (product.cost) {
@@ -111,7 +101,15 @@ const Products = () => {
         }
         updatedProduct.stock = numericValue;
         toast.success(`Estoque do produto "${selectedProduct.name}" atualizado para ${numericValue} unidades`);
-      } 
+      }
+      else if (editType === 'cost') {
+        if (numericValue < 0) {
+          toast.error("O custo deve ser um valor positivo");
+          return;
+        }
+        updatedProduct.cost = numericValue;
+        toast.success(`Custo do produto "${selectedProduct.name}" atualizado para R$ ${numericValue.toFixed(2)}`);
+      }
       else if (editType === 'profit') {
         if (!selectedProduct.cost) {
           toast.error("Não é possível definir margem de lucro sem o custo do produto");
@@ -130,13 +128,39 @@ const Products = () => {
       setEditDialogOpen(false);
       
       // If cost change, refresh cost changes
-      if (editType === 'profit' || (editType === 'price' && selectedProduct.cost)) {
+      if (editType === 'cost' || editType === 'profit' || (editType === 'price' && selectedProduct.cost)) {
         setTimeout(() => {
           fetchCostChangeLogs().then(logs => {
             const recentChanges = logs.slice(0, 5);
             setRecentCostChanges(recentChanges);
           });
         }, 1000);
+      }
+    } catch (error) {
+      toast.error("Ocorreu um erro ao salvar as alterações");
+    }
+  };
+
+  // Função para salvar a edição completa do produto
+  const handleFullEditSave = async (updatedProduct: Product) => {
+    try {
+      // Update the product in our state and database
+      const result = await updateProduct(updatedProduct);
+      
+      if (result.success) {
+        toast.success(`Produto "${updatedProduct.name}" atualizado com sucesso!`);
+        
+        // If there was a cost change, refresh cost changes
+        if (selectedProduct && selectedProduct.cost !== updatedProduct.cost) {
+          setTimeout(() => {
+            fetchCostChangeLogs().then(logs => {
+              const recentChanges = logs.slice(0, 5);
+              setRecentCostChanges(recentChanges);
+            });
+          }, 1000);
+        }
+      } else {
+        toast.error("Erro ao atualizar produto");
       }
     } catch (error) {
       toast.error("Ocorreu um erro ao salvar as alterações");
@@ -261,6 +285,7 @@ const Products = () => {
         editValue={editValue}
         setEditValue={setEditValue}
         onSave={handleEditSave}
+        onFullSave={handleFullEditSave}
       />
     </PageTransition>
   );

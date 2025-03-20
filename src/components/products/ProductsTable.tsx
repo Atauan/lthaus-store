@@ -8,7 +8,8 @@ import {
   DollarSign,
   Percent,
   Package,
-  Trash2
+  Trash2,
+  Clipboard
 } from 'lucide-react';
 import IconButton from '@/components/ui/custom/IconButton';
 import {
@@ -24,7 +25,7 @@ import { Product } from '@/hooks/useProducts';
 interface ProductsTableProps {
   filteredProducts: Product[];
   totalProducts: number;
-  openEditDialog: (product: Product, type: 'price' | 'profit' | 'stock') => void;
+  openEditDialog: (product: Product, type: 'price' | 'profit' | 'stock' | 'cost' | 'full') => void;
   onDelete: (productId: number) => void;
 }
 
@@ -61,9 +62,12 @@ const ProductsTable = ({
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded bg-secondary flex-shrink-0 overflow-hidden">
                         <img 
-                          src={product.image || '/placeholder.svg'} 
+                          src={product.image_url || product.image || '/placeholder.svg'} 
                           alt={product.name} 
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/placeholder.svg';
+                          }}
                         />
                       </div>
                       <div>
@@ -103,13 +107,22 @@ const ProductsTable = ({
                         </IconButton>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => navigate(`/products/edit/${product.id}`)}>
+                        <DropdownMenuItem onClick={() => openEditDialog(product, 'full')}>
                           <Edit className="mr-2 h-4 w-4" />
-                          Editar produto
+                          Edição Rápida
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/products/edit/${product.id}`)}>
+                          <Clipboard className="mr-2 h-4 w-4" />
+                          Edição Completa
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => openEditDialog(product, 'price')}>
                           <DollarSign className="mr-2 h-4 w-4" />
                           Alterar preço
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openEditDialog(product, 'cost')}>
+                          <DollarSign className="mr-2 h-4 w-4" />
+                          Alterar custo
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => openEditDialog(product, 'profit')}>
                           <Percent className="mr-2 h-4 w-4" />
