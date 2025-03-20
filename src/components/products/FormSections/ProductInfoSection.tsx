@@ -26,24 +26,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { UseFormReturn } from 'react-hook-form';
-import { ProductFormValues } from '@/hooks/useProductForm';
+import { useProductFormContext } from '@/contexts/ProductFormContext';
 
-interface ProductInfoSectionProps {
-  form: UseFormReturn<ProductFormValues>;
-  onAddCategory: () => void;
-  onAddBrand: () => void;
-  categories: string[];  // Add this prop
-  brands: string[];      // Add this prop
-}
+const ProductInfoSection: React.FC = () => {
+  const { 
+    form, 
+    setIsNewCategoryDialogOpen, 
+    setIsNewBrandDialogOpen,
+    categories,
+    brands 
+  } = useProductFormContext();
 
-const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
-  form,
-  onAddCategory,
-  onAddBrand,
-  categories,
-  brands
-}) => {
   return (
     <Card>
       <CardHeader>
@@ -121,7 +114,7 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
                     type="button" 
                     variant="outline" 
                     size="icon"
-                    onClick={onAddCategory}
+                    onClick={() => setIsNewCategoryDialogOpen(true)}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -162,7 +155,7 @@ const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
                     type="button" 
                     variant="outline" 
                     size="icon"
-                    onClick={onAddBrand}
+                    onClick={() => setIsNewBrandDialogOpen(true)}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>

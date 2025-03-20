@@ -2,27 +2,27 @@
 import React from 'react';
 import { Undo, RefreshCw, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useProductFormContext } from '@/contexts/ProductFormContext';
 
-interface FormButtonsProps {
-  onCancel: () => void;
-  onReset: () => void;
-  isLoading?: boolean;
-  isEditing?: boolean;
-}
+const FormButtons: React.FC = () => {
+  const { 
+    handleResetForm, 
+    navigate, 
+    isSubmitting, 
+    isEditing 
+  } = useProductFormContext();
 
-const FormButtons: React.FC<FormButtonsProps> = ({
-  onCancel,
-  onReset,
-  isLoading = false,
-  isEditing = false
-}) => {
+  const handleCancel = () => {
+    navigate('/products');
+  };
+
   return (
     <div className="flex flex-col sm:flex-row gap-3 justify-end">
       <Button 
         type="button" 
         variant="outline" 
-        onClick={onCancel}
-        disabled={isLoading}
+        onClick={handleCancel}
+        disabled={isSubmitting}
       >
         <Undo className="mr-2 h-4 w-4" />
         {isEditing ? 'Voltar para Produtos' : 'Cancelar'}
@@ -31,8 +31,8 @@ const FormButtons: React.FC<FormButtonsProps> = ({
       <Button 
         type="button" 
         variant="secondary" 
-        onClick={onReset}
-        disabled={isLoading}
+        onClick={handleResetForm}
+        disabled={isSubmitting}
       >
         <RefreshCw className="mr-2 h-4 w-4" />
         {isEditing ? 'Restaurar Original' : 'Limpar Campos'}
@@ -40,14 +40,14 @@ const FormButtons: React.FC<FormButtonsProps> = ({
       
       <Button 
         type="submit"
-        disabled={isLoading}
+        disabled={isSubmitting}
       >
-        {isLoading ? (
+        {isSubmitting ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : (
           <Save className="mr-2 h-4 w-4" />
         )}
-        {isLoading ? 'Salvando...' : isEditing ? 'Atualizar Produto' : 'Salvar Produto'}
+        {isSubmitting ? 'Salvando...' : isEditing ? 'Atualizar Produto' : 'Salvar Produto'}
       </Button>
     </div>
   );

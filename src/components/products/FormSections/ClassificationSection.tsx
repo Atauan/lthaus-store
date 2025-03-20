@@ -25,21 +25,15 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { UseFormReturn } from 'react-hook-form';
-import { ProductFormValues } from '@/hooks/useProductForm';
-import { Supplier } from '@/hooks/products/useSuppliers';
+import { useProductFormContext } from '@/contexts/ProductFormContext';
 
-interface ClassificationSectionProps {
-  form: UseFormReturn<ProductFormValues>;
-  onAddSupplier: () => void;
-  suppliers?: Supplier[];
-}
+const ClassificationSection: React.FC = () => {
+  const { 
+    form, 
+    setIsNewSupplierDialogOpen, 
+    suppliers 
+  } = useProductFormContext();
 
-const ClassificationSection: React.FC<ClassificationSectionProps> = ({
-  form,
-  onAddSupplier,
-  suppliers = []
-}) => {
   return (
     <Card>
       <CardHeader>
@@ -113,7 +107,7 @@ const ClassificationSection: React.FC<ClassificationSectionProps> = ({
                   type="button" 
                   variant="outline" 
                   size="icon"
-                  onClick={onAddSupplier}
+                  onClick={() => setIsNewSupplierDialogOpen(true)}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>

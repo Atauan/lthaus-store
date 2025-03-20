@@ -9,20 +9,20 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import IconButton from '@/components/ui/custom/IconButton';
+import { useProductFormContext } from '@/contexts/ProductFormContext';
 
-interface ImagesSectionProps {
-  previewUrls: string[];
-  onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onRemoveImage: (index: number) => void;
-  existingImageUrl?: string;
-}
+const ImagesSection: React.FC = () => {
+  const { 
+    previewUrls, 
+    handleImageUpload, 
+    removeImage, 
+    isEditing, 
+    product 
+  } = useProductFormContext();
 
-const ImagesSection: React.FC<ImagesSectionProps> = ({
-  previewUrls,
-  onImageUpload,
-  onRemoveImage,
-  existingImageUrl
-}) => {
+  // Get existing image URL if editing
+  const existingImageUrl = isEditing && product ? product.image_url : undefined;
+
   return (
     <Card>
       <CardHeader>
@@ -63,7 +63,7 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
                 variant="primary"
                 size="sm"
                 className="absolute -top-2 -right-2"
-                onClick={() => onRemoveImage(index)}
+                onClick={() => removeImage(index)}
               >
                 <XCircle className="h-4 w-4" />
               </IconButton>
@@ -78,7 +78,7 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
                 type="file" 
                 accept="image/*" 
                 className="hidden" 
-                onChange={onImageUpload}
+                onChange={handleImageUpload}
                 multiple={true}
               />
             </label>

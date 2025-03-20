@@ -16,24 +16,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { UseFormReturn } from 'react-hook-form';
-import { ProductFormValues } from '@/hooks/useProductForm';
+import { useProductFormContext } from '@/contexts/ProductFormContext';
 
-interface PricingSectionProps {
-  form: UseFormReturn<ProductFormValues>;
-  profit: number;
-  profitMargin: number;
-  onMarginChange: (newMargin: number) => void;
-  onSalePriceChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
+const PricingSection: React.FC = () => {
+  const {
+    form,
+    profit,
+    profitMargin,
+    handleMarginChange,
+    handleSalePriceChange
+  } = useProductFormContext();
 
-const PricingSection: React.FC<PricingSectionProps> = ({
-  form,
-  profit,
-  profitMargin,
-  onMarginChange,
-  onSalePriceChange
-}) => {
   return (
     <Card>
       <CardHeader>
@@ -84,7 +77,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({
                       step="0.01" 
                       min="0"
                       {...field}
-                      onChange={onSalePriceChange}
+                      onChange={handleSalePriceChange}
                     />
                   </FormControl>
                   <FormMessage />
@@ -110,7 +103,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({
                   max="100"
                   step="5"
                   value={profitMargin}
-                  onChange={(e) => onMarginChange(parseInt(e.target.value))}
+                  onChange={(e) => handleMarginChange(parseInt(e.target.value))}
                   className="flex-1 accent-primary h-2 bg-secondary rounded-full"
                 />
                 <span className="text-xs">100%</span>

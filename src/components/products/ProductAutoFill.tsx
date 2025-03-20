@@ -5,12 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { WandSparkles, Upload, Search, Loader2 } from 'lucide-react';
 import { useProductAutoFill } from '@/hooks/useProductAutoFill';
+import { useProductFormContext } from '@/contexts/ProductFormContext';
 
-interface ProductAutoFillProps {
-  onAutoFill: (productData: any) => void;
-}
-
-const ProductAutoFill = ({ onAutoFill }: ProductAutoFillProps) => {
+const ProductAutoFill = () => {
+  const { handleAutoFill } = useProductFormContext();
   const { loading, analyzeProductImage, analyzeProductName } = useProductAutoFill();
   const [productName, setProductName] = useState('');
   const [showNameInput, setShowNameInput] = useState(false);
@@ -32,7 +30,7 @@ const ProductAutoFill = ({ onAutoFill }: ProductAutoFillProps) => {
     
     if (result.success && result.data) {
       toast.success("Produto preenchido automaticamente!");
-      onAutoFill(result.data);
+      handleAutoFill(result.data);
     } else {
       toast.error(result.error || "Erro ao analisar imagem");
     }
@@ -50,7 +48,7 @@ const ProductAutoFill = ({ onAutoFill }: ProductAutoFillProps) => {
     
     if (result.success && result.data) {
       toast.success("Produto preenchido automaticamente!");
-      onAutoFill(result.data);
+      handleAutoFill(result.data);
       setShowNameInput(false);
       setProductName('');
     } else {
