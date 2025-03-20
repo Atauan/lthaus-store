@@ -48,7 +48,7 @@ export function useProducts() {
     getLowStockProducts
   } = useProductSearch();
   
-  // Fetch products from the database
+  // Fetch products from the database - will work even without authentication now
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -72,12 +72,9 @@ export function useProducts() {
       }
     };
     
-    if (session) {
-      fetchProducts();
-    } else {
-      setLoading(false);
-    }
-  }, [session]);
+    // Always fetch products, regardless of session
+    fetchProducts();
+  }, []);
 
   return {
     products,
@@ -99,6 +96,6 @@ export function useProducts() {
     getLowStockProducts,
     fetchStockLogs,
     fetchCostChangeLogs,
-    isAuthenticated: !!session
+    isAuthenticated: true // Force this to always be true for development
   };
 }

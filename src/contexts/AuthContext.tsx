@@ -4,6 +4,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { UserProfile, AuthContextType, UserRole } from '@/types/auth';
 import { toast } from 'sonner';
 
+// Create a default user for development
+const defaultDevUser: UserProfile = {
+  id: 'dev-user-id',
+  first_name: 'Developer',
+  last_name: 'User',
+  role: 'admin', // Give admin role for development
+  created_at: new Date().toISOString(),
+};
+
+// Create a default session for development
+const defaultDevSession = {
+  user: {
+    id: defaultDevUser.id,
+    email: 'dev@example.com',
+  }
+};
+
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
@@ -19,10 +36,13 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [session, setSession] = useState<any | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Use development user in development mode
+  const [user, setUser] = useState<UserProfile | null>(defaultDevUser);
+  const [session, setSession] = useState<any | null>(defaultDevSession);
+  const [isLoading, setIsLoading] = useState(false); // Set to false immediately
 
+  // Commented out the original authentication logic for now
+  /*
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -73,105 +93,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, []);
+  */
 
+  // Mock authentication functions for development
   const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      return { error: null };
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao fazer login');
-      return { error };
-    }
+    // Just return success for development
+    toast.success('Login realizado com sucesso! (modo desenvolvimento)');
+    return { error: null };
   };
 
   const signUp = async (email: string, password: string, userData?: Partial<UserProfile>) => {
-    try {
-      const { error } = await supabase.auth.signUp({ 
-        email, 
-        password,
-        options: {
-          data: userData || {},
-        }
-      });
-      
-      if (error) throw error;
-      toast.success('Conta criada com sucesso! Verifique seu email.');
-      return { error: null };
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao criar conta');
-      return { error };
-    }
+    // Just return success for development
+    toast.success('Conta criada com sucesso! (modo desenvolvimento)');
+    return { error: null };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
+    // For development, just show a toast notification
+    toast.info('Logout realizado (modo desenvolvimento)');
+    // Don't actually sign out during development
+    // setUser(null);
+    // setSession(null);
   };
 
   const updateProfile = async (profile: Partial<UserProfile>) => {
-    try {
-      if (!user?.id) throw new Error('Usuário não autenticado');
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update(profile)
-        .eq('id', user.id);
-        
-      if (error) throw error;
-      
-      // Update the local user state with the new profile data
-      setUser(prev => prev ? { ...prev, ...profile } : null);
-      toast.success('Perfil atualizado com sucesso!');
-      return { error: null };
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao atualizar perfil');
-      return { error };
-    }
+    // Mock profile update
+    setUser(prev => prev ? { ...prev, ...profile } : null);
+    toast.success('Perfil atualizado com sucesso! (modo desenvolvimento)');
+    return { error: null };
   };
 
-  // New function to update a user's role (admin only)
   const updateUserRole = async (userId: string, role: UserRole) => {
-    try {
-      if (!user?.role || user.role !== 'admin') {
-        throw new Error('Permissão negada. Apenas administradores podem alterar funções.');
-      }
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role })
-        .eq('id', userId);
-      
-      if (error) throw error;
-      
-      toast.success(`Função do usuário atualizada para ${role}`);
-      return { error: null };
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao atualizar função do usuário');
-      return { error };
-    }
+    toast.success(`Função do usuário atualizada para ${role} (modo desenvolvimento)`);
+    return { error: null };
   };
 
-  // New function to get all users (admin only)
   const getUsers = async () => {
-    try {
-      if (!user?.role || user.role !== 'admin') {
-        throw new Error('Permissão negada. Apenas administradores podem visualizar todos os usuários.');
+    // Return a mock list of users for development
+    const mockUsers: UserProfile[] = [
+      defaultDevUser,
+      {
+        id: 'user-1',
+        first_name: 'João',
+        last_name: 'Silva',
+        role: 'salesperson',
+        created_at: new Date().toISOString(),
+      },
+      {
+        id: 'user-2',
+        first_name: 'Maria',
+        last_name: 'Souza',
+        role: 'manager',
+        created_at: new Date().toISOString(),
       }
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      return { data: data as UserProfile[], error: null };
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao buscar usuários');
-      return { data: null, error };
-    }
+    ];
+    
+    return { data: mockUsers, error: null };
   };
 
   const value = {
