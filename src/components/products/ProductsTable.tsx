@@ -46,15 +46,15 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
         <Table>
           <TableHeader>
             <TableRow className="border-b border-primary/10">
-              <TableHead className="w-[50px] text-center">#</TableHead>
-              <TableHead className="min-w-[250px]">Produto</TableHead>
-              <TableHead className="min-w-[100px]">Categoria</TableHead>
-              <TableHead className="min-w-[100px]">Marca</TableHead>
-              <TableHead className="min-w-[100px] text-right">Preço</TableHead>
-              <TableHead className="min-w-[100px] text-right">Custo</TableHead>
-              <TableHead className="min-w-[100px] text-right">Lucro</TableHead>
-              <TableHead className="min-w-[100px] text-right">Estoque</TableHead>
-              <TableHead className="w-[80px] text-right">Ações</TableHead>
+              <TableHead className="hidden sm:table-cell w-[50px] text-center">#</TableHead>
+              <TableHead className="min-w-[200px]">Produto</TableHead>
+              <TableHead className="hidden md:table-cell min-w-[100px]">Categoria</TableHead>
+              <TableHead className="hidden md:table-cell min-w-[100px]">Marca</TableHead>
+              <TableHead className="min-w-[80px] text-right">Preço</TableHead>
+              <TableHead className="hidden sm:table-cell min-w-[80px] text-right">Custo</TableHead>
+              <TableHead className="hidden lg:table-cell min-w-[90px] text-right">Lucro</TableHead>
+              <TableHead className="min-w-[70px] text-right">Estoque</TableHead>
+              <TableHead className="w-[70px] text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -66,7 +66,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                 
                 return (
                   <TableRow key={product.id} className="border-b border-primary/10 hover:bg-muted/30 transition-colors">
-                    <TableCell className="text-center">{index + 1}</TableCell>
+                    <TableCell className="hidden sm:table-cell text-center">{index + 1}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-md bg-primary/5 flex items-center justify-center">
@@ -81,24 +81,28 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                           )}
                         </div>
                         <div>
-                          <p className="font-medium truncate max-w-[220px]">{product.name}</p>
+                          <p className="font-medium truncate max-w-[180px] md:max-w-[220px]">{product.name}</p>
+                          <div className="md:hidden text-xs text-muted-foreground">
+                            {product.category && <span className="mr-2">{product.category}</span>}
+                            {product.brand && <span>{product.brand}</span>}
+                          </div>
                           {product.description && (
-                            <p className="text-sm text-muted-foreground truncate max-w-[220px]">
+                            <p className="text-sm text-muted-foreground truncate max-w-[180px] md:max-w-[220px] hidden sm:block">
                               {product.description}
                             </p>
                           )}
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>{product.brand}</TableCell>
+                    <TableCell className="hidden md:table-cell">{product.category}</TableCell>
+                    <TableCell className="hidden md:table-cell">{product.brand}</TableCell>
                     <TableCell className="text-right font-medium">
                       R$ {product.price.toFixed(2)}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="hidden sm:table-cell text-right">
                       {product.cost ? `R$ ${product.cost.toFixed(2)}` : "-"}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="hidden lg:table-cell text-right">
                       {profit ? (
                         <div>
                           <p>R$ {profit.toFixed(2)}</p>

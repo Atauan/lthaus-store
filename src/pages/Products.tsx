@@ -156,8 +156,11 @@ const Products = () => {
   // Função para salvar a edição completa do produto
   const handleFullEditSave = async (updatedProduct: Product) => {
     try {
+      // Check if there's a file to upload 
+      let imageFile = (updatedProduct as any).file;
+      
       // Update the product in our state and database
-      const result = await updateProduct(updatedProduct);
+      const result = await updateProduct(updatedProduct, imageFile);
       
       if (result.success) {
         toast.success(`Produto "${updatedProduct.name}" atualizado com sucesso!`);

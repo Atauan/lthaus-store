@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -20,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Product, categories, brands } from '@/hooks/useProducts';
+import { Image, Upload, X } from 'lucide-react';
 
 interface EditProductDialogProps {
   open: boolean;
@@ -42,11 +44,19 @@ const EditProductDialog = ({
   onSave,
   onFullSave
 }: EditProductDialogProps) => {
-  const [fullEditProduct, setFullEditProduct] = React.useState<Product | null>(null);
+  const [fullEditProduct, setFullEditProduct] = useState<Product | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // Reset state when dialog opens/closes
   useEffect(() => {
-    if (open && editType === 'full' && selectedProduct) {
+    if (!open) {
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      setFullEditProduct(null);
+    } else if (editType === 'full' && selectedProduct) {
       setFullEditProduct({...selectedProduct});
+      setPreviewUrl(selectedProduct.image_url || selectedProduct.image || null);
     }
   }, [open, editType, selectedProduct]);
 
@@ -59,9 +69,59 @@ const EditProductDialog = ({
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      
+      // Create preview URL
+      const fileUrl = URL.createObjectURL(file);
+      setPreviewUrl(fileUrl);
+      
+      // Update image_url in the product state
+      if (fullEditProduct) {
+        handleFullEditChange('image_url', fileUrl);
+      }
+    }
+  };
+
+  const handleImageUrlChange = (url: string) => {
+    // Clear any selected file
+    if (selectedFile) {
+      URL.revokeObjectURL(previewUrl || '');
+      setSelectedFile(null);
+    }
+    setPreviewUrl(url);
+    
+    // Update image_url in the product state
+    if (fullEditProduct) {
+      handleFullEditChange('image_url', url);
+    }
+  };
+
+  const clearImage = () => {
+    if (selectedFile && previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    
+    // Clear image_url in the product state
+    if (fullEditProduct) {
+      handleFullEditChange('image_url', '');
+    }
+  };
+
   const handleFullSave = () => {
     if (fullEditProduct && onFullSave) {
-      onFullSave(fullEditProduct);
+      // If we have a selected file, we'll let the parent component handle the file upload
+      const productToSave = {
+        ...fullEditProduct,
+        // Add file property to be picked up by the onFullSave handler
+        file: selectedFile
+      } as any;
+      
+      onFullSave(productToSave);
       setOpen(false);
     }
   };
@@ -118,7 +178,7 @@ const EditProductDialog = ({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="category">Categoria</Label>
                 <Select
@@ -158,7 +218,7 @@ const EditProductDialog = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="cost">Preço de Custo (R$)</Label>
                 <Input
@@ -203,19 +263,46 @@ const EditProductDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="image">URL da Imagem</Label>
-              <Input
-                id="image"
-                type="text"
-                value={fullEditProduct.image_url || fullEditProduct.image || ''}
-                onChange={(e) => handleFullEditChange('image_url', e.target.value)}
-                placeholder="https://exemplo.com/imagem.jpg"
-              />
-              {(fullEditProduct.image_url || fullEditProduct.image) && (
-                <div className="mt-2">
-                  <div className="w-20 h-20 rounded border overflow-hidden">
+              <Label className="mb-1 block">Imagem do Produto</Label>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="image-url" className="text-sm text-muted-foreground">Inserir URL da imagem</Label>
+                  <Input
+                    id="image-url"
+                    type="text"
+                    value={fullEditProduct.image_url || ''}
+                    onChange={(e) => handleImageUrlChange(e.target.value)}
+                    placeholder="https://exemplo.com/imagem.jpg"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="image-file" className="text-sm text-muted-foreground">Ou fazer upload do dispositivo</Label>
+                  <div className="flex items-center">
+                    <label 
+                      htmlFor="image-file"
+                      className="flex items-center justify-center gap-2 w-full h-9 px-4 py-2 bg-muted hover:bg-muted/80 text-sm font-medium rounded-md cursor-pointer transition-colors"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Selecionar arquivo
+                      <input 
+                        id="image-file" 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleFileChange}
+                        className="hidden" 
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              {previewUrl && (
+                <div className="mt-3 relative inline-block">
+                  <div className="w-24 h-24 rounded border overflow-hidden">
                     <img 
-                      src={fullEditProduct.image_url || fullEditProduct.image} 
+                      src={previewUrl} 
                       alt={fullEditProduct.name} 
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -223,6 +310,13 @@ const EditProductDialog = ({
                       }}
                     />
                   </div>
+                  <button 
+                    type="button" 
+                    onClick={clearImage}
+                    className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
               )}
             </div>
