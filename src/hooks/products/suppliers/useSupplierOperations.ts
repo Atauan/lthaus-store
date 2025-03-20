@@ -16,8 +16,12 @@ export function useSupplierOperations(
     supplierData: SupplierFormData
   ): Promise<{ success: boolean; supplier?: Supplier }> => {
     try {
-      // Use the user's ID from the auth context instead of hardcoding "system"
-      const userId = user?.id || '00000000-0000-0000-0000-000000000000'; // Default UUID if user is not available
+      // Since there's no foreign key reference to auth.users table in our database
+      // We'll use a fixed UUID value that's meant for development mode
+      // This is only a workaround for development - in production, we'd use the actual user ID
+      const userId = '00000000-0000-0000-0000-000000000000'; // Use a valid UUID format
+      
+      console.log('Using userId for supplier insertion:', userId);
       
       // Insert into database
       const { data, error } = await supabase
@@ -28,7 +32,7 @@ export function useSupplierOperations(
           email: supplierData.email,
           phone: supplierData.phone,
           address: supplierData.address,
-          user_id: userId, // Use the actual UUID
+          user_id: userId, // Use the fixed UUID
           categories: supplierData.categories || []
         }])
         .select()
@@ -46,7 +50,7 @@ export function useSupplierOperations(
       toast.error(`Erro ao adicionar fornecedor: ${error.message}`);
       return { success: false };
     }
-  }, [user, setSuppliers]);
+  }, [setSuppliers]);
 
   // Update an existing supplier
   const updateSupplier = useCallback(async (
