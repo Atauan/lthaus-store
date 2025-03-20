@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -36,8 +37,13 @@ const EditProductDialog = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // Reset state when dialog opens or closes
   useEffect(() => {
     if (!open) {
+      // Clean up resources when dialog closes
+      if (previewUrl && selectedFile) {
+        URL.revokeObjectURL(previewUrl);
+      }
       setSelectedFile(null);
       setPreviewUrl(null);
       setFullEditProduct(null);
@@ -46,6 +52,15 @@ const EditProductDialog = ({
       setPreviewUrl(selectedProduct.image_url || selectedProduct.image || null);
     }
   }, [open, editType, selectedProduct]);
+
+  // Handle closing the dialog
+  const handleClose = () => {
+    // Make sure we clean up resources
+    if (previewUrl && selectedFile) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setOpen(false);
+  };
 
   const handleFullEditChange = (field: keyof Product, value: any) => {
     if (fullEditProduct) {
@@ -61,6 +76,11 @@ const EditProductDialog = ({
       const file = e.target.files[0];
       setSelectedFile(file);
       
+      // Clean up old object URL if it exists
+      if (previewUrl && !selectedProduct?.image_url) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      
       const fileUrl = URL.createObjectURL(file);
       setPreviewUrl(fileUrl);
       
@@ -71,8 +91,8 @@ const EditProductDialog = ({
   };
 
   const handleImageUrlChange = (url: string) => {
-    if (selectedFile) {
-      URL.revokeObjectURL(previewUrl || '');
+    if (selectedFile && previewUrl) {
+      URL.revokeObjectURL(previewUrl);
       setSelectedFile(null);
     }
     setPreviewUrl(url);
@@ -102,8 +122,13 @@ const EditProductDialog = ({
       } as any;
       
       onFullSave(productToSave);
-      setOpen(false);
+      handleClose();
     }
+  };
+
+  const handleSimpleSave = () => {
+    onSave();
+    handleClose();
   };
 
   const getDialogTitle = () => {
@@ -118,7 +143,7 @@ const EditProductDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[550px] border-primary/20">
         <DialogHeader>
           <DialogTitle>{getDialogTitle()}</DialogTitle>
@@ -134,7 +159,7 @@ const EditProductDialog = ({
             product={fullEditProduct}
             onProductChange={handleFullEditChange}
             onSave={handleFullSave}
-            onCancel={() => setOpen(false)}
+            onCancel={handleClose}
             selectedFile={selectedFile}
             previewUrl={previewUrl}
             onFileChange={handleFileChange}
@@ -146,8 +171,8 @@ const EditProductDialog = ({
             editType={editType}
             editValue={editValue}
             setEditValue={setEditValue}
-            onSave={onSave}
-            onCancel={() => setOpen(false)}
+            onSave={handleSimpleSave}
+            onCancel={handleClose}
           />
         )}
       </DialogContent>

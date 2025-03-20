@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { toast } from "sonner";
 import { Product } from '@/hooks/useProducts';
@@ -68,7 +69,7 @@ export function useProductEditing(
           toast.error("O custo deve ser um valor positivo");
           return;
         }
-        updateCost(selectedProduct.id, numericValue);
+        await updateCost(selectedProduct.id, numericValue);
         setEditDialogOpen(false);
         return;
       }
@@ -83,18 +84,24 @@ export function useProductEditing(
         toast.success(`Margem de lucro do produto "${selectedProduct.name}" definida para ${numericValue}%`);
       }
       
-      updateProduct(updatedProduct);
+      await updateProduct(updatedProduct);
       
+      // Ensure we close the dialog properly
       setEditDialogOpen(false);
+      // Clear selected product after successful update
+      setSelectedProduct(null);
     } catch (error) {
       toast.error("Ocorreu um erro ao salvar as alterações");
+      console.error("Edit save error:", error);
     }
   };
 
   const handleFullEditSave = async (updatedProduct: Product) => {
     try {
+      // Extract the file before sending to updateProduct
       const imageFile = (updatedProduct as any).file;
       
+      // Create a clean copy of the product without the file property
       const productToUpdate = { ...updatedProduct };
       if ('file' in productToUpdate) {
         delete (productToUpdate as any).file;
@@ -104,11 +111,16 @@ export function useProductEditing(
       
       if (result.success) {
         toast.success(`Produto "${updatedProduct.name}" atualizado com sucesso!`);
+        // Ensure dialog is closed after successful update
+        setEditDialogOpen(false);
+        // Clear selected product
+        setSelectedProduct(null);
       } else {
         toast.error("Erro ao atualizar produto");
       }
     } catch (error) {
       toast.error("Ocorreu um erro ao salvar as alterações");
+      console.error("Full edit save error:", error);
     }
   };
 
