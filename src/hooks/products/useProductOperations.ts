@@ -157,6 +157,39 @@ export function useProductOperations(products: Product[], setProducts: React.Dis
     }
   };
 
+  // Update product cost
+  const updateCost = async (productId: number, newCost: number) => {
+    try {
+      const product = products.find(p => p.id === productId);
+      
+      if (!product) {
+        throw new Error('Produto não encontrado');
+      }
+      
+      const { error } = await supabase
+        .from('products')
+        .update({ cost: newCost })
+        .eq('id', productId);
+        
+      if (error) {
+        throw error;
+      }
+      
+      // Update product in state
+      setProducts(prevProducts => 
+        prevProducts.map(p => p.id === productId ? { ...p, cost: newCost } : p)
+      );
+      
+      toast.success(`Custo do produto "${product.name}" atualizado para R$ ${newCost.toFixed(2)}.`);
+      
+      // Cost change log will be created automatically by the database trigger
+      return { success: true };
+    } catch (error: any) {
+      toast.error(`Erro ao atualizar custo: ${error.message}`);
+      return { success: false, error };
+    }
+  };
+
   // Delete a product
   const deleteProduct = async (id: number) => {
     try {
@@ -189,6 +222,7 @@ export function useProductOperations(products: Product[], setProducts: React.Dis
     addProduct,
     updateProduct,
     updateStock,
+    updateCost,
     deleteProduct
   };
 }

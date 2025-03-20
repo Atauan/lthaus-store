@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { SaleDetails } from '../types';
+import { SaleDetails, SaleItem } from '../types';
 
 export async function getSaleDetails(saleId: number): Promise<{ success: boolean; data?: SaleDetails; error?: any }> {
   try {
@@ -27,11 +27,24 @@ export async function getSaleDetails(saleId: number): Promise<{ success: boolean
       
     if (paymentsError) throw paymentsError;
     
+    // Mapear os dados dos itens para o formato esperado por SaleItem
+    const mappedItems: SaleItem[] = (itemsData || []).map(item => ({
+      id: item.id,
+      sale_id: item.sale_id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      price: item.price,
+      cost: item.cost,
+      created_at: item.created_at,
+      name: `Produto #${item.product_id}`, // Nome padrão
+      type: 'product' // Tipo padrão
+    }));
+    
     return {
       success: true,
       data: {
         sale: saleData,
-        items: itemsData || [],
+        items: mappedItems,
         payments: paymentsData || []
       }
     };

@@ -38,6 +38,7 @@ export function useProducts() {
     addProduct,
     updateProduct,
     updateStock,
+    updateCost,
     deleteProduct
   } = useProductOperations(products, setProducts);
   
@@ -88,6 +89,7 @@ export function useProducts() {
     addProduct,
     updateProduct,
     updateStock,
+    updateCost,
     deleteProduct,
     searchProducts,
     getLowStockProducts,

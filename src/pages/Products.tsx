@@ -25,6 +25,7 @@ const Products = () => {
     selectedBrand,
     setSelectedBrand,
     updateProduct,
+    updateCost,
     deleteProduct,
     fetchCostChangeLogs,
     costChangeLogs,
@@ -107,8 +108,19 @@ const Products = () => {
           toast.error("O custo deve ser um valor positivo");
           return;
         }
-        updatedProduct.cost = numericValue;
-        toast.success(`Custo do produto "${selectedProduct.name}" atualizado para R$ ${numericValue.toFixed(2)}`);
+        // Use a função específica para atualizar o custo
+        updateCost(selectedProduct.id, numericValue);
+        setEditDialogOpen(false);
+        
+        // Atualizar lista de alterações de custo
+        setTimeout(() => {
+          fetchCostChangeLogs().then(logs => {
+            const recentChanges = logs.slice(0, 5);
+            setRecentCostChanges(recentChanges);
+          });
+        }, 1000);
+        
+        return;
       }
       else if (editType === 'profit') {
         if (!selectedProduct.cost) {

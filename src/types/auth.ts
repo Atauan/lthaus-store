@@ -1,32 +1,37 @@
 
-import { Database } from "@/integrations/supabase/types";
+import { Session, User } from '@supabase/supabase-js';
 
-// User roles type definition
-export type UserRole = 'admin' | 'manager' | 'salesperson';
+export interface AuthUser {
+  id: string;
+  email?: string;
+  role?: string;
+  firstName?: string;
+  lastName?: string;
+}
 
-// User profile type definition
+export interface AuthState {
+  session: Session | null;
+  user: AuthUser | null;
+  loading: boolean;
+  error: Error | null;
+}
+
+export interface AuthContextType extends AuthState {
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, data: { firstName: string, lastName: string }) => Promise<void>;
+  signOut: () => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
+  clearError: () => void;
+}
+
+// Esta é uma interface temporária para representar o perfil do usuário
+// já que não temos acesso ao tipo completo em Database
 export interface UserProfile {
   id: string;
-  first_name: string;
-  last_name: string;
-  avatar_url?: string;
-  role: UserRole;
-  created_at?: string;
-  updated_at?: string;
+  first_name?: string;
+  last_name?: string;
+  role?: string;
 }
 
-// Auth context type definition
-export interface AuthContextType {
-  user: UserProfile | null;
-  session: any | null;
-  isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any | null }>;
-  signUp: (email: string, password: string, userData?: Partial<UserProfile>) => Promise<{ error: any | null }>;
-  signOut: () => Promise<void>;
-  updateProfile: (profile: Partial<UserProfile>) => Promise<{ error: any | null }>;
-  updateUserRole: (userId: string, role: UserRole) => Promise<{ error: any | null }>;
-  getUsers: () => Promise<{ data: UserProfile[] | null, error: any | null }>;
-}
-
-// Auth user type based on the Supabase database
-export type AuthUser = Database['public']['Tables']['profiles']['Row'];
+export type { Session, User };

@@ -29,15 +29,18 @@ export async function createSale(
     
     const saleId = saleData.id;
     
+    // Mapear os itens para o formato esperado pela tabela sale_items
+    const formattedItems = items.map(item => ({
+      sale_id: saleId,
+      product_id: item.product_id || 0, // Fornecer um valor padrão para product_id
+      quantity: item.quantity,
+      price: item.price,
+      cost: item.cost
+    }));
+    
     const { error: itemsError } = await supabase
       .from('sale_items')
-      .insert(
-        items.map(item => ({
-          ...item,
-          sale_id: saleId,
-          user_id: userId
-        }))
-      );
+      .insert(formattedItems);
       
     if (itemsError) throw itemsError;
     
@@ -46,8 +49,7 @@ export async function createSale(
       .insert(
         payments.map(payment => ({
           ...payment,
-          sale_id: saleId,
-          user_id: userId
+          sale_id: saleId
         }))
       );
       
