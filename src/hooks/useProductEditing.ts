@@ -12,6 +12,7 @@ export function useProductEditing(
   const [editType, setEditType] = useState<'price' | 'profit' | 'stock' | 'cost' | 'full'>('price');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+  const [isSaving, setIsSaving] = useState(false);
   
   const openEditDialog = (product: Product, type: 'price' | 'profit' | 'stock' | 'cost' | 'full') => {
     setSelectedProduct(product);
@@ -35,14 +36,26 @@ export function useProductEditing(
     setEditDialogOpen(true);
   };
 
+  const cleanupAfterSave = () => {
+    // Ensure we reset all state properly
+    setIsSaving(false);
+    // Add a small delay to ensure dialog is closed before resetting state
+    setTimeout(() => {
+      setSelectedProduct(null);
+      setEditValue('');
+    }, 300);
+  };
+
   const handleEditSave = async () => {
-    if (!selectedProduct) return;
+    if (!selectedProduct || isSaving) return;
     
     try {
+      setIsSaving(true);
       const numericValue = parseFloat(editValue);
       
       if (isNaN(numericValue)) {
         toast.error("O valor inserido não é válido");
+        setIsSaving(false);
         return;
       }
       
@@ -51,6 +64,7 @@ export function useProductEditing(
       if (editType === 'price') {
         if (numericValue <= 0) {
           toast.error("O preço deve ser maior que zero");
+          setIsSaving(false);
           return;
         }
         updatedProduct.price = numericValue;
@@ -59,6 +73,7 @@ export function useProductEditing(
       else if (editType === 'stock') {
         if (numericValue < 0 || !Number.isInteger(numericValue)) {
           toast.error("A quantidade em estoque deve ser um número inteiro positivo");
+          setIsSaving(false);
           return;
         }
         updatedProduct.stock = numericValue;
@@ -67,15 +82,18 @@ export function useProductEditing(
       else if (editType === 'cost') {
         if (numericValue < 0) {
           toast.error("O custo deve ser um valor positivo");
+          setIsSaving(false);
           return;
         }
         await updateCost(selectedProduct.id, numericValue);
         setEditDialogOpen(false);
+        cleanupAfterSave();
         return;
       }
       else if (editType === 'profit') {
         if (!selectedProduct.cost) {
           toast.error("Não é possível definir margem de lucro sem o custo do produto");
+          setIsSaving(false);
           return;
         }
         
@@ -88,16 +106,19 @@ export function useProductEditing(
       
       // Ensure we close the dialog properly
       setEditDialogOpen(false);
-      // Clear selected product after successful update
-      setSelectedProduct(null);
+      cleanupAfterSave();
     } catch (error) {
       toast.error("Ocorreu um erro ao salvar as alterações");
       console.error("Edit save error:", error);
+      setIsSaving(false);
     }
   };
 
   const handleFullEditSave = async (updatedProduct: Product) => {
+    if (isSaving) return;
+    
     try {
+      setIsSaving(true);
       // Extract the file before sending to updateProduct
       const imageFile = (updatedProduct as any).file;
       
@@ -113,14 +134,15 @@ export function useProductEditing(
         toast.success(`Produto "${updatedProduct.name}" atualizado com sucesso!`);
         // Ensure dialog is closed after successful update
         setEditDialogOpen(false);
-        // Clear selected product
-        setSelectedProduct(null);
+        cleanupAfterSave();
       } else {
         toast.error("Erro ao atualizar produto");
+        setIsSaving(false);
       }
     } catch (error) {
       toast.error("Ocorreu um erro ao salvar as alterações");
       console.error("Full edit save error:", error);
+      setIsSaving(false);
     }
   };
 
@@ -133,6 +155,7 @@ export function useProductEditing(
     setEditValue,
     openEditDialog,
     handleEditSave,
-    handleFullEditSave
+    handleFullEditSave,
+    isSaving
   };
 }

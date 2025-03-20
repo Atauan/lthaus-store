@@ -49,8 +49,8 @@ const SimpleEditForm: React.FC<SimpleEditFormProps> = ({
         </div>
       </div>
       <DialogFooter>
-        <Button variant="outline" onClick={onCancel} className="border-white">Cancelar</Button>
-        <Button onClick={onSave}>Salvar</Button>
+        <Button type="button" variant="outline" onClick={onCancel} className="border-white">Cancelar</Button>
+        <Button type="button" onClick={onSave}>Salvar</Button>
       </DialogFooter>
     </>
   );

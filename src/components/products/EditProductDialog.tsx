@@ -36,17 +36,22 @@ const EditProductDialog = ({
   const [fullEditProduct, setFullEditProduct] = useState<Product | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Reset state when dialog opens or closes
   useEffect(() => {
     if (!open) {
-      // Clean up resources when dialog closes
-      if (previewUrl && selectedFile) {
-        URL.revokeObjectURL(previewUrl);
-      }
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      setFullEditProduct(null);
+      // Add a small delay before cleaning up resources to ensure proper animation
+      setTimeout(() => {
+        // Clean up resources when dialog closes
+        if (previewUrl && selectedFile) {
+          URL.revokeObjectURL(previewUrl);
+        }
+        setSelectedFile(null);
+        setPreviewUrl(null);
+        setFullEditProduct(null);
+        setIsTransitioning(false);
+      }, 300);
     } else if (editType === 'full' && selectedProduct) {
       setFullEditProduct({...selectedProduct});
       setPreviewUrl(selectedProduct.image_url || selectedProduct.image || null);
@@ -55,11 +60,21 @@ const EditProductDialog = ({
 
   // Handle closing the dialog
   const handleClose = () => {
+    // Prevent multiple close attempts
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    
     // Make sure we clean up resources
     if (previewUrl && selectedFile) {
       URL.revokeObjectURL(previewUrl);
     }
-    setOpen(false);
+    
+    // Use setTimeout to ensure the dialog closing animation completes
+    // before we actually close it and reset state
+    setTimeout(() => {
+      setOpen(false);
+    }, 50);
   };
 
   const handleFullEditChange = (field: keyof Product, value: any) => {
@@ -116,19 +131,22 @@ const EditProductDialog = ({
 
   const handleFullSave = () => {
     if (fullEditProduct && onFullSave) {
+      // Set transitioning state to prevent double-clicks
+      setIsTransitioning(true);
+      
       const productToSave = {
         ...fullEditProduct,
         file: selectedFile
       } as any;
       
       onFullSave(productToSave);
-      handleClose();
     }
   };
 
   const handleSimpleSave = () => {
+    // Set transitioning state to prevent double-clicks
+    setIsTransitioning(true);
     onSave();
-    handleClose();
   };
 
   const getDialogTitle = () => {
