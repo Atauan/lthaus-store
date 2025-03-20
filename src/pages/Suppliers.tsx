@@ -11,10 +11,12 @@ import {
   Pencil,
   Trash,
   Building,
-  MapPin
+  MapPin,
+  Tag,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,13 +26,24 @@ import {
 import GlassCard from '@/components/ui/custom/GlassCard';
 import IconButton from '@/components/ui/custom/IconButton';
 import NewSupplierDialog from '@/components/products/NewSupplierDialog';
-import { useSuppliers } from '@/hooks/products/useSuppliers';
+import { Supplier, useSuppliers } from '@/hooks/products/useSuppliers';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Suppliers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isNewSupplierDialogOpen, setIsNewSupplierDialogOpen] = useState(false);
-  const { suppliers, loading, addSupplier } = useSuppliers();
+  const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null);
+  const { suppliers, loading, addSupplier, deleteSupplier, updateSupplier } = useSuppliers();
   
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -42,13 +55,15 @@ const Suppliers = () => {
     phone?: string;
     email?: string;
     address?: string;
+    categories?: string[];
   }) => {
     const result = await addSupplier({
       name: supplierData.name,
       contact_name: supplierData.contactName,
       phone: supplierData.phone,
       email: supplierData.email,
-      address: supplierData.address
+      address: supplierData.address,
+      categories: supplierData.categories
     });
     
     if (result.success) {
@@ -56,12 +71,24 @@ const Suppliers = () => {
       setIsNewSupplierDialogOpen(false);
     }
   };
+
+  const handleDeleteSupplier = async () => {
+    if (!supplierToDelete) return;
+    
+    const result = await deleteSupplier(supplierToDelete.id);
+    
+    if (result.success) {
+      toast.success(`Fornecedor "${supplierToDelete.name}" excluído com sucesso!`);
+      setSupplierToDelete(null);
+    }
+  };
   
   const filteredSuppliers = suppliers.filter(supplier => {
-    return supplier.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-           (supplier.contact_name && supplier.contact_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    const searchLower = searchQuery.toLowerCase();
+    return supplier.name.toLowerCase().includes(searchLower) || 
+           (supplier.contact_name && supplier.contact_name.toLowerCase().includes(searchLower)) ||
            (supplier.categories && supplier.categories.some(category => 
-             category.toLowerCase().includes(searchQuery.toLowerCase())
+             category.toLowerCase().includes(searchLower)
            ));
   });
   
@@ -128,7 +155,10 @@ const Suppliers = () => {
                             <Pencil className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={() => setSupplierToDelete(supplier)}
+                          >
                             <Trash className="mr-2 h-4 w-4" />
                             Excluir
                           </DropdownMenuItem>
@@ -160,17 +190,18 @@ const Suppliers = () => {
                       
                       {supplier.categories && supplier.categories.length > 0 && (
                         <div className="flex items-start gap-3">
-                          <Package className="h-4 w-4 text-muted-foreground mt-0.5" />
+                          <Tag className="h-4 w-4 text-muted-foreground mt-0.5" />
                           <div>
                             <p className="text-sm font-medium mb-1">Categorias</p>
                             <div className="flex flex-wrap gap-1.5">
                               {supplier.categories.map((category, idx) => (
-                                <span 
+                                <Badge 
                                   key={idx} 
-                                  className="px-2 py-0.5 bg-primary/5 text-primary text-xs rounded-full"
+                                  variant="secondary"
+                                  className="text-xs"
                                 >
                                   {category}
-                                </span>
+                                </Badge>
                               ))}
                             </div>
                           </div>
@@ -202,6 +233,27 @@ const Suppliers = () => {
         onOpenChange={setIsNewSupplierDialogOpen}
         onAddSupplier={handleAddSupplier}
       />
+
+      <AlertDialog open={!!supplierToDelete} onOpenChange={(open) => !open && setSupplierToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir fornecedor</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o fornecedor "{supplierToDelete?.name}"? 
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteSupplier}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageTransition>
   );
 };

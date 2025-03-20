@@ -16,6 +16,7 @@ export interface Supplier {
 export function useSuppliers() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
+  const [allCategories, setAllCategories] = useState<string[]>([]);
 
   // Fetch suppliers on component mount
   useEffect(() => {
@@ -39,7 +40,23 @@ export function useSuppliers() {
       }
     }
 
+    async function fetchCategories() {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('name')
+          .order('name');
+          
+        if (error) throw error;
+        
+        setAllCategories(data.map(cat => cat.name));
+      } catch (error: any) {
+        console.error('Error fetching categories:', error.message);
+      }
+    }
+
     fetchSuppliers();
+    fetchCategories();
   }, []);
 
   // Add a new supplier to the database
@@ -50,6 +67,7 @@ export function useSuppliers() {
       email?: string;
       phone?: string;
       address?: string;
+      categories?: string[];
     }
   ): Promise<{ success: boolean; supplier?: Supplier }> => {
     try {
@@ -63,7 +81,7 @@ export function useSuppliers() {
           phone: supplierData.phone,
           address: supplierData.address,
           user_id: 'system', // Since we don't have authentication yet
-          categories: []
+          categories: supplierData.categories || []
         }])
         .select()
         .single();
@@ -142,11 +160,43 @@ export function useSuppliers() {
     }
   }, []);
 
+  // Add a category to the database if it doesn't exist
+  const addCategory = useCallback(async (name: string): Promise<boolean> => {
+    try {
+      // Check if category already exists
+      if (allCategories.includes(name)) {
+        return true; // Already exists, consider it a success
+      }
+      
+      // Insert into database
+      const { error } = await supabase
+        .from('categories')
+        .insert([{ name }]);
+      
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+          return true; // Already exists, consider it a success
+        }
+        throw error;
+      }
+      
+      // Update local state
+      setAllCategories(prev => [...prev, name].sort());
+      return true;
+    } catch (error: any) {
+      console.error('Error adding category:', error.message);
+      toast.error(`Erro ao adicionar categoria: ${error.message}`);
+      return false;
+    }
+  }, [allCategories]);
+
   return {
     suppliers,
     loading,
+    allCategories,
     addSupplier,
     updateSupplier,
-    deleteSupplier
+    deleteSupplier,
+    addCategory
   };
 }

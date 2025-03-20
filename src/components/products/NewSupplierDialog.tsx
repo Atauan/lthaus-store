@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Truck, User, Building, MapPin, Phone, Mail } from 'lucide-react';
+import { Truck, User, Building, MapPin, Phone, Mail, Tag, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -12,6 +12,24 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from "@/components/ui/badge";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useSuppliers } from '@/hooks/products/useSuppliers';
 
 interface SupplierFormData {
   name: string;
@@ -19,6 +37,7 @@ interface SupplierFormData {
   phone: string;
   email: string;
   address: string;
+  categories?: string[];
 }
 
 interface NewSupplierDialogProps {
@@ -38,6 +57,9 @@ const NewSupplierDialog: React.FC<NewSupplierDialogProps> = ({
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [error, setError] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [newCategory, setNewCategory] = useState('');
+  const { allCategories, addCategory } = useSuppliers();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +74,8 @@ const NewSupplierDialog: React.FC<NewSupplierDialogProps> = ({
       contactName,
       phone,
       email,
-      address
+      address,
+      categories: selectedCategories
     });
     
     resetForm();
@@ -64,7 +87,22 @@ const NewSupplierDialog: React.FC<NewSupplierDialogProps> = ({
     setPhone('');
     setEmail('');
     setAddress('');
+    setSelectedCategories([]);
     setError('');
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) return;
+    
+    const success = await addCategory(newCategory.trim());
+    if (success) {
+      setSelectedCategories(prev => [...prev, newCategory.trim()]);
+      setNewCategory('');
+    }
+  };
+
+  const handleRemoveCategory = (category: string) => {
+    setSelectedCategories(prev => prev.filter(c => c !== category));
   };
 
   return (
@@ -149,6 +187,93 @@ const NewSupplierDialog: React.FC<NewSupplierDialogProps> = ({
                 placeholder="Endereço completo"
                 rows={3}
               />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium flex items-center gap-2 mb-1.5">
+                <Tag className="h-4 w-4" />
+                Categorias
+              </label>
+              
+              <div className="flex flex-wrap gap-2 mb-2">
+                {selectedCategories.map((category) => (
+                  <Badge 
+                    key={category} 
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    {category}
+                    <button 
+                      type="button" 
+                      className="ml-1 text-xs rounded-full hover:bg-muted p-0.5"
+                      onClick={() => handleRemoveCategory(category)}
+                    >
+                      ×
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+              
+              <div className="flex gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      type="button"
+                      className="justify-start flex-1"
+                    >
+                      Selecionar categorias
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar categoria..." />
+                      <CommandEmpty>Nenhuma categoria encontrada.</CommandEmpty>
+                      <CommandGroup>
+                        {allCategories.map((category) => (
+                          <CommandItem
+                            key={category}
+                            onSelect={() => {
+                              setSelectedCategories(prev => 
+                                prev.includes(category) 
+                                  ? prev.filter(c => c !== category)
+                                  : [...prev, category]
+                              );
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedCategories.includes(category) ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {category}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                
+                <div className="relative flex-1">
+                  <Input
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    placeholder="Nova categoria..."
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full"
+                    onClick={handleAddCategory}
+                    disabled={!newCategory.trim()}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
           
