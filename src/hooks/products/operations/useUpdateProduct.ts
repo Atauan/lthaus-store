@@ -34,11 +34,17 @@ export function useUpdateProduct() {
         }
       }
       
-      // Inserir o produto com a URL da imagem (se existir)
+      // Create a clean product object for the database update
+      // Removing any file property that might have been added
       const productData = {
         ...updatedProduct,
         image_url: imageUrl
       };
+      
+      // Remove the file property if it exists
+      if ('file' in productData) {
+        delete (productData as any).file;
+      }
       
       const { error } = await supabase
         .from('products')

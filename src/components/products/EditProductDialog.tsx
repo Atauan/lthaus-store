@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -37,7 +36,6 @@ const EditProductDialog = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // Reset state when dialog opens/closes
   useEffect(() => {
     if (!open) {
       setSelectedFile(null);
@@ -63,11 +61,9 @@ const EditProductDialog = ({
       const file = e.target.files[0];
       setSelectedFile(file);
       
-      // Create preview URL
       const fileUrl = URL.createObjectURL(file);
       setPreviewUrl(fileUrl);
       
-      // Update image_url in the product state
       if (fullEditProduct) {
         handleFullEditChange('image_url', fileUrl);
       }
@@ -75,14 +71,12 @@ const EditProductDialog = ({
   };
 
   const handleImageUrlChange = (url: string) => {
-    // Clear any selected file
     if (selectedFile) {
       URL.revokeObjectURL(previewUrl || '');
       setSelectedFile(null);
     }
     setPreviewUrl(url);
     
-    // Update image_url in the product state
     if (fullEditProduct) {
       handleFullEditChange('image_url', url);
     }
@@ -95,7 +89,6 @@ const EditProductDialog = ({
     setSelectedFile(null);
     setPreviewUrl(null);
     
-    // Clear image_url in the product state
     if (fullEditProduct) {
       handleFullEditChange('image_url', '');
     }
@@ -103,10 +96,8 @@ const EditProductDialog = ({
 
   const handleFullSave = () => {
     if (fullEditProduct && onFullSave) {
-      // If we have a selected file, we'll let the parent component handle the file upload
       const productToSave = {
         ...fullEditProduct,
-        // Add file property to be picked up by the onFullSave handler
         file: selectedFile
       } as any;
       

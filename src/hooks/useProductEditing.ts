@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from "sonner";
 import { Product } from '@/hooks/useProducts';
@@ -94,9 +93,14 @@ export function useProductEditing(
 
   const handleFullEditSave = async (updatedProduct: Product) => {
     try {
-      let imageFile = (updatedProduct as any).file;
+      const imageFile = (updatedProduct as any).file;
       
-      const result = await updateProduct(updatedProduct, imageFile);
+      const productToUpdate = { ...updatedProduct };
+      if ('file' in productToUpdate) {
+        delete (productToUpdate as any).file;
+      }
+      
+      const result = await updateProduct(productToUpdate, imageFile);
       
       if (result.success) {
         toast.success(`Produto "${updatedProduct.name}" atualizado com sucesso!`);
