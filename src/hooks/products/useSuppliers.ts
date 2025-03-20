@@ -33,6 +33,7 @@ export function useSuppliers() {
         setSuppliers(data as Supplier[]);
       } catch (error: any) {
         console.error('Error fetching suppliers:', error.message);
+        toast.error(`Erro ao carregar fornecedores: ${error.message}`);
       } finally {
         setLoading(false);
       }
@@ -81,9 +82,71 @@ export function useSuppliers() {
     }
   }, []);
 
+  // Update an existing supplier
+  const updateSupplier = useCallback(async (
+    id: number,
+    supplierData: {
+      name?: string;
+      contact_name?: string;
+      email?: string;
+      phone?: string;
+      address?: string;
+      categories?: string[];
+    }
+  ): Promise<{ success: boolean }> => {
+    try {
+      const { error } = await supabase
+        .from('suppliers')
+        .update(supplierData)
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setSuppliers(prev => 
+        prev.map(supplier => 
+          supplier.id === id 
+            ? { ...supplier, ...supplierData } 
+            : supplier
+        )
+      );
+      
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error updating supplier:', error.message);
+      toast.error(`Erro ao atualizar fornecedor: ${error.message}`);
+      return { success: false };
+    }
+  }, []);
+
+  // Delete a supplier
+  const deleteSupplier = useCallback(async (
+    id: number
+  ): Promise<{ success: boolean }> => {
+    try {
+      const { error } = await supabase
+        .from('suppliers')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setSuppliers(prev => prev.filter(supplier => supplier.id !== id));
+      
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error deleting supplier:', error.message);
+      toast.error(`Erro ao excluir fornecedor: ${error.message}`);
+      return { success: false };
+    }
+  }, []);
+
   return {
     suppliers,
     loading,
-    addSupplier
+    addSupplier,
+    updateSupplier,
+    deleteSupplier
   };
 }
