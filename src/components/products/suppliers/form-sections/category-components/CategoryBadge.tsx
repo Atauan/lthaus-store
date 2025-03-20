@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 
 interface CategoryBadgeProps {
   category: string;
@@ -19,8 +20,9 @@ const CategoryBadge: React.FC<CategoryBadgeProps> = ({ category, onRemove }) => 
         type="button" 
         className="ml-1 text-xs rounded-full hover:bg-muted p-0.5"
         onClick={() => onRemove(category)}
+        aria-label={`Remover categoria ${category}`}
       >
-        ×
+        <X className="h-3 w-3" />
       </button>
     </Badge>
   );

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check } from 'lucide-react';
+import { Check, Tag } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -21,6 +21,9 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   allCategories,
   onSelectCategory
 }) => {
+  // Count how many categories are selected
+  const selectedCount = selectedCategories.length;
+  
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -29,26 +32,32 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
           type="button"
           className="justify-start flex-1"
         >
-          Selecionar categorias
+          <Tag className="mr-2 h-4 w-4" />
+          {selectedCount > 0 
+            ? `${selectedCount} ${selectedCount === 1 ? 'categoria selecionada' : 'categorias selecionadas'}`
+            : 'Selecionar categorias'}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" align="start">
+      <PopoverContent className="w-[240px] p-0" align="start">
         <Command>
           <CommandInput placeholder="Buscar categoria..." />
           <CommandEmpty>Nenhuma categoria encontrada.</CommandEmpty>
-          <CommandGroup>
+          <CommandGroup heading="Categorias disponíveis">
             {allCategories.map((category) => (
               <CommandItem
                 key={category}
                 onSelect={() => onSelectCategory(category)}
+                className="flex items-center"
               >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selectedCategories.includes(category) ? "opacity-100" : "opacity-0"
+                <div className={cn(
+                  "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                  selectedCategories.includes(category) ? "bg-primary text-primary-foreground" : "opacity-50"
+                )}>
+                  {selectedCategories.includes(category) && (
+                    <Check className="h-3 w-3" />
                   )}
-                />
-                {category}
+                </div>
+                <span>{category}</span>
               </CommandItem>
             ))}
           </CommandGroup>
