@@ -7,12 +7,14 @@ interface FormButtonsProps {
   onCancel: () => void;
   onReset: () => void;
   isLoading?: boolean;
+  isEditing?: boolean;
 }
 
 const FormButtons: React.FC<FormButtonsProps> = ({
   onCancel,
   onReset,
-  isLoading = false
+  isLoading = false,
+  isEditing = false
 }) => {
   return (
     <div className="flex flex-col sm:flex-row gap-3 justify-end">
@@ -33,7 +35,7 @@ const FormButtons: React.FC<FormButtonsProps> = ({
         disabled={isLoading}
       >
         <RefreshCw className="mr-2 h-4 w-4" />
-        Clear Fields
+        {isEditing ? 'Reset Changes' : 'Clear Fields'}
       </Button>
       
       <Button 
@@ -45,7 +47,7 @@ const FormButtons: React.FC<FormButtonsProps> = ({
         ) : (
           <Save className="mr-2 h-4 w-4" />
         )}
-        {isLoading ? 'Saving...' : 'Save Product'}
+        {isLoading ? 'Saving...' : isEditing ? 'Update Product' : 'Save Product'}
       </Button>
     </div>
   );

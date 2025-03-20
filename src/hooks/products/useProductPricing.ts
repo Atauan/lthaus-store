@@ -25,6 +25,11 @@ export function useProductPricing(form: UseFormReturn<ProductFormValues>) {
     setProfit(calculatedSalePrice - cost);
   }, [watchCostPrice, profitMargin, form]);
 
+  // Set initial profit margin (used when editing a product)
+  const setInitialProfitMargin = (margin: number) => {
+    setProfitMargin(parseFloat(margin.toFixed(0)));
+  };
+
   // Handle margin slider change
   const handleMarginChange = (newMargin: number) => {
     setProfitMargin(newMargin);
@@ -55,6 +60,7 @@ export function useProductPricing(form: UseFormReturn<ProductFormValues>) {
     profit,
     profitMargin,
     handleMarginChange,
-    handleSalePriceChange
+    handleSalePriceChange,
+    setInitialProfitMargin
   };
 }

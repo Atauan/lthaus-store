@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +17,7 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Package, MoreHorizontal, Edit, Trash2, Clipboard, Pencil, DollarSign } from "lucide-react";
+import { Package, MoreHorizontal, Edit, Trash2, Clipboard, Pencil, DollarSign, FileEdit } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Product } from '@/hooks/useProducts';
 
@@ -33,6 +34,12 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
   openEditDialog,
   onDelete
 }) => {
+  const navigate = useNavigate();
+
+  const handleFullEdit = (product: Product) => {
+    navigate(`/products/edit/${product.id}`);
+  };
+
   return (
     <div className="bg-card border-primary/20 border rounded-lg shadow-soft overflow-hidden animate-scale-in">
       <div className="p-4 bg-muted/20 border-b border-primary/10">
@@ -126,6 +133,11 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            
+                            <DropdownMenuItem onClick={() => handleFullEdit(product)}>
+                              <FileEdit className="h-4 w-4 mr-2" />
+                              Editar Produto
+                            </DropdownMenuItem>
                             
                             <DropdownMenuItem onClick={() => openEditDialog(product, 'full')}>
                               <Edit className="h-4 w-4 mr-2" />

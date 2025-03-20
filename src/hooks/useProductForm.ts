@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -9,26 +8,39 @@ import { useProductImages } from './products/useProductImages';
 import { useProductFormDialogs } from './products/useProductFormDialogs';
 import { useSuppliers, Supplier } from './products/useSuppliers';
 import type { ProductFormValues } from './products/types';
+import { Product } from './products/useProductTypes';
 
 // Re-export the type with the 'export type' syntax
 export type { ProductFormValues } from './products/types';
 
-export function useProductForm() {
+export function useProductForm(editProduct?: Product, isEditing = false) {
   const navigate = useNavigate();
-  const { addProduct } = useProducts();
+  const { addProduct, updateProduct } = useProducts();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Initialize form with default values or edit product data
   const form = useForm<ProductFormValues>({
-    defaultValues: {
-      name: '',
-      description: '',
-      costPrice: 0,
-      salePrice: 0,
-      category: '',
-      brand: '',
-      stock: 1,
-      productType: 'external', // Default to external (for sale to customers)
-    },
+    defaultValues: isEditing && editProduct 
+      ? {
+          name: editProduct.name,
+          description: editProduct.description || '',
+          costPrice: editProduct.cost || 0,
+          salePrice: editProduct.price,
+          category: editProduct.category,
+          brand: editProduct.brand,
+          stock: editProduct.stock,
+          productType: 'external', // Default to external (for sale to customers)
+        } 
+      : {
+          name: '',
+          description: '',
+          costPrice: 0,
+          salePrice: 0,
+          category: '',
+          brand: '',
+          stock: 1,
+          productType: 'external',
+        },
   });
 
   // Use the extracted pricing hook
@@ -36,8 +48,17 @@ export function useProductForm() {
     profit, 
     profitMargin, 
     handleMarginChange, 
-    handleSalePriceChange 
+    handleSalePriceChange,
+    setInitialProfitMargin
   } = useProductPricing(form);
+
+  // Set initial profit margin when editing a product
+  useEffect(() => {
+    if (isEditing && editProduct && editProduct.cost && editProduct.cost > 0) {
+      const initialMargin = ((editProduct.price - editProduct.cost) / editProduct.cost) * 100;
+      setInitialProfitMargin(initialMargin);
+    }
+  }, [isEditing, editProduct, setInitialProfitMargin]);
 
   // Use the extracted images hook
   const { 
@@ -69,17 +90,38 @@ export function useProductForm() {
   // Reset the form
   const handleResetForm = () => {
     clearImages();
-    form.reset({
-      name: '',
-      description: '',
-      costPrice: 0,
-      salePrice: 0,
-      category: '',
-      brand: '',
-      stock: 1,
-      supplier: '',
-      productType: 'external',
-    });
+    if (isEditing && editProduct) {
+      // Reset to original product values
+      form.reset({
+        name: editProduct.name,
+        description: editProduct.description || '',
+        costPrice: editProduct.cost || 0,
+        salePrice: editProduct.price,
+        category: editProduct.category,
+        brand: editProduct.brand,
+        stock: editProduct.stock,
+        supplier: '',
+        productType: 'external',
+      });
+      
+      if (editProduct.cost && editProduct.cost > 0) {
+        const initialMargin = ((editProduct.price - editProduct.cost) / editProduct.cost) * 100;
+        setInitialProfitMargin(initialMargin);
+      }
+    } else {
+      // Reset to empty values for new product
+      form.reset({
+        name: '',
+        description: '',
+        costPrice: 0,
+        salePrice: 0,
+        category: '',
+        brand: '',
+        stock: 1,
+        supplier: '',
+        productType: 'external',
+      });
+    }
   };
 
   // Handle auto-fill
@@ -123,24 +165,50 @@ export function useProductForm() {
       // Get the image file from the first selected image if available
       const imageFile = selectedImages.length > 0 ? selectedImages[0] : undefined;
       
-      // Call the addProduct function from useProducts hook with image file
-      const result = await addProduct(productData, imageFile);
+      let result;
       
-      if (result.success) {
-        toast.success("Produto adicionado com sucesso!");
+      if (isEditing && editProduct) {
+        // Update existing product
+        const updatedProduct = {
+          ...productData,
+          id: editProduct.id,
+          // Keep existing image if not uploading a new one
+          image: editProduct.image,
+          image_url: editProduct.image_url
+        };
         
-        // Reset the form
-        handleResetForm();
+        result = await updateProduct(updatedProduct, imageFile);
         
-        // Redirect after 2 seconds
-        setTimeout(() => {
-          navigate('/products');
-        }, 2000);
+        if (result.success) {
+          toast.success("Produto atualizado com sucesso!");
+          
+          // Redirect after 2 seconds
+          setTimeout(() => {
+            navigate('/products');
+          }, 2000);
+        } else {
+          toast.error(`Erro ao atualizar produto: ${result.error?.message || 'Erro desconhecido'}`);
+        }
       } else {
-        toast.error(`Erro ao adicionar produto: ${result.error?.message || 'Erro desconhecido'}`);
+        // Add new product
+        result = await addProduct(productData, imageFile);
+        
+        if (result.success) {
+          toast.success("Produto adicionado com sucesso!");
+          
+          // Reset the form
+          handleResetForm();
+          
+          // Redirect after 2 seconds
+          setTimeout(() => {
+            navigate('/products');
+          }, 2000);
+        } else {
+          toast.error(`Erro ao adicionar produto: ${result.error?.message || 'Erro desconhecido'}`);
+        }
       }
     } catch (error: any) {
-      toast.error(`Erro ao adicionar produto: ${error.message}`);
+      toast.error(`Erro ao ${isEditing ? 'atualizar' : 'adicionar'} produto: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }

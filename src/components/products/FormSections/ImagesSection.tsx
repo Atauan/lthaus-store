@@ -14,12 +14,14 @@ interface ImagesSectionProps {
   previewUrls: string[];
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveImage: (index: number) => void;
+  existingImageUrl?: string;
 }
 
 const ImagesSection: React.FC<ImagesSectionProps> = ({
   previewUrls,
   onImageUpload,
-  onRemoveImage
+  onRemoveImage,
+  existingImageUrl
 }) => {
   return (
     <Card>
@@ -34,6 +36,21 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-3 mb-4">
+          {/* Show existing image if available */}
+          {existingImageUrl && previewUrls.length === 0 && (
+            <div className="relative">
+              <img 
+                src={existingImageUrl} 
+                alt="Existing product image"
+                className="w-20 h-20 object-cover rounded-md border"
+              />
+              <div className="absolute -top-2 -right-2 bg-primary text-white rounded-full p-1 text-xs">
+                Current
+              </div>
+            </div>
+          )}
+          
+          {/* Show new uploaded images */}
           {previewUrls.map((url, index) => (
             <div key={index} className="relative">
               <img 
@@ -70,7 +87,9 @@ const ImagesSection: React.FC<ImagesSectionProps> = ({
         
         <p className="text-xs text-muted-foreground flex items-center gap-1">
           <Info className="h-3 w-3" />
-          Formatos suportados: JPG, PNG e WEBP
+          {existingImageUrl && previewUrls.length === 0 
+            ? "Uploading a new image will replace the current one" 
+            : "Formatos suportados: JPG, PNG e WEBP"}
         </p>
       </CardContent>
     </Card>

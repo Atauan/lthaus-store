@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Form } from '@/components/ui/form';
 import GlassCard from '@/components/ui/custom/GlassCard';
@@ -12,8 +13,14 @@ import PricingSection from './FormSections/PricingSection';
 import ClassificationSection from './FormSections/ClassificationSection';
 import ImagesSection from './FormSections/ImagesSection';
 import FormButtons from './FormSections/FormButtons';
+import { Product } from '@/hooks/products/useProductTypes';
 
-const ProductForm = () => {
+interface ProductFormProps {
+  product?: Product;
+  isEditing?: boolean;
+}
+
+const ProductForm: React.FC<ProductFormProps> = ({ product, isEditing = false }) => {
   const {
     form,
     profit,
@@ -41,7 +48,7 @@ const ProductForm = () => {
     categories,
     brands,
     suppliers
-  } = useProductForm();
+  } = useProductForm(product, isEditing);
 
   return (
     <div className="space-y-6">
@@ -67,11 +74,13 @@ const ProductForm = () => {
             </div>
 
             <div className="space-y-6">
-              <GlassCard borderEffect hoverEffect className="bg-blue-50/30">
-                <div className="text-center">
-                  <ProductAutoFill onAutoFill={handleAutoFill} />
-                </div>
-              </GlassCard>
+              {!isEditing && (
+                <GlassCard borderEffect hoverEffect className="bg-blue-50/30">
+                  <div className="text-center">
+                    <ProductAutoFill onAutoFill={handleAutoFill} />
+                  </div>
+                </GlassCard>
+              )}
 
               <ClassificationSection 
                 form={form}
@@ -83,6 +92,7 @@ const ProductForm = () => {
                 previewUrls={previewUrls}
                 onImageUpload={handleImageUpload}
                 onRemoveImage={removeImage}
+                existingImageUrl={isEditing && product ? product.image_url : undefined}
               />
             </div>
           </div>
@@ -91,6 +101,7 @@ const ProductForm = () => {
             onCancel={() => navigate('/products')}
             onReset={handleResetForm}
             isLoading={isSubmitting}
+            isEditing={isEditing}
           />
         </form>
       </Form>
