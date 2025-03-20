@@ -8,13 +8,9 @@ export function useProductOperations(products: Product[], setProducts: React.Dis
   // Add a new product
   const addProduct = async (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      // Since user_id is required in the database, provide a default UUID for development
       const { data, error } = await supabase
         .from('products')
-        .insert({
-          ...product,
-          user_id: '00000000-0000-0000-0000-000000000000' // Default UUID for development
-        })
+        .insert(product)
         .select();
         
       if (error) {

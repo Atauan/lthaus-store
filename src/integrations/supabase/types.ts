@@ -9,6 +9,86 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      cost_change_logs: {
+        Row: {
+          change_percentage: number
+          created_at: string
+          id: string
+          new_cost: number
+          notes: string | null
+          previous_cost: number
+          product_id: number
+        }
+        Insert: {
+          change_percentage: number
+          created_at?: string
+          id?: string
+          new_cost: number
+          notes?: string | null
+          previous_cost: number
+          product_id: number
+        }
+        Update: {
+          change_percentage?: number
+          created_at?: string
+          id?: string
+          new_cost?: number
+          notes?: string | null
+          previous_cost?: number
+          product_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_change_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          brand: string
+          category: string
+          cost: number | null
+          created_at: string | null
+          description: string | null
+          id: number
+          image: string | null
+          name: string
+          price: number
+          stock: number
+          updated_at: string | null
+        }
+        Insert: {
+          brand: string
+          category: string
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          image?: string | null
+          name: string
+          price: number
+          stock?: number
+          updated_at?: string | null
+        }
+        Update: {
+          brand?: string
+          category?: string
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          image?: string | null
+          name?: string
+          price?: number
+          stock?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       sales: {
         Row: {
           created_at: string | null
@@ -68,6 +148,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      stock_logs: {
+        Row: {
+          change_amount: number
+          created_at: string
+          id: string
+          new_stock: number
+          notes: string | null
+          previous_stock: number
+          product_id: number
+          reference_id: string | null
+          reference_type: string
+        }
+        Insert: {
+          change_amount: number
+          created_at?: string
+          id?: string
+          new_stock: number
+          notes?: string | null
+          previous_stock: number
+          product_id: number
+          reference_id?: string | null
+          reference_type: string
+        }
+        Update: {
+          change_amount?: number
+          created_at?: string
+          id?: string
+          new_stock?: number
+          notes?: string | null
+          previous_stock?: number
+          product_id?: number
+          reference_id?: string | null
+          reference_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppliers: {
         Row: {

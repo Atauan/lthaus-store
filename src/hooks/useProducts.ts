@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
 import { useProductFilters } from './products/useProductFilters';
 import { useProductLogs } from './products/useProductLogs';
 import { useProductOperations } from './products/useProductOperations';
@@ -14,7 +13,6 @@ export type { Product, StockLog, CostChangeLog } from './products/types';
 export { categories, brands } from './products/types';
 
 export function useProducts() {
-  const { session } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -95,6 +93,6 @@ export function useProducts() {
     getLowStockProducts,
     fetchStockLogs,
     fetchCostChangeLogs,
-    isAuthenticated: true // Always true now since we don't need authentication
+    isAuthenticated: true // Mantido para compatibilidade, mas não usaremos autenticação
   };
 }

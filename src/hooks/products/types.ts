@@ -28,7 +28,6 @@ export interface Product {
   image?: string;
   created_at?: string;
   updated_at?: string;
-  user_id?: string;
 }
 
 export interface StockLog {
@@ -41,7 +40,6 @@ export interface StockLog {
   reference_id?: string;
   notes?: string;
   created_at: string;
-  user_id: string;
   product_name?: string; // For UI display
 }
 
@@ -53,7 +51,6 @@ export interface CostChangeLog {
   change_percentage: number;
   notes?: string;
   created_at: string;
-  user_id: string;
   product_name?: string; // For UI display
 }
 
