@@ -2,28 +2,18 @@
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { Supplier, SupplierFormData } from './types';
 
 export function useSupplierOperations(
   suppliers: Supplier[],
   setSuppliers: React.Dispatch<React.SetStateAction<Supplier[]>>
 ) {
-  const { user } = useAuth();
-
   // Add a new supplier to the database
   const addSupplier = useCallback(async (
     supplierData: SupplierFormData
   ): Promise<{ success: boolean; supplier?: Supplier }> => {
     try {
-      // Since there's no foreign key reference to auth.users table in our database
-      // We'll use a fixed UUID value that's meant for development mode
-      // This is only a workaround for development - in production, we'd use the actual user ID
-      const userId = '00000000-0000-0000-0000-000000000000'; // Use a valid UUID format
-      
-      console.log('Using userId for supplier insertion:', userId);
-      
-      // Insert into database
+      // Insert into database without user_id
       const { data, error } = await supabase
         .from('suppliers')
         .insert([{
@@ -32,7 +22,6 @@ export function useSupplierOperations(
           email: supplierData.email,
           phone: supplierData.phone,
           address: supplierData.address,
-          user_id: userId, // Use the fixed UUID
           categories: supplierData.categories || []
         }])
         .select()
