@@ -4,12 +4,13 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useProducts } from '@/hooks/useProducts';
-import { ProductFormValues } from './products/types';
 import { useProductPricing } from './products/useProductPricing';
 import { useProductImages } from './products/useProductImages';
 import { useProductFormDialogs } from './products/useProductFormDialogs';
+import type { ProductFormValues } from './products/types';
 
-export { ProductFormValues } from './products/types';
+// Re-export the type with the 'export type' syntax
+export type { ProductFormValues } from './products/types';
 
 export function useProductForm() {
   const navigate = useNavigate();

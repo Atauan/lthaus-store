@@ -15,3 +15,47 @@ export interface ProductImage {
   file: File;
   previewUrl: string;
 }
+
+export interface Product {
+  id: number;
+  name: string;
+  description?: string;
+  category: string;
+  brand: string;
+  price: number;
+  cost?: number;
+  stock: number;
+  image?: string;
+  created_at?: string;
+  updated_at?: string;
+  user_id?: string;
+}
+
+export interface StockLog {
+  id: string;
+  product_id: number;
+  previous_stock: number;
+  new_stock: number;
+  change_amount: number;
+  reference_type: string;
+  reference_id?: string;
+  notes?: string;
+  created_at: string;
+  user_id: string;
+  product_name?: string; // For UI display
+}
+
+export interface CostChangeLog {
+  id: string;
+  product_id: number;
+  previous_cost: number;
+  new_cost: number;
+  change_percentage: number;
+  notes?: string;
+  created_at: string;
+  user_id: string;
+  product_name?: string; // For UI display
+}
+
+export const categories = ['Todas', 'Cabos', 'Capas', 'Áudio', 'Carregadores', 'Proteção', 'Acessórios'];
+export const brands = ['Todas', 'Apple', 'Samsung', 'Anker', 'JBL', 'Generic'];
