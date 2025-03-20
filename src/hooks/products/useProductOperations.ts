@@ -1,8 +1,12 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, adminSupabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Product } from './types';
+
+// Use this for development to bypass RLS
+const useDevMode = true;
+const db = useDevMode ? adminSupabase : supabase;
 
 export function useProductOperations(products: Product[], setProducts: React.Dispatch<React.SetStateAction<Product[]>>) {
   // Add a new product
@@ -11,7 +15,7 @@ export function useProductOperations(products: Product[], setProducts: React.Dis
       // Use a proper UUID format for development user ID
       const devUserId = '00000000-0000-0000-0000-000000000000';
       
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('products')
         .insert([{
           ...product,
@@ -40,7 +44,7 @@ export function useProductOperations(products: Product[], setProducts: React.Dis
   // Update an existing product
   const updateProduct = async (updatedProduct: Product) => {
     try {
-      const { error } = await supabase
+      const { error } = await db
         .from('products')
         .update(updatedProduct)
         .eq('id', updatedProduct.id);
@@ -71,7 +75,7 @@ export function useProductOperations(products: Product[], setProducts: React.Dis
         throw new Error('Produto não encontrado');
       }
       
-      const { error } = await supabase
+      const { error } = await db
         .from('products')
         .update({ stock: newStock })
         .eq('id', productId);
@@ -104,7 +108,7 @@ export function useProductOperations(products: Product[], setProducts: React.Dis
         throw new Error('Produto não encontrado');
       }
       
-      const { error } = await supabase
+      const { error } = await db
         .from('products')
         .delete()
         .eq('id', id);

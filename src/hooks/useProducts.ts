@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, adminSupabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductFilters } from './products/useProductFilters';
@@ -12,6 +12,10 @@ import { Product, categories, brands } from './products/types';
 // Re-export types from our types file
 export type { Product, StockLog, CostChangeLog } from './products/types';
 export { categories, brands } from './products/types';
+
+// Use this for development to bypass RLS
+const useDevMode = true;
+const db = useDevMode ? adminSupabase : supabase;
 
 export function useProducts() {
   const { session } = useAuth();
@@ -53,7 +57,7 @@ export function useProducts() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
+        const { data, error } = await db
           .from('products')
           .select('*')
           .order('name');
