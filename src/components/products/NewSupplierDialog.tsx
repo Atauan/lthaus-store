@@ -13,10 +13,18 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 
+interface SupplierFormData {
+  name: string;
+  contactName: string;
+  phone: string;
+  email: string;
+  address: string;
+}
+
 interface NewSupplierDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddSupplier: (supplier: string) => void;
+  onAddSupplier: (supplierData: SupplierFormData) => void;
 }
 
 const NewSupplierDialog: React.FC<NewSupplierDialogProps> = ({
@@ -39,7 +47,14 @@ const NewSupplierDialog: React.FC<NewSupplierDialogProps> = ({
       return;
     }
     
-    onAddSupplier(name);
+    onAddSupplier({
+      name,
+      contactName,
+      phone,
+      email,
+      address
+    });
+    
     resetForm();
   };
 

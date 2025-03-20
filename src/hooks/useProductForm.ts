@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +7,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { useProductPricing } from './products/useProductPricing';
 import { useProductImages } from './products/useProductImages';
 import { useProductFormDialogs } from './products/useProductFormDialogs';
+import { useSuppliers, Supplier } from './products/useSuppliers';
 import type { ProductFormValues } from './products/types';
 
 // Re-export the type with the 'export type' syntax
@@ -60,6 +62,9 @@ export function useProductForm() {
     categories,
     brands
   } = useProductFormDialogs(form);
+
+  // Use the suppliers hook
+  const { suppliers } = useSuppliers();
 
   // Reset the form
   const handleResetForm = () => {
@@ -166,6 +171,7 @@ export function useProductForm() {
     navigate,
     isSubmitting,
     categories,
-    brands
+    brands,
+    suppliers
   };
 }

@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      brands: {
+        Row: {
+          created_at: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          created_at: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
       cost_change_logs: {
         Row: {
           change_percentage: number
@@ -278,6 +314,7 @@ export type Database = {
           address: string | null
           categories: string[]
           contact: string | null
+          contact_name: string | null
           created_at: string | null
           email: string | null
           id: number
@@ -290,6 +327,7 @@ export type Database = {
           address?: string | null
           categories?: string[]
           contact?: string | null
+          contact_name?: string | null
           created_at?: string | null
           email?: string | null
           id?: number
@@ -302,6 +340,7 @@ export type Database = {
           address?: string | null
           categories?: string[]
           contact?: string | null
+          contact_name?: string | null
           created_at?: string | null
           email?: string | null
           id?: number

@@ -42,7 +42,9 @@ const ProductForm = () => {
     isSubmitting,
     // Get the dynamic categories and brands lists
     categories,
-    brands
+    brands,
+    // Get suppliers
+    suppliers
   } = useProductForm();
 
   return (
@@ -84,6 +86,7 @@ const ProductForm = () => {
               <ClassificationSection 
                 form={form}
                 onAddSupplier={() => setIsNewSupplierDialogOpen(true)}
+                suppliers={suppliers}
               />
 
               {/* Product Images */}
