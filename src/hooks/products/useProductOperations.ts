@@ -8,14 +8,13 @@ export function useProductOperations(products: Product[], setProducts: React.Dis
   // Add a new product
   const addProduct = async (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      // Use a proper UUID format for development user ID
-      const devUserId = '00000000-0000-0000-0000-000000000000';
-      
+      // NOTE: We're now omitting the user_id since RLS is disabled
+      // and we don't need to provide it for development mode
       const { data, error } = await supabase
         .from('products')
         .insert([{
           ...product,
-          user_id: devUserId
+          // No user_id needed since we've disabled that constraint
         }])
         .select();
         
