@@ -11,6 +11,7 @@ import CostChangesTab from '@/components/products/CostChangesTab';
 import { useProducts } from '@/hooks/useProducts';
 import { useProductEditing } from '@/hooks/useProductEditing';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2 } from 'lucide-react';
 
 const Products = () => {
   const navigate = useNavigate();
@@ -47,8 +48,9 @@ const Products = () => {
   } = useProductEditing(updateProduct, updateCost, fetchCostChangeLogs);
 
   const [recentCostChanges, setRecentCostChanges] = useState<any[]>([]);
+  const [refreshingData, setRefreshingData] = useState(false);
 
-  // Fetch cost changes when component mounts
+  // Load cost changes when component mounts
   useEffect(() => {
     fetchCostChangeLogs().then(logs => {
       const recentChanges = logs.slice(0, 5);
@@ -60,10 +62,14 @@ const Products = () => {
   useEffect(() => {
     if (!editDialogOpen && (editType === 'cost' || editType === 'profit' || (editType === 'price' && selectedProduct?.cost))) {
       // Update cost logs after closing dialog if we made changes that could affect costs
+      console.log('Edit dialog closed, refreshing cost logs...');
+      setRefreshingData(true);
+      
       setTimeout(() => {
         fetchCostChangeLogs().then(logs => {
           const recentChanges = logs.slice(0, 5);
           setRecentCostChanges(recentChanges);
+          setRefreshingData(false);
         });
       }, 1000);
     }
@@ -74,10 +80,10 @@ const Products = () => {
   };
 
   const handleDeleteProduct = async (productId: number) => {
-    if (window.confirm("Tem certeza que deseja excluir este produto?")) {
+    if (window.confirm("Are you sure you want to delete this product?")) {
       const result = await deleteProduct(productId);
       if (result.success) {
-        toast.success("Produto excluído com sucesso!");
+        toast.success("Product deleted successfully!");
       }
     }
   };
@@ -90,8 +96,8 @@ const Products = () => {
 
           <Tabs defaultValue="products">
             <TabsList className="mb-4">
-              <TabsTrigger value="products">Produtos</TabsTrigger>
-              <TabsTrigger value="cost-changes">Alterações de Custo</TabsTrigger>
+              <TabsTrigger value="products">Products</TabsTrigger>
+              <TabsTrigger value="cost-changes">Cost Changes</TabsTrigger>
             </TabsList>
             
             <TabsContent value="products">
@@ -106,19 +112,33 @@ const Products = () => {
                 brands={['Todas', 'Apple', 'Samsung', 'Anker', 'JBL', 'Generic']}
               />
 
-              <ProductsTable 
-                filteredProducts={filteredProducts}
-                totalProducts={products.length}
-                openEditDialog={openEditDialog}
-                onDelete={handleDeleteProduct}
-              />
+              {loading ? (
+                <div className="flex justify-center items-center h-64">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <span className="ml-2 text-lg">Loading products...</span>
+                </div>
+              ) : (
+                <ProductsTable 
+                  filteredProducts={filteredProducts}
+                  totalProducts={products.length}
+                  openEditDialog={openEditDialog}
+                  onDelete={handleDeleteProduct}
+                />
+              )}
             </TabsContent>
             
             <TabsContent value="cost-changes">
-              <CostChangesTab 
-                recentCostChanges={recentCostChanges}
-                loading={loading}
-              />
+              {refreshingData ? (
+                <div className="flex justify-center items-center h-64">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <span className="ml-2 text-lg">Refreshing cost data...</span>
+                </div>
+              ) : (
+                <CostChangesTab 
+                  recentCostChanges={recentCostChanges}
+                  loading={loading}
+                />
+              )}
             </TabsContent>
           </Tabs>
         </div>

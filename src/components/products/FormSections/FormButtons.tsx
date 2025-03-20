@@ -23,7 +23,7 @@ const FormButtons: React.FC<FormButtonsProps> = ({
         disabled={isLoading}
       >
         <Undo className="mr-2 h-4 w-4" />
-        Cancelar
+        Cancel
       </Button>
       
       <Button 
@@ -33,7 +33,7 @@ const FormButtons: React.FC<FormButtonsProps> = ({
         disabled={isLoading}
       >
         <RefreshCw className="mr-2 h-4 w-4" />
-        Limpar Campos
+        Clear Fields
       </Button>
       
       <Button 
@@ -45,7 +45,7 @@ const FormButtons: React.FC<FormButtonsProps> = ({
         ) : (
           <Save className="mr-2 h-4 w-4" />
         )}
-        {isLoading ? 'Salvando...' : 'Salvar Produto'}
+        {isLoading ? 'Saving...' : 'Save Product'}
       </Button>
     </div>
   );

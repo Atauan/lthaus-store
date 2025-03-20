@@ -2,36 +2,25 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Product } from '../useProductTypes';
+import { uploadProductImage } from './useImageUpload';
 
 export function useUpdateProduct() {
   const updateProduct = async (updatedProduct: Product, imageFile?: File) => {
     try {
       let imageUrl = updatedProduct.image_url || updatedProduct.image;
       
-      // Se tiver arquivo de imagem, enviar para o Storage primeiro
+      // If there's an image file, upload it to Storage first
       if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = `products/${fileName}`;
+        toast.loading('Uploading product image...');
         
-        // Enviar a imagem para o Storage
-        const { data: uploadData, error: uploadError } = await supabase
-          .storage
-          .from('products')
-          .upload(filePath, imageFile);
-          
-        if (uploadError) {
-          console.error('Erro ao fazer upload da imagem:', uploadError);
-          toast.error(`Erro ao fazer upload da imagem: ${uploadError.message}`);
-        } else if (uploadData) {
-          // Obter URL pública
-          const { data: { publicUrl } } = supabase
-            .storage
-            .from('products')
-            .getPublicUrl(filePath);
-            
-          imageUrl = publicUrl;
+        imageUrl = await uploadProductImage(imageFile);
+        
+        if (!imageUrl) {
+          toast.error('Failed to upload image');
+          return { success: false, error: new Error('Failed to upload image') };
         }
+        
+        toast.dismiss();
       }
       
       // Create a clean product object for the database update
@@ -46,19 +35,24 @@ export function useUpdateProduct() {
         delete (productData as any).file;
       }
       
+      toast.loading('Updating product...');
+      
       const { error } = await supabase
         .from('products')
         .update(productData)
         .eq('id', updatedProduct.id);
         
+      toast.dismiss();
+      
       if (error) {
         throw error;
       }
       
-      toast.success(`Produto "${updatedProduct.name}" atualizado com sucesso!`);
+      toast.success(`Product "${updatedProduct.name}" updated successfully!`);
       return { success: true, data: productData as Product };
     } catch (error: any) {
-      toast.error(`Erro ao atualizar produto: ${error.message}`);
+      toast.dismiss();
+      toast.error(`Error updating product: ${error.message}`);
       return { success: false, error };
     }
   };

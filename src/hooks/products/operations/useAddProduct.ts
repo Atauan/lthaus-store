@@ -2,61 +2,55 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Product } from '../useProductTypes';
+import { uploadProductImage } from './useImageUpload';
 
 export function useAddProduct() {
   const addProduct = async (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>, imageFile?: File) => {
     try {
       let imageUrl = product.image;
       
-      // Se tiver arquivo de imagem, enviar para o Storage primeiro
+      // If there's an image file, upload it to Storage first
       if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = `products/${fileName}`;
+        toast.loading('Uploading product image...');
         
-        // Enviar a imagem para o Storage
-        const { data: uploadData, error: uploadError } = await supabase
-          .storage
-          .from('products')
-          .upload(filePath, imageFile);
-          
-        if (uploadError) {
-          console.error('Erro ao fazer upload da imagem:', uploadError);
-          toast.error(`Erro ao fazer upload da imagem: ${uploadError.message}`);
-        } else if (uploadData) {
-          // Obter URL pública
-          const { data: { publicUrl } } = supabase
-            .storage
-            .from('products')
-            .getPublicUrl(filePath);
-            
-          imageUrl = publicUrl;
+        imageUrl = await uploadProductImage(imageFile);
+        
+        if (!imageUrl) {
+          toast.error('Failed to upload image');
+          return { success: false, error: new Error('Failed to upload image') };
         }
+        
+        toast.dismiss();
       }
       
-      // Inserir o produto com a URL da imagem (se existir)
+      // Insert the product with the image URL (if it exists)
       const productData = {
         ...product,
         image_url: imageUrl
       };
+      
+      toast.loading('Adding product...');
       
       const { data, error } = await supabase
         .from('products')
         .insert(productData)
         .select();
         
+      toast.dismiss();
+      
       if (error) {
         throw error;
       }
       
       if (data && data.length > 0) {
-        toast.success(`Produto "${product.name}" adicionado com sucesso!`);
+        toast.success(`Product "${product.name}" added successfully!`);
         return { success: true, data: data[0] as Product };
       }
       
-      return { success: false, error: new Error('Falha ao adicionar produto') };
+      return { success: false, error: new Error('Failed to add product') };
     } catch (error: any) {
-      toast.error(`Erro ao adicionar produto: ${error.message}`);
+      toast.dismiss();
+      toast.error(`Error adding product: ${error.message}`);
       return { success: false, error };
     }
   };
