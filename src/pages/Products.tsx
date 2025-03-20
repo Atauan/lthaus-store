@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageTransition from '@/components/layout/PageTransition';
@@ -38,10 +37,8 @@ const Products = () => {
   const [editValue, setEditValue] = useState<string>('');
   const [recentCostChanges, setRecentCostChanges] = useState<any[]>([]);
 
-  // Fetch recent cost changes
   useEffect(() => {
     fetchCostChangeLogs().then(logs => {
-      // Get the 5 most recent cost changes
       const recentChanges = logs.slice(0, 5);
       setRecentCostChanges(recentChanges);
     });
@@ -62,7 +59,6 @@ const Products = () => {
     } else if (type === 'cost') {
       setEditValue((product.cost || 0).toString());
     } else if (type === 'profit') {
-      // Calculate profit percentage if cost exists
       if (product.cost) {
         const profitMargin = ((product.price - product.cost) / product.cost) * 100;
         setEditValue(profitMargin.toFixed(2));
@@ -108,11 +104,9 @@ const Products = () => {
           toast.error("O custo deve ser um valor positivo");
           return;
         }
-        // Use a função específica para atualizar o custo
         updateCost(selectedProduct.id, numericValue);
         setEditDialogOpen(false);
         
-        // Atualizar lista de alterações de custo
         setTimeout(() => {
           fetchCostChangeLogs().then(logs => {
             const recentChanges = logs.slice(0, 5);
@@ -128,18 +122,15 @@ const Products = () => {
           return;
         }
         
-        // Calculate new price based on cost and profit margin
         const newPrice = selectedProduct.cost * (1 + numericValue / 100);
         updatedProduct.price = newPrice;
         toast.success(`Margem de lucro do produto "${selectedProduct.name}" definida para ${numericValue}%`);
       }
       
-      // Update the product in our state and database
       updateProduct(updatedProduct);
       
       setEditDialogOpen(false);
       
-      // If cost change, refresh cost changes
       if (editType === 'cost' || editType === 'profit' || (editType === 'price' && selectedProduct.cost)) {
         setTimeout(() => {
           fetchCostChangeLogs().then(logs => {
@@ -153,19 +144,15 @@ const Products = () => {
     }
   };
 
-  // Função para salvar a edição completa do produto
   const handleFullEditSave = async (updatedProduct: Product) => {
     try {
-      // Check if there's a file to upload 
       let imageFile = (updatedProduct as any).file;
       
-      // Update the product in our state and database
       const result = await updateProduct(updatedProduct, imageFile);
       
       if (result.success) {
         toast.success(`Produto "${updatedProduct.name}" atualizado com sucesso!`);
         
-        // If there was a cost change, refresh cost changes
         if (selectedProduct && selectedProduct.cost !== updatedProduct.cost) {
           setTimeout(() => {
             fetchCostChangeLogs().then(logs => {
