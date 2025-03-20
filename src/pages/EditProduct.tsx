@@ -22,6 +22,11 @@ const EditProduct = () => {
     }
   }, [products, productId]);
 
+  // Handle going back to products page
+  const handleBackToProducts = () => {
+    navigate('/products');
+  };
+
   if (loading && products.length === 0) {
     return (
       <PageTransition>
@@ -45,7 +50,7 @@ const EditProduct = () => {
               <p className="text-muted-foreground mt-1">O produto que você está tentando editar não existe</p>
             </div>
             <button 
-              onClick={() => navigate('/products')}
+              onClick={handleBackToProducts}
               className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
             >
               Voltar para lista de produtos
