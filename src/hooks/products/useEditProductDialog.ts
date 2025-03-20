@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Product } from '@/hooks/useProducts';
+import { Product } from '@/hooks/products/useProductTypes';
 
 export function useEditProductDialog(
   selectedProduct: Product | null,
@@ -36,7 +36,18 @@ export function useEditProductDialog(
   const handleFullSave = () => {
     if (fullEditProduct && onFullSave) {
       setLocalIsTransitioning(true);
-      onFullSave(fullEditProduct);
+      
+      // Create a copy without the file property before saving
+      // as it might not be needed in the API call
+      const productToSave = { ...fullEditProduct };
+      if ('file' in productToSave) {
+        // The file property is only used for UI preview
+        // and should not be part of the saved product
+        const { file, ...rest } = productToSave;
+        onFullSave(rest as Product);
+      } else {
+        onFullSave(productToSave);
+      }
     }
   };
 

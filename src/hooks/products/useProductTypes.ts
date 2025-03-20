@@ -1,4 +1,3 @@
-
 // Types for product-related functionality
 export interface ProductFormValues {
   name: string;
@@ -31,6 +30,7 @@ export interface Product {
   image_url?: string;
   created_at?: string;
   updated_at?: string;
+  file?: File; // Add file property for temporary storage during editing
 }
 
 export interface StockLog {

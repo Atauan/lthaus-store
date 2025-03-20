@@ -35,6 +35,7 @@ const ImageManager: React.FC<ImageManagerProps> = ({ product, onProductChange })
       
       // Update the product with new image URL and file
       onProductChange('image_url', fileUrl);
+      // Now 'file' is a valid key of Product
       onProductChange('file', file);
     }
   };
@@ -48,8 +49,8 @@ const ImageManager: React.FC<ImageManagerProps> = ({ product, onProductChange })
     onProductChange('image_url', url);
     
     // If there was a file, remove it
-    if ('file' in product) {
-      onProductChange('file', null);
+    if (product.file) {
+      onProductChange('file', undefined);
     }
   };
 
@@ -62,8 +63,8 @@ const ImageManager: React.FC<ImageManagerProps> = ({ product, onProductChange })
     onProductChange('image_url', '');
     
     // If there was a file, remove it
-    if ('file' in product) {
-      onProductChange('file', null);
+    if (product.file) {
+      onProductChange('file', undefined);
     }
   };
 
