@@ -1,7 +1,7 @@
-
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface Supplier {
   id: number;
@@ -17,6 +17,7 @@ export function useSuppliers() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [allCategories, setAllCategories] = useState<string[]>([]);
+  const { user } = useAuth();
 
   // Fetch suppliers on component mount
   useEffect(() => {
@@ -71,6 +72,9 @@ export function useSuppliers() {
     }
   ): Promise<{ success: boolean; supplier?: Supplier }> => {
     try {
+      // Use the user's ID from the auth context instead of hardcoding "system"
+      const userId = user?.id || '00000000-0000-0000-0000-000000000000'; // Default UUID if user is not available
+      
       // Insert into database
       const { data, error } = await supabase
         .from('suppliers')
@@ -80,7 +84,7 @@ export function useSuppliers() {
           email: supplierData.email,
           phone: supplierData.phone,
           address: supplierData.address,
-          user_id: 'system', // Since we don't have authentication yet
+          user_id: userId, // Use the actual UUID
           categories: supplierData.categories || []
         }])
         .select()
@@ -98,7 +102,7 @@ export function useSuppliers() {
       toast.error(`Erro ao adicionar fornecedor: ${error.message}`);
       return { success: false };
     }
-  }, []);
+  }, [user]);
 
   // Update an existing supplier
   const updateSupplier = useCallback(async (
