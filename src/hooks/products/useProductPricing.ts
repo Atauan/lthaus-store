@@ -1,7 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { ProductFormValues } from './useProductTypes';
+import { ProductFormValues } from './types';
+import { 
+  calculateSalePrice, 
+  calculateProfit, 
+  calculateMarginPercentage 
+} from './utils/pricingUtils';
 
 export function useProductPricing(form: UseFormReturn<ProductFormValues>) {
   const [profit, setProfit] = useState<number>(0);
@@ -9,20 +14,13 @@ export function useProductPricing(form: UseFormReturn<ProductFormValues>) {
   
   const watchCostPrice = form.watch('costPrice');
   
-  // Calculate sale price based on cost and margin
-  const calculateSalePrice = (cost: number, margin: number) => {
-    if (cost <= 0) return 0;
-    const multiplier = 1 + (margin / 100);
-    const calculatedPrice = cost * multiplier;
-    return parseFloat(calculatedPrice.toFixed(2));
-  };
-
   // Update sale price and profit when cost or margin changes
   useEffect(() => {
     const cost = parseFloat(watchCostPrice.toString()) || 0;
     const calculatedSalePrice = calculateSalePrice(cost, profitMargin);
+    
     form.setValue('salePrice', calculatedSalePrice);
-    setProfit(calculatedSalePrice - cost);
+    setProfit(calculateProfit(calculatedSalePrice, cost));
   }, [watchCostPrice, profitMargin, form]);
 
   // Set initial profit margin (used when editing a product)
@@ -33,10 +31,12 @@ export function useProductPricing(form: UseFormReturn<ProductFormValues>) {
   // Handle margin slider change
   const handleMarginChange = (newMargin: number) => {
     setProfitMargin(newMargin);
+    
     const cost = parseFloat(watchCostPrice.toString()) || 0;
     const calculatedSalePrice = calculateSalePrice(cost, newMargin);
+    
     form.setValue('salePrice', calculatedSalePrice);
-    setProfit(calculatedSalePrice - cost);
+    setProfit(calculateProfit(calculatedSalePrice, cost));
   };
 
   // Handle sale price direct input
@@ -45,12 +45,12 @@ export function useProductPricing(form: UseFormReturn<ProductFormValues>) {
     const cost = parseFloat(watchCostPrice.toString()) || 0;
     
     if (cost > 0 && salePrice > cost) {
-      const newProfit = salePrice - cost;
+      const newProfit = calculateProfit(salePrice, cost);
       setProfit(newProfit);
       
       // Calculate and update margin based on new sale price
-      const newMargin = ((salePrice - cost) / cost) * 100;
-      setProfitMargin(parseFloat(newMargin.toFixed(0)));
+      const newMargin = calculateMarginPercentage(salePrice, cost);
+      setProfitMargin(newMargin);
     }
     
     form.setValue('salePrice', salePrice);

@@ -5,6 +5,7 @@ import { Product } from '@/hooks/products/useProductTypes';
 import { ProductFormValues } from '@/hooks/products/types';
 import { useProductForm } from '@/hooks/useProductForm';
 import { Supplier } from '@/hooks/products/useSuppliers';
+import { useNavigate } from 'react-router-dom';
 
 // Define context type
 type ProductFormContextType = {
@@ -40,6 +41,8 @@ type ProductFormContextType = {
   brands: string[];
   suppliers: Supplier[];
   isEditing: boolean;
+  navigate: ReturnType<typeof useNavigate>;
+  product?: Product;
 };
 
 // Create context with a default undefined value
@@ -63,7 +66,7 @@ export const ProductFormProvider: React.FC<ProductFormProviderProps> = ({
   
   // Provide the form context to all children
   return (
-    <ProductFormContext.Provider value={{ ...formProps, isEditing }}>
+    <ProductFormContext.Provider value={{ ...formProps, isEditing, product }}>
       {children}
     </ProductFormContext.Provider>
   );

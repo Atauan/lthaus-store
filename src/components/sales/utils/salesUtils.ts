@@ -1,5 +1,6 @@
 
 import { SaleItem } from '../types/salesTypes';
+import { calculateProfit as calculateItemProfit } from '@/hooks/products/utils/pricingUtils';
 
 export function generateSaleNumber() {
   return Math.floor(10000 + Math.random() * 90000);
@@ -12,7 +13,7 @@ export function calculateSubtotal(items: SaleItem[]) {
 export function calculateProfit(items: SaleItem[]) {
   return items.reduce((sum, item) => {
     const itemCost = item.cost || 0;
-    return sum + ((item.price - itemCost) * item.quantity);
+    return sum + calculateItemProfit(item.price, itemCost) * item.quantity;
   }, 0);
 }
 

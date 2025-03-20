@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Product } from '../useProductTypes';
+import { formatCurrency } from '../utils/pricingUtils';
 
 export function useCostOperations() {
   // Update product cost
@@ -22,7 +23,7 @@ export function useCostOperations() {
         throw error;
       }
       
-      toast.success(`Custo do produto "${product.name}" atualizado para R$ ${newCost.toFixed(2)}.`);
+      toast.success(`Custo do produto "${product.name}" atualizado para ${formatCurrency(newCost)}.`);
       
       // Cost change log will be created automatically by the database trigger
       return { success: true, data: { ...product, cost: newCost } };
