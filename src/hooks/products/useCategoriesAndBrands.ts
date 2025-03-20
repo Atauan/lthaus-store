@@ -77,6 +77,29 @@ export function useCategoriesAndBrands() {
     }
   }, [categories]);
 
+  // Delete a category from the database
+  const deleteCategory = useCallback(async (name: string): Promise<boolean> => {
+    try {
+      // Delete from database
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('name', name);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Update local state
+      setCategories(prev => prev.filter(category => category !== name));
+      return true;
+    } catch (error: any) {
+      console.error('Error deleting category:', error.message);
+      toast.error(`Erro ao excluir categoria: ${error.message}`);
+      return false;
+    }
+  }, []);
+
   // Add a new brand to the database
   const addBrand = useCallback(async (name: string): Promise<boolean> => {
     try {
@@ -113,6 +136,7 @@ export function useCategoriesAndBrands() {
     brands,
     loading,
     addCategory,
+    deleteCategory,
     addBrand
   };
 }

@@ -35,7 +35,7 @@ const NewCategoryDialog: React.FC<NewCategoryDialogProps> = ({
   const [newCategory, setNewCategory] = useState('');
   const [categoryToDelete, setCategoryToDelete] = useState('');
   const [error, setError] = useState('');
-  const { categories } = useCategoriesAndBrands();
+  const { categories, deleteCategory } = useCategoriesAndBrands();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,10 +57,11 @@ const NewCategoryDialog: React.FC<NewCategoryDialogProps> = ({
     }
 
     try {
-      // Aqui você poderia adicionar a lógica real para excluir a categoria do banco de dados
-      // Por enquanto, apenas mostraremos uma mensagem de sucesso
-      toast.success(`Categoria "${categoryToDelete}" excluída com sucesso!`);
-      setCategoryToDelete('');
+      const success = await deleteCategory(categoryToDelete);
+      if (success) {
+        toast.success(`Categoria "${categoryToDelete}" excluída com sucesso!`);
+        setCategoryToDelete('');
+      }
     } catch (error) {
       toast.error('Erro ao excluir categoria');
     }
