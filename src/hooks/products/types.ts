@@ -7,6 +7,7 @@ export interface ProductFormValues {
   category: string;
   brand: string;
   stock: number;
+  minStock: number; // Added minimum stock field
   supplier?: string;
   productType: 'internal' | 'external';
   image?: File;
@@ -26,10 +27,12 @@ export interface Product {
   price: number;
   cost?: number;
   stock: number;
+  min_stock: number; // Database field name
   image?: string;
   image_url?: string;
   created_at?: string;
   updated_at?: string;
+  file?: File; // Add file property for temporary storage during editing
 }
 
 export interface StockLog {

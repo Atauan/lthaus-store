@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Product } from '../useProductTypes';
+import { Product } from './useProductTypes';
 
 export function useStockOperations() {
   // Update stock manually
@@ -43,7 +43,7 @@ export function useStockOperations() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .lte('stock', supabase.raw('min_stock'))  // Using raw SQL to compare columns
+        .lt('stock', supabase.sql`min_stock`)  // Using SQL tag for column comparison
         .order('stock', { ascending: true });
       
       if (error) {

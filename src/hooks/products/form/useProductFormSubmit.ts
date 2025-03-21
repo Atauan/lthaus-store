@@ -1,9 +1,9 @@
+
 import { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { ProductFormValues } from '../types';
-import { Product } from '../useProductTypes';
+import { ProductFormValues, Product } from '../useProductTypes';
 
 type ProductOperations = {
   addProduct: (product: any, imageFile?: File) => Promise<any>;
@@ -35,7 +35,8 @@ export function useProductFormSubmit(
         brand: data.brand,
         price: data.salePrice,
         cost: data.costPrice > 0 ? data.costPrice : null,
-        stock: data.stock
+        stock: data.stock,
+        min_stock: data.minStock // Include min_stock field
       };
       
       // Get the image file from the first selected image if available

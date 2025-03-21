@@ -93,6 +93,7 @@ export type Database = {
           id: number
           image: string | null
           image_url: string | null
+          min_stock: number
           name: string
           price: number
           stock: number
@@ -107,6 +108,7 @@ export type Database = {
           id?: number
           image?: string | null
           image_url?: string | null
+          min_stock?: number
           name: string
           price: number
           stock?: number
@@ -121,6 +123,7 @@ export type Database = {
           id?: number
           image?: string | null
           image_url?: string | null
+          min_stock?: number
           name?: string
           price?: number
           stock?: number
