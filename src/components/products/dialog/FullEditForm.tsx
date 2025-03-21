@@ -123,16 +123,33 @@ const FullEditForm: React.FC<FullEditFormProps> = ({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="stock">Estoque</Label>
-            <Input
-              id="stock"
-              type="number"
-              step="1"
-              min="0"
-              value={product.stock}
-              onChange={(e) => onProductChange('stock', parseInt(e.target.value) || 0)}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="stock">Estoque</Label>
+              <Input
+                id="stock"
+                type="number"
+                step="1"
+                min="0"
+                value={product.stock}
+                onChange={(e) => onProductChange('stock', parseInt(e.target.value) || 0)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="min_stock">Estoque Mínimo</Label>
+              <Input
+                id="min_stock"
+                type="number"
+                step="1"
+                min="1"
+                value={product.min_stock || 5}
+                onChange={(e) => onProductChange('min_stock', parseInt(e.target.value) || 5)}
+              />
+              <div className="text-xs text-muted-foreground">
+                Você receberá alertas quando o estoque estiver abaixo deste valor
+              </div>
+            </div>
           </div>
 
           <ImageManager

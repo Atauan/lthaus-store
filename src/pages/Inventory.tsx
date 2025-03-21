@@ -16,13 +16,15 @@ import {
   History,
   ShoppingCart, 
   TrendingUp,
-  PlusCircle 
+  PlusCircle,
+  AlertTriangle
 } from 'lucide-react';
 import { useProducts, StockLog, CostChangeLog } from '@/hooks/useProducts';
 import InventoryStockTable from '@/components/inventory/InventoryStockTable';
 import InventoryCostTable from '@/components/inventory/InventoryCostTable';
 import InventoryStatistics from '@/components/inventory/InventoryStatistics';
 import StockUpdateDialog from '@/components/inventory/StockUpdateDialog';
+import LowStockAlert from '@/components/inventory/LowStockAlert';
 
 const Inventory = () => {
   const navigate = useNavigate();
@@ -42,6 +44,8 @@ const Inventory = () => {
   const [filteredCostLogs, setFilteredCostLogs] = useState<CostChangeLog[]>([]);
   const [isStockUpdateDialogOpen, setIsStockUpdateDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
+  const [lowStockProducts, setLowStockProducts] = useState([]);
+  const [isLowStockTabActive, setIsLowStockTabActive] = useState(false);
   
   // Fetch logs when component mounts
   useEffect(() => {
@@ -78,12 +82,27 @@ const Inventory = () => {
     setFilteredCostLogs(filtered);
   }, [costChangeLogs, costSearchQuery]);
   
+  // Get low stock products
+  useEffect(() => {
+    const getLowStockProducts = () => {
+      // Get products where stock is at or below min_stock
+      const lowStock = products.filter(product => 
+        product.stock <= (product.min_stock || 5)
+      );
+      setLowStockProducts(lowStock);
+    };
+    
+    if (products.length > 0) {
+      getLowStockProducts();
+    }
+  }, [products]);
+  
   // Calculate totals for statistics
   const totalProducts = products.length;
   const totalStockValue = products.reduce((sum, product) => 
     sum + (product.stock * (product.cost || 0)), 0);
   const totalStockCount = products.reduce((sum, product) => sum + product.stock, 0);
-  const lowStockProducts = products.filter(product => product.stock < 5).length;
+  const lowStockCount = lowStockProducts.length;
   
   // Open stock update dialog for a product
   const handleOpenStockUpdate = (productId: number) => {
@@ -100,6 +119,12 @@ const Inventory = () => {
       await fetchStockLogs();
       setIsStockUpdateDialogOpen(false);
     }
+  };
+  
+  // Handle view all low stock products
+  const handleViewLowStock = () => {
+    // Switch to Analysis tab and set filter for low stock
+    setIsLowStockTabActive(true);
   };
 
   return (
@@ -129,14 +154,20 @@ const Inventory = () => {
             </div>
           </div>
           
+          {/* Low Stock Alert */}
+          <LowStockAlert 
+            lowStockProducts={lowStockProducts} 
+            onViewAll={handleViewLowStock} 
+          />
+          
           <InventoryStatistics 
             totalProducts={totalProducts}
             totalStockValue={totalStockValue}
             totalStockCount={totalStockCount}
-            lowStockProducts={lowStockProducts}
+            lowStockProducts={lowStockCount}
           />
           
-          <Tabs defaultValue="stock" className="mt-6">
+          <Tabs defaultValue="stock" className="mt-6" value={isLowStockTabActive ? "analysis" : undefined} onValueChange={(val) => setIsLowStockTabActive(val === "analysis")}>
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="stock">
                 <ArrowUpDown className="mr-2 h-4 w-4" />
@@ -148,6 +179,11 @@ const Inventory = () => {
               </TabsTrigger>
               <TabsTrigger value="analysis">
                 <BarChart3 className="mr-2 h-4 w-4" />
+                {lowStockCount > 0 && (
+                  <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-xs font-semibold text-white bg-red-500 rounded-full">
+                    {lowStockCount}
+                  </span>
+                )}
                 Análise de Produtos
               </TabsTrigger>
             </TabsList>
@@ -198,6 +234,42 @@ const Inventory = () => {
             
             <TabsContent value="analysis" className="mt-4">
               <Card className="p-6">
+                {isLowStockTabActive && lowStockProducts.length > 0 && (
+                  <div className="mb-6">
+                    <div className="flex items-center mb-4">
+                      <AlertTriangle className="h-5 w-5 text-destructive mr-2" />
+                      <h3 className="text-lg font-medium">Produtos com Estoque Baixo</h3>
+                    </div>
+                    
+                    <div className="bg-destructive/10 rounded-lg p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {lowStockProducts.map(product => (
+                          <div key={product.id} className="bg-background rounded-md p-3 shadow-sm">
+                            <h4 className="font-medium">{product.name}</h4>
+                            <div className="text-sm mt-1">
+                              <span className="text-muted-foreground">Categoria: </span> 
+                              {product.category}
+                            </div>
+                            <div className="flex items-center justify-between mt-2">
+                              <div>
+                                <span className="text-destructive font-medium">{product.stock}</span>
+                                <span className="text-sm text-muted-foreground"> / {product.min_stock || 5} mínimo</span>
+                              </div>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => handleOpenStockUpdate(product.id)}
+                              >
+                                Atualizar
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div className="flex items-center p-4 bg-muted/30 rounded-lg">
                     <ShoppingCart className="h-10 w-10 text-primary mr-4" />
@@ -230,11 +302,13 @@ const Inventory = () => {
                   </div>
                 </div>
                 
-                <div className="mt-6 text-center p-8 bg-muted/20 rounded-lg">
-                  <p className="text-muted-foreground">
-                    Análises detalhadas serão implementadas em breve.
-                  </p>
-                </div>
+                {!isLowStockTabActive && (
+                  <div className="mt-6 text-center p-8 bg-muted/20 rounded-lg">
+                    <p className="text-muted-foreground">
+                      Análises detalhadas serão implementadas em breve.
+                    </p>
+                  </div>
+                )}
               </Card>
             </TabsContent>
           </Tabs>

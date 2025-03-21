@@ -1,3 +1,4 @@
+
 // Types for product-related functionality
 export interface ProductFormValues {
   name: string;
@@ -7,6 +8,7 @@ export interface ProductFormValues {
   category: string;
   brand: string;
   stock: number;
+  minStock: number; // Added minimum stock field
   supplier?: string;
   productType: 'internal' | 'external';
   image?: File;
@@ -26,6 +28,7 @@ export interface Product {
   price: number;
   cost?: number;
   stock: number;
+  min_stock: number; // Database field name
   image?: string;
   image_url?: string;
   created_at?: string;

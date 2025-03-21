@@ -23,7 +23,7 @@ export function useAddProduct() {
         toast.dismiss();
       }
       
-      // Insert the product with the image URL (if it exists)
+      // Convert minStock to min_stock if it exists
       const productData = {
         ...product,
         image_url: imageUrl

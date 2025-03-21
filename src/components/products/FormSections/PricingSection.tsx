@@ -115,7 +115,7 @@ const PricingSection: React.FC = () => {
               name="stock"
               rules={{ 
                 required: "Quantidade em estoque é obrigatória",
-                min: { value: 1, message: "Estoque deve ser no mínimo 1" }
+                min: { value: 0, message: "Estoque não pode ser negativo" }
               }}
               render={({ field }) => (
                 <FormItem>
@@ -123,15 +123,45 @@ const PricingSection: React.FC = () => {
                   <FormControl>
                     <Input 
                       type="number" 
-                      min="1" 
+                      min="0" 
                       step="1"
                       {...field}
                       onChange={(e) => {
-                        field.onChange(parseInt(e.target.value) || 1);
+                        field.onChange(parseInt(e.target.value) || 0);
                       }}
                     />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="minStock"
+              rules={{ 
+                required: "Estoque mínimo é obrigatório",
+                min: { value: 1, message: "Estoque mínimo deve ser pelo menos 1" }
+              }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estoque Mínimo para Alerta</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min="1" 
+                      step="1"
+                      placeholder="5"
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(parseInt(e.target.value) || 5);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Você receberá alertas quando o estoque atingir ou ficar abaixo deste valor
+                  </p>
                 </FormItem>
               )}
             />
