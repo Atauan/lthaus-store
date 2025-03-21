@@ -1,137 +1,208 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { 
-  Package, 
-  BarChart3, 
-  ShoppingBag, 
-  Truck, 
-  Menu, 
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import {
+  BookOpen,
+  ChevronDown,
+  Home,
+  LogOut,
+  Package,
+  Search,
+  Truck,
+  UserCircle,
+  Users,
   X,
-  Home
+  Menu,
+  Store,
+  BarChart2,
+  Settings,
+  ShoppingCart
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
-interface NavbarProps {
-  storeName?: string;
-}
-
-interface NavItemProps {
-  to: string;
-  icon: React.ReactNode;
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-}
-
-const NavItem = ({ to, icon, label, isActive, onClick }: NavItemProps) => (
-  <Link
-    to={to}
-    className={cn(
-      "flex items-center gap-3 px-4 py-3 rounded-lg text-base transition-all duration-200",
-      "hover:bg-primary/5 hover:text-primary",
-      isActive ? "bg-primary/10 text-primary font-medium" : "text-foreground/80"
-    )}
-    onClick={onClick}
-  >
-    <div className={cn(
-      "w-9 h-9 flex items-center justify-center rounded-full",
-      isActive ? "bg-primary text-white" : "bg-muted"
-    )}>
-      {icon}
-    </div>
-    <span>{label}</span>
-  </Link>
-);
-
-const Navbar = ({ storeName = "Accessory Stock" }: NavbarProps) => {
+export default function Navbar() {
+  const { user, signOut } = useAuth();
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
 
-  useEffect(() => {
-    // Close mobile menu when route changes
-    setIsOpen(false);
-  }, [location.pathname]);
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    const parts = name.split(' ');
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (
+      parts[0].charAt(0).toUpperCase() + parts[parts.length - 1].charAt(0).toUpperCase()
+    );
+  };
 
-  const navItems = [
-    { path: '/', icon: <Home size={18} />, label: 'Dashboard' },
-    { path: '/products', icon: <Package size={18} />, label: 'Produtos' },
-    { path: '/inventory', icon: <ShoppingBag size={18} />, label: 'Estoque' },
-    { path: '/sales', icon: <BarChart3 size={18} />, label: 'Vendas' },
-    { path: '/suppliers', icon: <Truck size={18} />, label: 'Fornecedores' },
+  const isActive = (path: string) => location.pathname === path;
+
+  const navLinks = [
+    { path: '/', icon: <Home className="h-5 w-5" />, label: 'Dashboard' },
+    { path: '/products', icon: <Package className="h-5 w-5" />, label: 'Produtos' },
+    { path: '/inventory', icon: <BarChart2 className="h-5 w-5" />, label: 'Estoque' },
+    { path: '/sales', icon: <ShoppingCart className="h-5 w-5" />, label: 'Vendas' },
+    { path: '/sales/new', icon: <Store className="h-5 w-5" />, label: 'Nova Venda' },
+    { path: '/suppliers', icon: <Truck className="h-5 w-5" />, label: 'Fornecedores' },
+    // { path: '/users', icon: <Users className="h-5 w-5" />, label: 'Usuários' },
+    { path: '/settings', icon: <Settings className="h-5 w-5" />, label: 'Configurações' },
   ];
 
-  if (!mounted) return null;
+  const NavLink = ({ path, icon, label, isMobile = false }: { path: string; icon: React.ReactNode; label: string; isMobile?: boolean }) => (
+    <Link
+      to={path}
+      className={`
+        flex items-center gap-3 px-3 py-2 rounded-md transition-colors
+        ${isActive(path)
+          ? 'bg-primary text-white'
+          : 'hover:bg-gray-100 text-gray-700'
+        }
+        ${isMobile ? 'text-base py-3' : ''}
+      `}
+    >
+      {icon}
+      <span>{label}</span>
+    </Link>
+  );
 
   return (
     <>
-      {/* Mobile menu toggle */}
-      <button 
-        className="fixed top-4 right-4 z-50 p-2 rounded-full bg-background shadow-soft lg:hidden" 
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+      {/* Top Nav Bar - fixed at top */}
+      <nav className="fixed top-0 left-0 right-0 h-16 bg-white border-b z-50 px-4">
+        <div className="flex items-center justify-between h-full">
+          <div className="flex items-center gap-4">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden"
+                  aria-label="Menu"
+                >
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 p-0">
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle>Menu</SheetTitle>
+                </SheetHeader>
+                <div className="p-4 space-y-1">
+                  {navLinks.map((link) => (
+                    <NavLink
+                      key={link.path}
+                      path={link.path}
+                      icon={link.icon}
+                      label={link.label}
+                      isMobile={true}
+                    />
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
 
-      {/* Mobile navigation */}
-      <div className={cn(
-        "fixed inset-0 z-40 glass-effect lg:hidden",
-        "transition-all duration-300 ease-in-out",
-        isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-      )}>
-        <div className="pt-16 px-6 h-full overflow-auto">
-          <div className="mb-8">
-            <h1 className="text-2xl font-semibold">{storeName}</h1>
-            <p className="text-muted-foreground">Gestão de loja</p>
+            <Link to="/" className="flex items-center gap-2">
+              <span className="font-bold text-xl hidden sm:inline">
+                Lthaus Imports
+              </span>
+            </Link>
           </div>
-          <nav className="flex flex-col gap-2">
-            {navItems.map((item) => (
-              <NavItem
-                key={item.path}
-                to={item.path}
-                icon={item.icon}
-                label={item.label}
-                isActive={location.pathname === item.path}
-                onClick={() => setIsOpen(false)}
-              />
-            ))}
-          </nav>
-        </div>
-      </div>
 
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:bg-white lg:border-r lg:shadow-soft z-20">
-        <div className="p-6">
-          <h1 className="text-2xl font-semibold text-center">{storeName}</h1>
-          <p className="text-muted-foreground text-center">Gestão de loja</p>
-        </div>
-        <div className="flex-1 px-4">
-          <nav className="flex flex-col gap-2">
-            {navItems.map((item) => (
-              <NavItem
-                key={item.path}
-                to={item.path}
-                icon={item.icon}
-                label={item.label}
-                isActive={location.pathname === item.path}
-                onClick={() => {}}
+          <div className="flex items-center gap-2">
+            <form onSubmit={handleSearch} className="relative hidden md:block">
+              <Input
+                type="text"
+                placeholder="Buscar produtos..."
+                className="w-64 pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-            ))}
-          </nav>
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+            </form>
+
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-10 w-10 rounded-full"
+                  >
+                    <Avatar>
+                      <AvatarFallback>
+                        {getInitials(user.displayName || user.email || 'User')}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="cursor-pointer flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      <span>Configurações</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="cursor-pointer flex items-center gap-2 text-red-600"
+                    onClick={() => signOut()}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Sair</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/login')}
+                className="flex items-center gap-2"
+              >
+                <UserCircle className="h-5 w-5" />
+                <span className="hidden sm:inline">Login</span>
+              </Button>
+            )}
+          </div>
         </div>
-        <div className="p-4 border-t mt-auto">
-          <p className="text-xs text-muted-foreground text-center">
-            Accessory Stock Master v1.0
-          </p>
+      </nav>
+
+      {/* Side Nav - fixed at left */}
+      <aside className="fixed left-0 top-16 bottom-0 w-64 border-r bg-white p-4 hidden lg:block">
+        <div className="space-y-1">
+          {navLinks.map((link) => (
+            <NavLink
+              key={link.path}
+              path={link.path}
+              icon={link.icon}
+              label={link.label}
+            />
+          ))}
         </div>
       </aside>
     </>
   );
-};
-
-export default Navbar;
+}

@@ -43,7 +43,7 @@ export function useStockOperations() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .lt('stock', supabase.sql`min_stock`)  // Using SQL tag for column comparison
+        .lt('stock', supabase.rpc('min_stock'))  // Fixed: Using rpc instead of sql
         .order('stock', { ascending: true });
       
       if (error) {

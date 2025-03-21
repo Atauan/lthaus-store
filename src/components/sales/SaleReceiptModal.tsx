@@ -20,8 +20,11 @@ import {
   FileText,
   CreditCard,
   Banknote,
-  Loader2
+  Loader2,
+  MapPin,
+  Building
 } from 'lucide-react';
+import { useStoreInfo } from '@/hooks/settings/useStoreInfo';
 
 interface SaleReceiptModalProps {
   isOpen: boolean;
@@ -40,6 +43,8 @@ const SaleReceiptModal: React.FC<SaleReceiptModalProps> = ({
   onFinish,
   savingInProgress = false
 }) => {
+  const { storeInfo } = useStoreInfo();
+  
   if (!saleData) return null;
   
   const formatDate = (dateString: string) => {
@@ -113,15 +118,25 @@ const SaleReceiptModal: React.FC<SaleReceiptModalProps> = ({
       `${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}`
     ).join('\n');
     
+    // Create message with store info
+    const storeName = storeInfo?.name || 'Lthaus Imports';
+    const storeAddress = storeInfo?.address 
+      ? `${storeInfo.address}, ${storeInfo.city} - ${storeInfo.state}`
+      : 'Av. Francisco José da Fonseca, 937, São Conrado, Aracaju - SE';
+    
     const message = encodeURIComponent(
-      `*Comprovante de Compra - Lthaus Imports*\n\n` +
+      `*Comprovante de Compra - ${storeName}*\n\n` +
       `*Venda #${saleData.saleNumber}*\n` +
       `Data: ${formatDate(saleData.date)}\n\n` +
       `*Itens:*\n${items}\n\n` +
       `*Subtotal:* R$ ${saleData.subtotal.toFixed(2)}\n` +
-      `*Desconto:* R$ ${(saleData.subtotal - saleData.finalTotal).toFixed(2)}\n` +
+      (saleData.deliveryFee > 0 ? `*Taxa de Entrega:* R$ ${saleData.deliveryFee.toFixed(2)}\n` : '') +
+      `*Desconto:* R$ ${(saleData.subtotal - saleData.finalTotal + (saleData.deliveryFee || 0)).toFixed(2)}\n` +
       `*Total:* R$ ${saleData.finalTotal.toFixed(2)}\n\n` +
-      `Agradecemos pela preferência!`
+      `${storeAddress}\n` +
+      (storeInfo?.cnpj ? `CNPJ: ${storeInfo.cnpj}\n` : '') +
+      (storeInfo?.phone ? `Tel: ${storeInfo.phone}\n` : '') +
+      `\nAgradecemos pela preferência!`
     );
     
     window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
@@ -136,8 +151,20 @@ const SaleReceiptModal: React.FC<SaleReceiptModalProps> = ({
         
         <div className="py-4 space-y-4">
           <div className="text-center mb-4">
-            <h2 className="font-bold text-xl">Lthaus Imports</h2>
-            <p className="text-muted-foreground text-sm">Comprovante de Venda</p>
+            <h2 className="font-bold text-xl">{storeInfo?.name || 'Lthaus Imports'}</h2>
+            {storeInfo?.cnpj && (
+              <div className="flex justify-center items-center gap-1 text-sm text-muted-foreground">
+                <Building className="h-3 w-3" />
+                <span>CNPJ: {storeInfo.cnpj}</span>
+              </div>
+            )}
+            {storeInfo?.address && (
+              <div className="flex justify-center items-center gap-1 text-xs text-muted-foreground mt-1">
+                <MapPin className="h-3 w-3" />
+                <span>{storeInfo.address}, {storeInfo.city} - {storeInfo.state}</span>
+              </div>
+            )}
+            <p className="text-muted-foreground text-sm mt-2">Comprovante de Venda</p>
           </div>
           
           <div className="border-t border-b py-4 space-y-3">
@@ -149,6 +176,11 @@ const SaleReceiptModal: React.FC<SaleReceiptModalProps> = ({
             <div className="flex justify-between">
               <span className="text-muted-foreground">Data:</span>
               <span>{formatDate(saleData.date)}</span>
+            </div>
+            
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Vendedor:</span>
+              <span>{storeInfo?.defaultSeller || 'Atendente'}</span>
             </div>
             
             <div className="flex justify-between items-center">
@@ -163,6 +195,13 @@ const SaleReceiptModal: React.FC<SaleReceiptModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Cliente:</span>
                 <span>{saleData.customerName}</span>
+              </div>
+            )}
+            
+            {saleData.deliveryAddress && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Endereço:</span>
+                <span className="text-right max-w-[200px]">{saleData.deliveryAddress}</span>
               </div>
             )}
           </div>
@@ -187,10 +226,17 @@ const SaleReceiptModal: React.FC<SaleReceiptModalProps> = ({
               <span>R$ {saleData.subtotal.toFixed(2)}</span>
             </div>
             
-            {(saleData.subtotal - saleData.finalTotal) > 0 && (
+            {saleData.deliveryFee > 0 && (
+              <div className="flex justify-between">
+                <span>Taxa de Entrega:</span>
+                <span>R$ {saleData.deliveryFee.toFixed(2)}</span>
+              </div>
+            )}
+            
+            {(saleData.subtotal - saleData.finalTotal + (saleData.deliveryFee || 0)) > 0 && (
               <div className="flex justify-between">
                 <span>Desconto:</span>
-                <span>R$ {(saleData.subtotal - saleData.finalTotal).toFixed(2)}</span>
+                <span>R$ {(saleData.subtotal - saleData.finalTotal + (saleData.deliveryFee || 0)).toFixed(2)}</span>
               </div>
             )}
             

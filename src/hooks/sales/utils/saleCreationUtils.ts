@@ -16,6 +16,7 @@ export async function createSale(
       throw new Error('Usuário não autenticado');
     }
 
+    // Start a transaction by using single batch
     const { data: saleData, error: saleError } = await supabase
       .from('sales')
       .insert([{
@@ -29,21 +30,24 @@ export async function createSale(
     
     const saleId = saleData.id;
     
-    // Mapear os itens para o formato esperado pela tabela sale_items
+    // Format items for database insertion
     const formattedItems = items.map(item => ({
       sale_id: saleId,
-      product_id: item.product_id || 0, // Fornecer um valor padrão para product_id
+      product_id: item.product_id || 0,
       quantity: item.quantity,
       price: item.price,
-      cost: item.cost
+      cost: item.cost,
+      name: item.name
     }));
     
+    // Insert sale items
     const { error: itemsError } = await supabase
       .from('sale_items')
       .insert(formattedItems);
       
     if (itemsError) throw itemsError;
     
+    // Insert payment methods
     const { error: paymentsError } = await supabase
       .from('sale_payments')
       .insert(
@@ -55,27 +59,53 @@ export async function createSale(
       
     if (paymentsError) throw paymentsError;
     
-    // Update product stock if needed
+    // Update product stock for each item
+    const lowStockProducts = [];
+    
     for (const item of items) {
       if (item.type === 'product' && item.product_id) {
+        // Get current product data
         const { data: productData, error: productError } = await supabase
           .from('products')
-          .select('stock')
+          .select('stock, min_stock, name')
           .eq('id', item.product_id)
           .single();
           
         if (productError) throw productError;
         
+        // Calculate new stock
         const currentStock = productData.stock;
         const newStock = Math.max(0, currentStock - item.quantity);
+        const minStock = productData.min_stock || 5;
         
+        // Update product stock
         const { error: updateError } = await supabase
           .from('products')
           .update({ stock: newStock })
           .eq('id', item.product_id);
           
         if (updateError) throw updateError;
+        
+        // Check if product is now below min_stock
+        if (newStock <= minStock) {
+          lowStockProducts.push({
+            id: item.product_id,
+            name: productData.name,
+            stock: newStock,
+            min_stock: minStock
+          });
+        }
       }
+    }
+    
+    // Show low stock warnings if needed
+    if (lowStockProducts.length > 0) {
+      lowStockProducts.forEach(product => {
+        toast.warning(
+          `Estoque baixo: ${product.name} (${product.stock}/${product.min_stock})`,
+          { duration: 5000 }
+        );
+      });
     }
     
     // Get the complete sale details for returning
@@ -98,7 +128,8 @@ export async function createSale(
       data: {
         sale: saleData,
         items: saleItemsData || [],
-        payments: salePaymentsData || []
+        payments: salePaymentsData || [],
+        lowStockProducts: lowStockProducts.length > 0 ? lowStockProducts : null
       }
     };
   } catch (error: any) {
