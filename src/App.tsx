@@ -7,7 +7,7 @@ import { Toaster as SonnerToaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
 
 // Import your page components
-import Index from './pages/Index';
+import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import Products from './pages/Products';
 import AddProduct from './pages/AddProduct';
@@ -39,7 +39,7 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/add" element={<AddProduct />} />
             <Route path="/products/edit/:id" element={<EditProduct />} />

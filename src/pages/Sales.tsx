@@ -1,9 +1,8 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Plus, Search, Filter } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PageTransition from '@/components/layout/PageTransition';
@@ -51,6 +50,15 @@ export default function Sales() {
     periodSales,
     isLoadingStatistics 
   } = useSalesStatistics(sales);
+
+  // Count total number of products sold
+  const totalProductsSold = periodSales.reduce((total, sale) => {
+    // If sale has items array, sum quantities, otherwise assume 1 item per sale
+    if (sale.items && Array.isArray(sale.items)) {
+      return total + sale.items.reduce((itemsTotal, item) => itemsTotal + (item.quantity || 1), 0);
+    }
+    return total + 1;
+  }, 0);
 
   // Pagination
   const totalPages = Math.ceil(filteredSales.length / pageSize);
@@ -108,8 +116,9 @@ export default function Sales() {
 
             <TabsContent value="vendas" className="space-y-6">
               <SalesStatistics 
-                salesStatistics={salesStatistics}
-                periodSales={periodSales}
+                totalSales={salesStatistics.totalSales}
+                productsSold={totalProductsSold}
+                totalRevenue={salesStatistics.totalRevenue}
                 isLoading={isLoadingStatistics}
               />
               
@@ -154,7 +163,7 @@ export default function Sales() {
             </TabsContent>
 
             <TabsContent value="relatorios">
-              <SalesReportsTab salesData={sales} />
+              <SalesReportsTab />
             </TabsContent>
           </Tabs>
 

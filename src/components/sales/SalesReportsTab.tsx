@@ -1,19 +1,74 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BarChart, PieChart, LineChart } from '@/components/ui/chart';
+import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs';
+import { useSalesData } from '@/hooks/sales/useSalesData';
 
-const SalesReportsTab: React.FC = () => {
+const SalesReportsTab = () => {
+  const { sales } = useSalesData();
+  
   return (
-    <div className="text-center p-12">
-      <h3 className="text-lg font-medium mb-2">Relatórios de Vendas</h3>
-      <p className="text-muted-foreground mb-6">
-        Visualize gráficos e análises detalhadas das suas vendas
-      </p>
-      <div className="flex justify-center gap-3">
-        <Button variant="outline">Vendas por Categoria</Button>
-        <Button variant="outline">Vendas por Período</Button>
-        <Button variant="outline">Produtos Mais Vendidos</Button>
-      </div>
+    <div className="space-y-6">
+      <Tabs defaultValue="chart">
+        <TabsList className="w-full max-w-md mx-auto mb-4">
+          <TabsTrigger value="chart" className="flex-1">Gráficos</TabsTrigger>
+          <TabsTrigger value="summary" className="flex-1">Resumo</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="chart">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Vendas por Mês</CardTitle>
+              </CardHeader>
+              <CardContent className="h-80">
+                <BarChart />
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Métodos de Pagamento</CardTitle>
+              </CardHeader>
+              <CardContent className="h-80">
+                <PieChart />
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Tendência de Vendas</CardTitle>
+              </CardHeader>
+              <CardContent className="h-80">
+                <LineChart />
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Canais de Venda</CardTitle>
+              </CardHeader>
+              <CardContent className="h-80">
+                <PieChart />
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="summary">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Relatório Detalhado</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500 mb-4">
+                Relatórios detalhados serão implementados em breve.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
