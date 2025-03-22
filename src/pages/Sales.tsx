@@ -6,6 +6,14 @@ import SalesStatistics from '@/components/sales/SalesStatistics';
 import SalesTabs from '@/components/sales/SalesTabs';
 import { useSales } from '@/hooks/useSales';
 import { formatDate } from '@/components/sales/utils/salesFilterUtils';
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from '@/components/ui/pagination';
 
 // Add this type to bridge the gap between our backend and UI types
 type SaleForUI = {
@@ -38,6 +46,11 @@ const Sales = () => {
   const [productsSold, setProductsSold] = useState(0);
   const [uiSales, setUiSales] = useState<SaleForUI[]>([]);
   
+  // Paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(uiSales.length / itemsPerPage);
+  
   // Convert backend sales to UI format
   useEffect(() => {
     const mappedSales = backendSales.map(sale => ({
@@ -55,6 +68,7 @@ const Sales = () => {
     }));
     
     setUiSales(mappedSales);
+    setCurrentPage(1); // Reset to page 1 when sales change
   }, [backendSales]);
   
   useEffect(() => {
@@ -102,6 +116,12 @@ const Sales = () => {
     setDateRange({ from, to: now });
   };
   
+  // Paginate sales
+  const paginatedSales = uiSales.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  
   return (
     <PageTransition>
       <div className="min-h-screen lg:pl-64 pt-16">
@@ -124,10 +144,60 @@ const Sales = () => {
             handleSearch={handleSearch}
             setSelectedDateRange={handleDateRangeChange}
             setSelectedPayment={setSelectedPayment}
-            filteredSales={uiSales}
+            filteredSales={paginatedSales}
             loading={loading}
             formatDate={formatDate}
           />
+          
+          {/* Paginação */}
+          {totalPages > 1 && (
+            <Pagination className="mt-4">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+                
+                {[...Array(totalPages)].map((_, i) => {
+                  const pageNum = i + 1;
+                  // Mostrar sempre a primeira, a última e as páginas próximas da atual
+                  if (
+                    pageNum === 1 || 
+                    pageNum === totalPages || 
+                    (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                  ) {
+                    return (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink 
+                          onClick={() => setCurrentPage(pageNum)}
+                          isActive={currentPage === pageNum}
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  } else if (
+                    (pageNum === 2 && currentPage > 3) || 
+                    (pageNum === totalPages - 1 && currentPage < totalPages - 2)
+                  ) {
+                    return <PaginationItem key={pageNum}>...</PaginationItem>;
+                  }
+                  return null;
+                })}
+                
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
         </div>
       </div>
     </PageTransition>

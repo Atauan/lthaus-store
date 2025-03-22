@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -68,7 +69,7 @@ export default function Navbar() {
     { path: '/sales', icon: <ShoppingCart className="h-5 w-5" />, label: 'Vendas' },
     { path: '/sales/new', icon: <Store className="h-5 w-5" />, label: 'Nova Venda' },
     { path: '/suppliers', icon: <Truck className="h-5 w-5" />, label: 'Fornecedores' },
-    // { path: '/users', icon: <Users className="h-5 w-5" />, label: 'Usuários' },
+    { path: '/users', icon: <Users className="h-5 w-5" />, label: 'Usuários' },
     { path: '/settings', icon: <Settings className="h-5 w-5" />, label: 'Configurações' },
   ];
 

@@ -86,6 +86,21 @@ export async function createSale(
           
         if (updateError) throw updateError;
         
+        // Create stock log entry
+        const { error: logError } = await supabase
+          .from('stock_logs')
+          .insert({
+            product_id: item.product_id,
+            previous_stock: currentStock,
+            new_stock: newStock,
+            change_amount: -item.quantity,
+            reference_type: 'sale',
+            reference_id: saleId,
+            notes: `Venda #${sale.sale_number}`
+          });
+          
+        if (logError) console.error('Erro ao registrar log de estoque:', logError);
+        
         // Check if product is now below min_stock
         if (newStock <= minStock) {
           lowStockProducts.push({
