@@ -7,7 +7,7 @@ const currentDateTimeString = () => new Date().toISOString();
 
 export const createNewSale = async (saleData: any) => {
   try {
-    // Create a new sale entry
+    // Create a new sale entry - we'll remove the user_id requirement since authentication will be implemented later
     const saleResult = await supabase
       .from('sales')
       .insert({
@@ -24,7 +24,8 @@ export const createNewSale = async (saleData: any) => {
         notes: saleData.notes,
         delivery_address: saleData.delivery_address,
         delivery_fee: saleData.delivery_fee || 0,
-        user_id: saleData.user_id || '00000000-0000-0000-0000-000000000000'
+        // We'll use a NULL value for user_id temporarily until authentication is implemented
+        user_id: null
       })
       .select('id')
       .single();

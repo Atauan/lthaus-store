@@ -14,6 +14,7 @@ import AddTemporaryProductDialog from './AddTemporaryProductDialog';
 import SaleFormHeader from './form/SaleFormHeader';
 import SaleFormContainer from './form/SaleFormContainer';
 import { useSalesFormSubmit } from './hooks/useSalesFormSubmit';
+import PageTransition from '@/components/layout/PageTransition';
 
 const SalesForm = () => {
   const [selectedItems, setSelectedItems] = useState<SaleItem[]>([]);
@@ -89,70 +90,72 @@ const SalesForm = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 pb-10 pt-16 lg:pl-64">
-      <SaleFormHeader 
-        saleNumber={saleNumber}
-        onAddTemporaryItem={() => setIsAddProductOpen(true)}
-        onSubmit={form.handleSubmit(handleFormSubmit)}
-      />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <SaleFormContainer 
-            form={form} 
-            onSubmit={handleFormSubmit}
-          >
-            <SaleInfoSection form={form} />
-            
-            <ItemsSection 
-              selectedItems={selectedItems} 
-              setSelectedItems={setSelectedItems} 
-            />
-            
-            <DeliverySection form={form} saleChannel={form.watch('saleChannel')} />
-            
-            <SalesSummary 
+    <div className="container mx-auto px-4 pb-10 pt-20">
+      <PageTransition>
+        <SaleFormHeader 
+          saleNumber={saleNumber}
+          onAddTemporaryItem={() => setIsAddProductOpen(true)}
+          onSubmit={form.handleSubmit(handleFormSubmit)}
+        />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <SaleFormContainer 
+              form={form} 
+              onSubmit={handleFormSubmit}
+            >
+              <SaleInfoSection form={form} />
+              
+              <ItemsSection 
+                selectedItems={selectedItems} 
+                setSelectedItems={setSelectedItems} 
+              />
+              
+              <DeliverySection form={form} saleChannel={form.watch('saleChannel')} />
+              
+              <SalesSummary 
+                subtotal={subtotal}
+                profit={profit}
+                form={form}
+                calculateFinalTotal={getFinalTotal}
+                deliveryFee={deliveryFee}
+              />
+              
+              <PaymentMethodsSection 
+                form={form} 
+                total={getFinalTotal()}
+              />
+            </SaleFormContainer>
+          </div>
+          
+          <div className="lg:col-span-1">
+            <QuickActionsSidebar
               subtotal={subtotal}
               profit={profit}
               form={form}
               calculateFinalTotal={getFinalTotal}
-              deliveryFee={deliveryFee}
+              onNewSale={handleNewSaleAction}
             />
-            
-            <PaymentMethodsSection 
-              form={form} 
-              total={getFinalTotal()}
-            />
-          </SaleFormContainer>
+          </div>
         </div>
         
-        <div className="lg:col-span-1">
-          <QuickActionsSidebar
-            subtotal={subtotal}
-            profit={profit}
-            form={form}
-            calculateFinalTotal={getFinalTotal}
+        {saleData && (
+          <SaleReceiptModal
+            isOpen={isReceiptModalOpen}
+            onClose={() => setIsReceiptModalOpen(false)}
+            saleData={saleData}
             onNewSale={handleNewSaleAction}
+            onFinish={handleFinishSale}
+            savingInProgress={savingInProgress}
           />
-        </div>
-      </div>
-      
-      {saleData && (
-        <SaleReceiptModal
-          isOpen={isReceiptModalOpen}
-          onClose={() => setIsReceiptModalOpen(false)}
-          saleData={saleData}
-          onNewSale={handleNewSaleAction}
-          onFinish={handleFinishSale}
-          savingInProgress={savingInProgress}
+        )}
+        
+        <AddTemporaryProductDialog
+          isOpen={isAddProductOpen}
+          onClose={() => setIsAddProductOpen(false)}
+          onAddItem={handleAddTemporaryProduct}
         />
-      )}
-      
-      <AddTemporaryProductDialog
-        isOpen={isAddProductOpen}
-        onClose={() => setIsAddProductOpen(false)}
-        onAddItem={handleAddTemporaryProduct}
-      />
+      </PageTransition>
     </div>
   );
 };

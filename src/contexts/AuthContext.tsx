@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 // Create a default user for development with proper UUID format
 const defaultDevUser: UserProfile = {
-  id: '00000000-0000-0000-0000-000000000000', // Valid UUID format
+  id: null, // Set to null to prevent foreign key issues
   first_name: 'Developer',
   last_name: 'User',
   role: 'admin', // Give admin role for development

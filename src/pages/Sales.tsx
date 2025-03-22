@@ -16,7 +16,18 @@ import SalesStatistics from '@/components/sales/SalesStatistics';
 import { useSalesData } from '@/hooks/sales/useSalesData';
 import { useSalesFiltering } from '@/hooks/sales/useSalesFiltering';
 import { useSalesStatistics } from '@/hooks/sales/useSalesStatistics';
-import Navbar from '@/components/layout/Navbar';
+
+// Define a conversion function to adapt our Sale type to the expected format by SalesTable
+function adaptSalesToTableFormat(sales: Array<any>) {
+  return sales.map(sale => ({
+    id: sale.id,
+    date: sale.sale_date,
+    customer: sale.customer_name || 'Cliente não identificado',
+    items: [], // We don't have items directly in the sale object, we'll handle this differently
+    paymentMethod: sale.payment_method,
+    total: sale.final_total
+  }));
+}
 
 export default function Sales() {
   const navigate = useNavigate();
@@ -57,9 +68,14 @@ export default function Sales() {
     return periodSales.length * 2; // Estimating an average of 2 products per sale
   }, [periodSales]);
 
+  // Convert our sales data to the format expected by SalesTable
+  const adaptedFilteredSales = useMemo(() => {
+    return adaptSalesToTableFormat(filteredSales);
+  }, [filteredSales]);
+
   // Pagination
-  const totalPages = Math.ceil(filteredSales.length / pageSize);
-  const paginatedSales = filteredSales.slice((page - 1) * pageSize, page * pageSize);
+  const totalPages = Math.ceil(adaptedFilteredSales.length / pageSize);
+  const paginatedSales = adaptedFilteredSales.slice((page - 1) * pageSize, page * pageSize);
 
   // Go to prev page
   const goToPrevPage = () => {
@@ -77,8 +93,7 @@ export default function Sales() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <main className="container mx-auto px-4 pt-20 pb-10 lg:ml-64 lg:pl-8">
+      <main className="container mx-auto px-4 pt-20 pb-10">
         <PageTransition>
           <SalesHeader
             searchTerm={searchTerm}
@@ -132,7 +147,7 @@ export default function Sales() {
                   />
                   
                   {/* Pagination */}
-                  {filteredSales.length > 0 && totalPages > 1 && (
+                  {adaptedFilteredSales.length > 0 && totalPages > 1 && (
                     <div className="flex justify-between items-center mt-4">
                       <div className="text-sm text-gray-500">
                         Página {page} de {totalPages}
