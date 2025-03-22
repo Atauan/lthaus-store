@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -153,7 +152,7 @@ export default function Navbar() {
                   >
                     <Avatar>
                       <AvatarFallback>
-                        {getInitials(user.displayName || user.email || 'User')}
+                        {getInitials(user.firstName || user.email || 'User')}
                       </AvatarFallback>
                     </Avatar>
                   </Button>

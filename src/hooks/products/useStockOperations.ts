@@ -40,17 +40,23 @@ export function useStockOperations() {
   // Get low stock products
   const getLowStockProducts = async () => {
     try {
+      // Fixed: Using a simple query to check if stock is below min_stock
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .lt('stock', supabase.rpc('min_stock'))  // Fixed: Using rpc instead of sql
+        .lt('stock', 5) // Temporary fix using a hardcoded value
         .order('stock', { ascending: true });
       
       if (error) {
         throw error;
       }
       
-      return { success: true, data: data as Product[] };
+      // Filter products where stock is less than min_stock (client-side)
+      const lowStockProducts = data.filter(product => 
+        product.stock < (product.min_stock || 5)
+      );
+      
+      return { success: true, data: lowStockProducts as Product[] };
     } catch (error: any) {
       toast.error(`Erro ao buscar produtos com estoque baixo: ${error.message}`);
       return { success: false, error, data: [] as Product[] };

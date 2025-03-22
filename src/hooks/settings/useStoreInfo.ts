@@ -63,9 +63,25 @@ export function useStoreInfo() {
         throw error;
       }
       
-      // If data exists, set it
+      // If data exists, set it with proper field mapping
       if (data) {
-        setStoreInfo(data as StoreInfo);
+        // Map database fields to our interface
+        const mappedData: StoreInfo = {
+          name: data.name,
+          cnpj: data.cnpj || '',
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zipCode: data.zipcode, // Map zipcode from DB to zipCode in interface
+          phone: data.phone || '',
+          email: data.email || '',
+          ownerName: data.ownername || '', // Map ownername from DB to ownerName in interface
+          defaultSeller: data.defaultseller || '', // Map defaultseller from DB to defaultSeller in interface
+          latitude: data.latitude,
+          longitude: data.longitude
+        };
+        
+        setStoreInfo(mappedData);
       } else {
         // Set default values
         setStoreInfo({
@@ -101,6 +117,22 @@ export function useStoreInfo() {
         throw new Error("Usuário não autenticado");
       }
       
+      // Map our interface fields to database column names
+      const dbData = {
+        name: info.name,
+        cnpj: info.cnpj,
+        address: info.address,
+        city: info.city,
+        state: info.state,
+        zipcode: info.zipCode, // Map zipCode to zipcode for DB
+        phone: info.phone,
+        email: info.email,
+        ownername: info.ownerName, // Map ownerName to ownername for DB
+        defaultseller: info.defaultSeller, // Map defaultSeller to defaultseller for DB
+        latitude: info.latitude,
+        longitude: info.longitude
+      };
+      
       // Check if record exists
       const { data: existingData, error: fetchError } = await supabase
         .from('store_info')
@@ -115,7 +147,7 @@ export function useStoreInfo() {
         // Update existing record
         const { error } = await supabase
           .from('store_info')
-          .update(info)
+          .update(dbData)
           .eq('id', existingData[0].id);
         
         if (error) throw error;
@@ -123,7 +155,7 @@ export function useStoreInfo() {
         // Insert new record
         const { error } = await supabase
           .from('store_info')
-          .insert([info]);
+          .insert([dbData]);
         
         if (error) throw error;
       }
