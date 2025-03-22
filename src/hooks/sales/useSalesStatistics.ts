@@ -1,45 +1,93 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Sale, SalesStatistics } from './types';
 
-export function useSalesStatistics(salesData: Sale[]) {
+export function useSalesStatistics(sales: Sale[]) {
+  const [isLoadingStatistics, setIsLoadingStatistics] = useState(true);
   const [salesStatistics, setSalesStatistics] = useState<SalesStatistics>({
     totalSales: 0,
     totalRevenue: 0,
     totalProfit: 0,
-    period: 'month',
+    period: 'day',
     sales: []
   });
-  const [periodSales, setPeriodSales] = useState<Sale[]>([]);
-  const [isLoadingStatistics, setIsLoadingStatistics] = useState(true);
 
+  // For the current time period (default: today)
+  const periodSales = useMemo(() => {
+    if (!sales || sales.length === 0) return [];
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return sales.filter(sale => {
+      const saleDate = new Date(sale.sale_date || new Date());
+      return saleDate >= today;
+    });
+  }, [sales]);
+  
+  // Calculate statistics based on period sales
   useEffect(() => {
-    calculateStatistics('month');
-  }, [salesData]);
-
-  const calculateStatistics = (period: 'day' | 'week' | 'month' = 'month') => {
+    if (sales && sales.length > 0) {
+      try {
+        const totalSales = periodSales.length;
+        const totalRevenue = periodSales.reduce((sum, sale) => sum + sale.final_total, 0);
+        const totalProfit = periodSales.reduce((sum, sale) => sum + (sale.profit || 0), 0);
+        
+        setSalesStatistics({
+          totalSales,
+          totalRevenue,
+          totalProfit,
+          period: 'day',
+          sales: periodSales
+        });
+      } catch (error) {
+        console.error('Error calculating sales statistics:', error);
+      }
+    }
+    setIsLoadingStatistics(false);
+  }, [periodSales, sales]);
+  
+  const getSalesStatistics = (period: 'day' | 'week' | 'month' = 'day') => {
     setIsLoadingStatistics(true);
     
     try {
+      let filteredSales: Sale[] = [];
       const now = new Date();
-      let cutoffDate = new Date();
       
-      // Set cutoff date based on selected period
-      if (period === 'day') {
-        cutoffDate.setDate(now.getDate() - 1);
-      } else if (period === 'week') {
-        cutoffDate.setDate(now.getDate() - 7);
-      } else {
-        cutoffDate.setMonth(now.getMonth() - 1);
+      switch (period) {
+        case 'day':
+          // Sales from today
+          const startOfDay = new Date(now);
+          startOfDay.setHours(0, 0, 0, 0);
+          
+          filteredSales = sales.filter(sale => {
+            const saleDate = new Date(sale.sale_date || new Date());
+            return saleDate >= startOfDay;
+          });
+          break;
+          
+        case 'week':
+          // Sales from the past 7 days
+          const oneWeekAgo = new Date(now);
+          oneWeekAgo.setDate(now.getDate() - 7);
+          
+          filteredSales = sales.filter(sale => {
+            const saleDate = new Date(sale.sale_date || new Date());
+            return saleDate >= oneWeekAgo;
+          });
+          break;
+          
+        case 'month':
+          // Sales from the current month
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+          
+          filteredSales = sales.filter(sale => {
+            const saleDate = new Date(sale.sale_date || new Date());
+            return saleDate >= startOfMonth;
+          });
+          break;
       }
       
-      // Filter sales by period
-      const filteredSales = salesData.filter(sale => {
-        const saleDate = new Date(sale.sale_date || '');
-        return saleDate >= cutoffDate;
-      });
-      
-      // Calculate statistics
       const totalSales = filteredSales.length;
       const totalRevenue = filteredSales.reduce((sum, sale) => sum + sale.final_total, 0);
       const totalProfit = filteredSales.reduce((sum, sale) => sum + (sale.profit || 0), 0);
@@ -51,24 +99,13 @@ export function useSalesStatistics(salesData: Sale[]) {
         period,
         sales: filteredSales
       });
-      
-      setPeriodSales(filteredSales);
     } catch (error) {
-      console.error('Error calculating statistics:', error);
+      console.error('Error calculating sales statistics:', error);
     } finally {
       setIsLoadingStatistics(false);
     }
   };
-
-  // Method that can be called to get sales statistics
-  const getSalesStatistics = async (period: 'day' | 'week' | 'month' = 'month') => {
-    calculateStatistics(period);
-    return {
-      success: true,
-      data: salesStatistics
-    };
-  };
-
+  
   return {
     salesStatistics,
     periodSales,
