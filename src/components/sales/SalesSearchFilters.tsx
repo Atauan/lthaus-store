@@ -1,83 +1,92 @@
 
 import React from 'react';
-import { Search, Filter, CalendarDays } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-interface SalesSearchFiltersProps {
-  searchQuery: string;
-  selectedDateRange: string;
-  selectedPayment: string;
-  handleSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  setSelectedDateRange: (value: string) => void;
-  setSelectedPayment: (value: string) => void;
+export interface SalesSearchFiltersProps {
+  timeRange: string;
+  setTimeRange: (range: string) => void;
+  paymentMethod: string;
+  setPaymentMethod: (method: string) => void;
+  minAmount: string;
+  setMinAmount: (amount: string) => void;
+  maxAmount: string;
+  setMaxAmount: (amount: string) => void;
 }
 
 const SalesSearchFilters: React.FC<SalesSearchFiltersProps> = ({
-  searchQuery,
-  selectedDateRange,
-  selectedPayment,
-  handleSearch,
-  setSelectedDateRange,
-  setSelectedPayment
+  timeRange,
+  setTimeRange,
+  paymentMethod,
+  setPaymentMethod,
+  minAmount,
+  setMinAmount,
+  maxAmount,
+  setMaxAmount
 }) => {
   return (
-    <div className="flex flex-wrap gap-3 w-full md:w-auto">
-      <div className="relative flex-1 min-w-[200px]">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-        <Input 
-          placeholder="Buscar venda..." 
-          className="pl-9"
-          value={searchQuery}
-          onChange={handleSearch}
-        />
-      </div>
-      
-      <div className="w-36">
-        <Select value={selectedDateRange} onValueChange={setSelectedDateRange}>
-          <SelectTrigger>
-            <div className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              <SelectValue placeholder="Período" />
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="hoje">Hoje</SelectItem>
-              <SelectItem value="7dias">Últimos 7 dias</SelectItem>
-              <SelectItem value="30dias">Últimos 30 dias</SelectItem>
-              <SelectItem value="todos">Todos</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div className="w-36">
-        <Select value={selectedPayment} onValueChange={setSelectedPayment}>
-          <SelectTrigger>
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              <SelectValue placeholder="Pagamento" />
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="cartao">Cartão</SelectItem>
-              <SelectItem value="dinheiro">Dinheiro</SelectItem>
-              <SelectItem value="pix">PIX</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
+    <Card className="mb-6">
+      <CardContent className="pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="time-range">Período</Label>
+            <Select value={timeRange} onValueChange={setTimeRange}>
+              <SelectTrigger id="time-range">
+                <SelectValue placeholder="Selecionar período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="today">Hoje</SelectItem>
+                <SelectItem value="week">Esta semana</SelectItem>
+                <SelectItem value="month">Este mês</SelectItem>
+                <SelectItem value="custom">Personalizado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="payment-method">Método de Pagamento</Label>
+            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+              <SelectTrigger id="payment-method">
+                <SelectValue placeholder="Selecionar método" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
+                <SelectItem value="debit_card">Cartão de Débito</SelectItem>
+                <SelectItem value="pix">PIX</SelectItem>
+                <SelectItem value="cash">Dinheiro</SelectItem>
+                <SelectItem value="bank_transfer">Transferência</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="min-amount">Valor Mínimo</Label>
+            <Input
+              id="min-amount"
+              type="number"
+              placeholder="0,00"
+              value={minAmount}
+              onChange={(e) => setMinAmount(e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="max-amount">Valor Máximo</Label>
+            <Input
+              id="max-amount"
+              type="number"
+              placeholder="0,00"
+              value={maxAmount}
+              onChange={(e) => setMaxAmount(e.target.value)}
+            />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

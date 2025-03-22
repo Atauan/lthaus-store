@@ -1,7 +1,7 @@
 
 import { useCallback } from 'react';
 import { Sale, SaleItem, SalePayment } from './types';
-import { createSale } from './utils/saleCreationUtils';
+import { createNewSale } from './utils/saleCreationUtils';
 
 export function useSaleCreate() {
   const handleCreateSale = useCallback(async (
@@ -9,7 +9,7 @@ export function useSaleCreate() {
     items: Omit<SaleItem, 'id' | 'created_at' | 'updated_at' | 'sale_id'>[],
     payments: Omit<SalePayment, 'id' | 'created_at' | 'updated_at' | 'sale_id'>[]
   ) => {
-    return await createSale(sale, items, payments);
+    return await createNewSale({ ...sale, items, payments });
   }, []);
 
   return { createSale: handleCreateSale };

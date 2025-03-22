@@ -26,7 +26,7 @@ export default function Sales() {
   const pageSize = 10;
 
   // Fetch sales data
-  const { salesData, isLoading, refresh } = useSalesData();
+  const { sales, loading, refresh } = useSalesData();
   
   // Filtering
   const {
@@ -43,14 +43,14 @@ export default function Sales() {
     filteredSales,
     showFilters,
     setShowFilters
-  } = useSalesFiltering(salesData);
+  } = useSalesFiltering(sales);
 
   // Sales statistics
   const { 
     salesStatistics, 
     periodSales,
     isLoadingStatistics 
-  } = useSalesStatistics(salesData);
+  } = useSalesStatistics(sales);
 
   // Pagination
   const totalPages = Math.ceil(filteredSales.length / pageSize);
@@ -122,7 +122,7 @@ export default function Sales() {
                 <CardContent>
                   <SalesTable 
                     sales={paginatedSales}
-                    isLoading={isLoading}
+                    isLoading={loading}
                   />
                   
                   {/* Pagination */}
@@ -154,7 +154,7 @@ export default function Sales() {
             </TabsContent>
 
             <TabsContent value="relatorios">
-              <SalesReportsTab salesData={salesData} />
+              <SalesReportsTab salesData={sales} />
             </TabsContent>
           </Tabs>
 

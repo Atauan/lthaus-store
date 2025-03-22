@@ -1,7 +1,24 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+interface Product {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  stock: number;
+}
+
+interface Service {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+}
 
 interface ItemListProps {
   items: any[];
@@ -11,15 +28,55 @@ interface ItemListProps {
 }
 
 const ItemList: React.FC<ItemListProps> = ({ items, type, onAddItem, onNotFoundAction }) => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch products from database when component mounts
+  useEffect(() => {
+    if (type === 'product') {
+      fetchProducts();
+    }
+  }, [type]);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, category, price, stock')
+        .order('name');
+
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
+        setProducts(data);
+      }
+    } catch (error: any) {
+      toast.error(`Erro ao carregar produtos: ${error.message}`);
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // If we have products from the database, use those instead of the passed-in items
+  const displayItems = type === 'product' && products.length > 0 ? products : items;
+
   return (
     <div className="bg-muted/20 rounded-lg p-3 max-h-[300px] overflow-auto">
       <h3 className="text-sm font-medium mb-2">
         {type === 'product' ? 'Produtos' : 'Serviços'} Disponíveis
       </h3>
       
-      {items.length > 0 ? (
+      {loading ? (
+        <div className="p-4 text-center">
+          <p className="text-muted-foreground text-sm">Carregando...</p>
+        </div>
+      ) : displayItems.length > 0 ? (
         <div className="divide-y">
-          {items.map((item) => (
+          {displayItems.map((item) => (
             <div 
               key={item.id} 
               className="py-2 hover:bg-muted/30 transition-colors flex justify-between items-center cursor-pointer"

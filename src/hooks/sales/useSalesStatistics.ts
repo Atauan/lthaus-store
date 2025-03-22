@@ -1,49 +1,78 @@
 
-import { useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useState, useEffect } from 'react';
+import { Sale, SalesStatistics } from './types';
 
-export function useSalesStatistics() {
-  const getSalesStatistics = useCallback(async (period: 'day' | 'week' | 'month' = 'month') => {
+export function useSalesStatistics(salesData: Sale[]) {
+  const [salesStatistics, setSalesStatistics] = useState<SalesStatistics>({
+    totalSales: 0,
+    totalRevenue: 0,
+    totalProfit: 0,
+    period: 'month',
+    sales: []
+  });
+  const [periodSales, setPeriodSales] = useState<Sale[]>([]);
+  const [isLoadingStatistics, setIsLoadingStatistics] = useState(true);
+
+  useEffect(() => {
+    calculateStatistics('month');
+  }, [salesData]);
+
+  const calculateStatistics = (period: 'day' | 'week' | 'month' = 'month') => {
+    setIsLoadingStatistics(true);
+    
     try {
-      let fromDate = new Date();
+      const now = new Date();
+      let cutoffDate = new Date();
       
+      // Set cutoff date based on selected period
       if (period === 'day') {
-        fromDate.setDate(fromDate.getDate() - 1);
+        cutoffDate.setDate(now.getDate() - 1);
       } else if (period === 'week') {
-        fromDate.setDate(fromDate.getDate() - 7);
-      } else if (period === 'month') {
-        fromDate.setMonth(fromDate.getMonth() - 1);
+        cutoffDate.setDate(now.getDate() - 7);
+      } else {
+        cutoffDate.setMonth(now.getMonth() - 1);
       }
       
-      const fromDateStr = fromDate.toISOString();
+      // Filter sales by period
+      const filteredSales = salesData.filter(sale => {
+        const saleDate = new Date(sale.sale_date || '');
+        return saleDate >= cutoffDate;
+      });
       
-      const { data, error } = await supabase
-        .from('sales')
-        .select('*')
-        .gte('sale_date', fromDateStr);
-        
-      if (error) throw error;
+      // Calculate statistics
+      const totalSales = filteredSales.length;
+      const totalRevenue = filteredSales.reduce((sum, sale) => sum + sale.final_total, 0);
+      const totalProfit = filteredSales.reduce((sum, sale) => sum + (sale.profit || 0), 0);
       
-      const totalSales = data.length;
-      const totalRevenue = data.reduce((sum, sale) => sum + sale.final_total, 0);
-      const totalProfit = data.reduce((sum, sale) => sum + (sale.profit || 0), 0);
+      setSalesStatistics({
+        totalSales,
+        totalRevenue,
+        totalProfit,
+        period,
+        sales: filteredSales
+      });
       
-      return {
-        success: true,
-        data: {
-          totalSales,
-          totalRevenue,
-          totalProfit,
-          period,
-          sales: data
-        }
-      };
-    } catch (error: any) {
-      toast.error(`Erro ao carregar estatísticas: ${error.message}`);
-      return { success: false, error };
+      setPeriodSales(filteredSales);
+    } catch (error) {
+      console.error('Error calculating statistics:', error);
+    } finally {
+      setIsLoadingStatistics(false);
     }
-  }, []);
+  };
 
-  return { getSalesStatistics };
+  // Method that can be called to get sales statistics
+  const getSalesStatistics = async (period: 'day' | 'week' | 'month' = 'month') => {
+    calculateStatistics(period);
+    return {
+      success: true,
+      data: salesStatistics
+    };
+  };
+
+  return {
+    salesStatistics,
+    periodSales,
+    isLoadingStatistics,
+    getSalesStatistics
+  };
 }
