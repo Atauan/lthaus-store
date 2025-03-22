@@ -1,154 +1,114 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Sale, SaleItem, SalePayment } from '../types';
+import { SaleData } from '../types';
+import { currentDateTimeString } from './saleDetailsUtils';
 
-export async function createSale(
-  sale: Omit<Sale, 'id' | 'created_at' | 'updated_at'>,
-  items: Omit<SaleItem, 'id' | 'created_at' | 'updated_at' | 'sale_id'>[],
-  payments: Omit<SalePayment, 'id' | 'created_at' | 'updated_at' | 'sale_id'>[]
-) {
+export const createNewSale = async (saleData: SaleData) => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    const userId = user?.id;
-    
-    if (!userId) {
-      throw new Error('Usuário não autenticado');
+    // Create a new sale entry
+    const saleResult = await supabase
+      .from('sales')
+      .insert({
+        customer_name: saleData.customerName,
+        customer_document: saleData.customerDocument,
+        customer_address: saleData.customerAddress,
+        customer_city: saleData.customerCity,
+        customer_state: saleData.customerState,
+        customer_zipcode: saleData.customerZipCode,
+        customer_phone: saleData.customerPhone,
+        customer_email: saleData.customerEmail,
+        payment_method: saleData.paymentMethod,
+        payment_installments: saleData.paymentInstallments || 1,
+        subtotal: saleData.subtotal,
+        discount: saleData.discount,
+        delivery_fee: saleData.deliveryFee,
+        total: saleData.total,
+        notes: saleData.notes,
+        created_at: currentDateTimeString(),
+        status: 'completed',
+        seller_id: saleData.sellerId || null,
+        delivery_type: saleData.deliveryType || 'pickup',
+        latitude: saleData.latitude || null,
+        longitude: saleData.longitude || null,
+      })
+      .select('id')
+      .single();
+
+    if (saleResult.error) {
+      throw saleResult.error;
     }
 
-    // Start a transaction by using single batch
-    const { data: saleData, error: saleError } = await supabase
-      .from('sales')
-      .insert([{
-        ...sale,
-        user_id: userId
-      }])
-      .select()
-      .single();
-      
-    if (saleError) throw saleError;
-    
-    const saleId = saleData.id;
-    
-    // Format items for database insertion
-    const formattedItems = items.map(item => ({
-      sale_id: saleId,
-      product_id: item.product_id || 0,
-      quantity: item.quantity,
-      price: item.price,
-      cost: item.cost,
-      name: item.name
-    }));
-    
-    // Insert sale items
-    const { error: itemsError } = await supabase
-      .from('sale_items')
-      .insert(formattedItems);
-      
-    if (itemsError) throw itemsError;
-    
-    // Insert payment methods
-    const { error: paymentsError } = await supabase
-      .from('sale_payments')
-      .insert(
-        payments.map(payment => ({
-          ...payment,
-          sale_id: saleId
-        }))
-      );
-      
-    if (paymentsError) throw paymentsError;
-    
-    // Update product stock for each item
-    const lowStockProducts = [];
-    
-    for (const item of items) {
-      if (item.type === 'product' && item.product_id) {
-        // Get current product data
-        const { data: productData, error: productError } = await supabase
+    const saleId = saleResult.data.id;
+
+    // Create sale items entries and update stock
+    for (const item of saleData.items) {
+      // Create sale item
+      const itemResult = await supabase
+        .from('sale_items')
+        .insert({
+          sale_id: saleId,
+          product_id: item.id,
+          product_name: item.name,
+          quantity: item.quantity,
+          unit_price: item.price,
+          total_price: item.total,
+          cost_price: item.costPrice || 0,
+        });
+
+      if (itemResult.error) {
+        console.error('Error creating sale item:', itemResult.error);
+        continue;
+      }
+
+      // Update product stock
+      if (item.id) {
+        // Get current product stock
+        const { data: product, error: productError } = await supabase
           .from('products')
-          .select('stock, min_stock, name')
-          .eq('id', item.product_id)
+          .select('stock')
+          .eq('id', item.id)
           .single();
-          
-        if (productError) throw productError;
-        
-        // Calculate new stock
-        const currentStock = productData.stock;
-        const newStock = Math.max(0, currentStock - item.quantity);
-        const minStock = productData.min_stock || 5;
-        
+
+        if (productError) {
+          console.error('Error fetching product stock:', productError);
+          continue;
+        }
+
+        const previousStock = product.stock;
+        const newStock = Math.max(0, previousStock - item.quantity);
+
         // Update product stock
         const { error: updateError } = await supabase
           .from('products')
           .update({ stock: newStock })
-          .eq('id', item.product_id);
-          
-        if (updateError) throw updateError;
-        
-        // Create stock log entry
-        const { error: logError } = await supabase
+          .eq('id', item.id);
+
+        if (updateError) {
+          console.error('Error updating product stock:', updateError);
+          continue;
+        }
+
+        // Create stock log
+        await supabase
           .from('stock_logs')
           .insert({
-            product_id: item.product_id,
-            previous_stock: currentStock,
+            product_id: item.id,
+            previous_stock: previousStock,
             new_stock: newStock,
             change_amount: -item.quantity,
             reference_type: 'sale',
-            reference_id: saleId,
-            notes: `Venda #${sale.sale_number}`
+            reference_id: saleId.toString(),
+            notes: `Venda #${saleId}`
           });
-          
-        if (logError) console.error('Erro ao registrar log de estoque:', logError);
-        
-        // Check if product is now below min_stock
-        if (newStock <= minStock) {
-          lowStockProducts.push({
-            id: item.product_id,
-            name: productData.name,
-            stock: newStock,
-            min_stock: minStock
-          });
-        }
       }
     }
-    
-    // Show low stock warnings if needed
-    if (lowStockProducts.length > 0) {
-      lowStockProducts.forEach(product => {
-        toast.warning(
-          `Estoque baixo: ${product.name} (${product.stock}/${product.min_stock})`,
-          { duration: 5000 }
-        );
-      });
-    }
-    
-    // Get the complete sale details for returning
-    const { data: saleItemsData, error: saleItemsError } = await supabase
-      .from('sale_items')
-      .select('*')
-      .eq('sale_id', saleId);
-      
-    if (saleItemsError) throw saleItemsError;
-    
-    const { data: salePaymentsData, error: salePaymentsError } = await supabase
-      .from('sale_payments')
-      .select('*')
-      .eq('sale_id', saleId);
-      
-    if (salePaymentsError) throw salePaymentsError;
-    
-    return {
-      success: true,
-      data: {
-        sale: saleData,
-        items: saleItemsData || [],
-        payments: salePaymentsData || [],
-        lowStockProducts: lowStockProducts.length > 0 ? lowStockProducts : null
-      }
-    };
+
+    toast.success('Venda registrada com sucesso!');
+    return { success: true, saleId };
   } catch (error: any) {
-    toast.error(`Erro ao criar venda: ${error.message}`);
+    console.error('Error creating sale:', error);
+    toast.error(`Erro ao registrar venda: ${error.message}`);
     return { success: false, error };
   }
-}
+};

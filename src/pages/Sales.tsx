@@ -1,207 +1,173 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ShoppingCart, Plus, Search, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PageTransition from '@/components/layout/PageTransition';
+
 import SalesHeader from '@/components/sales/SalesHeader';
+import SalesTable from '@/components/sales/SalesTable';
+import SalesSearchFilters from '@/components/sales/SalesSearchFilters';
+import SalesReportsTab from '@/components/sales/SalesReportsTab';
 import SalesStatistics from '@/components/sales/SalesStatistics';
-import SalesTabs from '@/components/sales/SalesTabs';
-import { useSales } from '@/hooks/useSales';
-import { formatDate } from '@/components/sales/utils/salesFilterUtils';
-import { 
-  Pagination, 
-  PaginationContent, 
-  PaginationItem, 
-  PaginationLink, 
-  PaginationNext, 
-  PaginationPrevious 
-} from '@/components/ui/pagination';
 
-// Add this type to bridge the gap between our backend and UI types
-type SaleForUI = {
-  id: number;
-  date: string;
-  customer: string;
-  items: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
-  paymentMethod: string;
-  total: number;
-};
+import { useSalesData } from '@/hooks/sales/useSalesData';
+import { useSalesFiltering } from '@/hooks/sales/useSalesFiltering';
+import { useSalesStatistics } from '@/hooks/sales/useSalesStatistics';
+import Navbar from '@/components/layout/Navbar';
 
-const Sales = () => {
+export default function Sales() {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('vendas');
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  // Fetch sales data
+  const { salesData, isLoading, refresh } = useSalesData();
+  
+  // Filtering
+  const {
+    searchTerm,
+    setSearchTerm,
+    timeRange,
+    setTimeRange,
+    paymentMethod,
+    setPaymentMethod,
+    minAmount,
+    setMinAmount,
+    maxAmount,
+    setMaxAmount,
+    filteredSales,
+    showFilters,
+    setShowFilters
+  } = useSalesFiltering(salesData);
+
+  // Sales statistics
   const { 
-    loading,
-    filteredSales: backendSales,
-    searchQuery, 
-    setSearchQuery,
-    dateRange,
-    setDateRange,
-    getSalesStatistics
-  } = useSales();
-  
-  const [selectedPayment, setSelectedPayment] = useState('todos');
-  const [totalSales, setTotalSales] = useState(0);
-  const [totalRevenue, setTotalRevenue] = useState(0);
-  const [productsSold, setProductsSold] = useState(0);
-  const [uiSales, setUiSales] = useState<SaleForUI[]>([]);
-  
-  // Paginação
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(uiSales.length / itemsPerPage);
-  
-  // Convert backend sales to UI format
-  useEffect(() => {
-    const mappedSales = backendSales.map(sale => ({
-      id: sale.id,
-      date: sale.sale_date || '',
-      customer: sale.customer_name || 'Cliente não identificado',
-      // Since we don't have actual items in the current data, we're creating a placeholder
-      items: [{ 
-        name: 'Item da venda', 
-        quantity: 1, 
-        price: sale.final_total 
-      }],
-      paymentMethod: sale.payment_method,
-      total: sale.final_total
-    }));
-    
-    setUiSales(mappedSales);
-    setCurrentPage(1); // Reset to page 1 when sales change
-  }, [backendSales]);
-  
-  useEffect(() => {
-    const loadStatistics = async () => {
-      const { success, data } = await getSalesStatistics('month');
-      if (success && data) {
-        setTotalSales(data.totalSales);
-        setTotalRevenue(data.totalRevenue);
-        
-        // Calculate products sold (estimate if not available)
-        if (data.sales) {
-          // This would ideally come from backend sum of all sale items quantities
-          // For now we'll use average 2 items per sale as an estimation
-          setProductsSold(data.sales.length * 2);
-        }
-      }
-    };
-    
-    loadStatistics();
-  }, [getSalesStatistics]);
-  
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-  
-  const handleDateRangeChange = (value: string) => {
-    // Convert string values to actual date range
-    const now = new Date();
-    let from: Date | undefined;
-    
-    if (value === '7dias') {
-      from = new Date();
-      from.setDate(from.getDate() - 7);
-    } else if (value === '30dias') {
-      from = new Date();
-      from.setDate(from.getDate() - 30);
-    } else if (value === '90dias') {
-      from = new Date();
-      from.setDate(from.getDate() - 90);
-    } else if (value === 'ano') {
-      from = new Date();
-      from.setFullYear(from.getFullYear() - 1);
-    }
-    
-    setDateRange({ from, to: now });
-  };
-  
-  // Paginate sales
-  const paginatedSales = uiSales.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-  
-  return (
-    <PageTransition>
-      <div className="min-h-screen lg:pl-64 pt-16">
-        <div className="container mx-auto px-4 pb-10">
-          <SalesHeader 
-            title="Vendas" 
-            description="Gerencie e analise suas vendas"
-          />
-          
-          <SalesStatistics 
-            totalSales={totalSales}
-            productsSold={productsSold}
-            totalRevenue={totalRevenue}
-          />
-          
-          <SalesTabs 
-            searchQuery={searchQuery}
-            selectedDateRange={'30dias'} // This is just the UI representation
-            selectedPayment={selectedPayment}
-            handleSearch={handleSearch}
-            setSelectedDateRange={handleDateRangeChange}
-            setSelectedPayment={setSelectedPayment}
-            filteredSales={paginatedSales}
-            loading={loading}
-            formatDate={formatDate}
-          />
-          
-          {/* Paginação */}
-          {totalPages > 1 && (
-            <Pagination className="mt-4">
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious 
-                    onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-                    disabled={currentPage === 1}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-                
-                {[...Array(totalPages)].map((_, i) => {
-                  const pageNum = i + 1;
-                  // Mostrar sempre a primeira, a última e as páginas próximas da atual
-                  if (
-                    pageNum === 1 || 
-                    pageNum === totalPages || 
-                    (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-                  ) {
-                    return (
-                      <PaginationItem key={pageNum}>
-                        <PaginationLink 
-                          onClick={() => setCurrentPage(pageNum)}
-                          isActive={currentPage === pageNum}
-                        >
-                          {pageNum}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  } else if (
-                    (pageNum === 2 && currentPage > 3) || 
-                    (pageNum === totalPages - 1 && currentPage < totalPages - 2)
-                  ) {
-                    return <PaginationItem key={pageNum}>...</PaginationItem>;
-                  }
-                  return null;
-                })}
-                
-                <PaginationItem>
-                  <PaginationNext 
-                    onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          )}
-        </div>
-      </div>
-    </PageTransition>
-  );
-};
+    salesStatistics, 
+    periodSales,
+    isLoadingStatistics 
+  } = useSalesStatistics(salesData);
 
-export default Sales;
+  // Pagination
+  const totalPages = Math.ceil(filteredSales.length / pageSize);
+  const paginatedSales = filteredSales.slice((page - 1) * pageSize, page * pageSize);
+
+  // Go to prev page
+  const goToPrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
+
+  // Go to next page
+  const goToNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <main className="container mx-auto px-4 pt-20 pb-10 lg:ml-64 lg:pl-8">
+        <PageTransition>
+          <SalesHeader
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            showFilters={showFilters}
+            setShowFilters={setShowFilters}
+            refresh={refresh}
+          />
+
+          {showFilters && (
+            <SalesSearchFilters 
+              timeRange={timeRange}
+              setTimeRange={setTimeRange}
+              paymentMethod={paymentMethod}
+              setPaymentMethod={setPaymentMethod}
+              minAmount={minAmount}
+              setMinAmount={setMinAmount}
+              maxAmount={maxAmount}
+              setMaxAmount={setMaxAmount}
+            />
+          )}
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
+            <TabsList className="w-full max-w-md mx-auto mb-6">
+              <TabsTrigger value="vendas" className="flex-1">
+                Vendas
+              </TabsTrigger>
+              <TabsTrigger value="relatorios" className="flex-1">
+                Relatórios
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="vendas" className="space-y-6">
+              <SalesStatistics 
+                salesStatistics={salesStatistics}
+                periodSales={periodSales}
+                isLoading={isLoadingStatistics}
+              />
+              
+              <Card>
+                <CardHeader className="pb-0">
+                  <CardTitle className="text-lg font-medium text-gray-700">
+                    Histórico de Vendas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <SalesTable 
+                    sales={paginatedSales}
+                    isLoading={isLoading}
+                  />
+                  
+                  {/* Pagination */}
+                  {filteredSales.length > 0 && totalPages > 1 && (
+                    <div className="flex justify-between items-center mt-4">
+                      <div className="text-sm text-gray-500">
+                        Página {page} de {totalPages}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={goToPrevPage}
+                          disabled={page === 1}
+                          className="px-3 py-1 h-8"
+                        >
+                          Anterior
+                        </Button>
+                        <Button
+                          onClick={goToNextPage}
+                          disabled={page === totalPages}
+                          className="px-3 py-1 h-8"
+                        >
+                          Próxima
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="relatorios">
+              <SalesReportsTab salesData={salesData} />
+            </TabsContent>
+          </Tabs>
+
+          <div className="fixed bottom-6 right-6">
+            <Button
+              onClick={() => navigate('/sales/new')}
+              className="rounded-full h-14 w-14 bg-primary hover:bg-primary/90 shadow-lg"
+            >
+              <Plus className="h-6 w-6" />
+            </Button>
+          </div>
+        </PageTransition>
+      </main>
+    </div>
+  );
+}
