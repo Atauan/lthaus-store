@@ -90,7 +90,7 @@ const SalesForm = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 pb-10 pt-20">
+    <div className="w-full">
       <PageTransition>
         <SaleFormHeader 
           saleNumber={saleNumber}
@@ -128,7 +128,7 @@ const SalesForm = () => {
             </SaleFormContainer>
           </div>
           
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 hidden lg:block">
             <QuickActionsSidebar
               subtotal={subtotal}
               profit={profit}

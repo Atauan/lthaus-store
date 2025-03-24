@@ -1,15 +1,14 @@
 
-import React, { createContext, useContext, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { UserProfile, AuthContextType, UserRole } from '@/types/auth';
+import React, { createContext, useContext } from 'react';
+import { UserProfile, AuthContextType } from '@/types/auth';
 import { toast } from 'sonner';
 
-// Create a default user for development with proper UUID format
+// Create a default user for development
 const defaultDevUser: UserProfile = {
-  id: null, // Set to null to prevent foreign key issues
+  id: null,
   first_name: 'Developer',
   last_name: 'User',
-  role: 'admin', // Give admin role for development
+  role: 'admin',
   created_at: new Date().toISOString(),
 };
 
@@ -22,9 +21,9 @@ const defaultDevSession = {
 };
 
 const AuthContext = createContext<AuthContextType>({
-  user: null,
-  session: null,
-  loading: true,
+  user: defaultDevUser,
+  session: defaultDevSession,
+  loading: false,
   error: null,
   signIn: async () => {},
   signUp: async () => {},
@@ -37,37 +36,33 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Always provide the development user - now that authentication is not required
-  const [user] = useState<UserProfile | null>(defaultDevUser);
-  const [session] = useState<any | null>(defaultDevSession);
-  const [isLoading] = useState(false);
-  const [loading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
   // Mock authentication functions for development
   const signIn = async () => {
     toast.success('Login realizado com sucesso! (modo desenvolvimento)');
+    return { data: defaultDevSession, error: null };
   };
 
   const signUp = async () => {
     toast.success('Conta criada com sucesso! (modo desenvolvimento)');
+    return { data: defaultDevSession, error: null };
   };
 
   const signOut = async () => {
     toast.info('Logout realizado (modo desenvolvimento)');
+    return { error: null };
   };
 
   const requestPasswordReset = async () => {
     toast.success('Instruções de recuperação de senha enviadas! (modo desenvolvimento)');
+    return { error: null };
   };
 
   const updatePassword = async () => {
     toast.success('Senha atualizada com sucesso! (modo desenvolvimento)');
+    return { error: null };
   };
 
-  const clearError = () => {
-    setError(null);
-  };
+  const clearError = () => {};
 
   const updateProfile = async () => {
     toast.success('Perfil atualizado com sucesso! (modo desenvolvimento)');
@@ -103,11 +98,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const value = {
-    user,
-    session,
-    loading,
-    error,
-    isLoading,
+    user: defaultDevUser,
+    session: defaultDevSession,
+    loading: false,
+    error: null,
+    isLoading: false,
     signIn,
     signUp,
     signOut,

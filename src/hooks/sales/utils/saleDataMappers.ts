@@ -1,8 +1,5 @@
 
-export function mapSaleFormToDatabase(
-  saleData: any,
-  userId?: string
-) {
+export function mapSaleFormToDatabase(saleData: any) {
   // Map form data to database schema
   return {
     sale: {
@@ -19,7 +16,7 @@ export function mapSaleFormToDatabase(
       sale_date: saleData.date,
       delivery_address: saleData.deliveryAddress || null,
       delivery_fee: saleData.deliveryFee || 0,
-      user_id: userId
+      // Removed user_id completely
     },
     items: saleData.items.map((item: any) => ({
       product_id: item.id,
@@ -28,13 +25,13 @@ export function mapSaleFormToDatabase(
       cost: item.cost,
       quantity: item.quantity,
       type: item.type,
-      custom_price: item.custom_price || false,
-      user_id: userId
+      custom_price: item.custom_price || false
+      // Removed user_id completely
     })),
     payments: saleData.paymentMethods.map((payment: any) => ({
       method: payment.method,
-      amount: payment.amount,
-      user_id: userId
+      amount: payment.amount
+      // Removed user_id completely
     }))
   };
 }

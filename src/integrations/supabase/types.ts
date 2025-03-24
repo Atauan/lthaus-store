@@ -226,7 +226,7 @@ export type Database = {
           sale_number: number
           subtotal: number
           updated_at: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -245,7 +245,7 @@ export type Database = {
           sale_number: number
           subtotal: number
           updated_at?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -264,7 +264,7 @@ export type Database = {
           sale_number?: number
           subtotal?: number
           updated_at?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }

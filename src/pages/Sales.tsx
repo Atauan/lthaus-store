@@ -23,7 +23,7 @@ function adaptSalesToTableFormat(sales: Array<any>) {
     id: sale.id,
     date: sale.sale_date,
     customer: sale.customer_name || 'Cliente não identificado',
-    items: [], // We don't have items directly in the sale object, we'll handle this differently
+    items: [], // We don't have items directly in the sale object
     paymentMethod: sale.payment_method,
     total: sale.final_total
   }));
@@ -92,103 +92,101 @@ export default function Sales() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="container mx-auto px-4 pt-20 pb-10">
-        <PageTransition>
-          <SalesHeader
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            showFilters={showFilters}
-            setShowFilters={setShowFilters}
-            refresh={refresh}
+    <div className="w-full">
+      <PageTransition>
+        <SalesHeader
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+          refresh={refresh}
+        />
+
+        {showFilters && (
+          <SalesSearchFilters 
+            timeRange={timeRange}
+            setTimeRange={setTimeRange}
+            paymentMethod={paymentMethod}
+            setPaymentMethod={setPaymentMethod}
+            minAmount={minAmount}
+            setMinAmount={setMinAmount}
+            maxAmount={maxAmount}
+            setMaxAmount={setMaxAmount}
           />
+        )}
 
-          {showFilters && (
-            <SalesSearchFilters 
-              timeRange={timeRange}
-              setTimeRange={setTimeRange}
-              paymentMethod={paymentMethod}
-              setPaymentMethod={setPaymentMethod}
-              minAmount={minAmount}
-              setMinAmount={setMinAmount}
-              maxAmount={maxAmount}
-              setMaxAmount={setMaxAmount}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
+          <TabsList className="w-full max-w-md mx-auto mb-6">
+            <TabsTrigger value="vendas" className="flex-1">
+              Vendas
+            </TabsTrigger>
+            <TabsTrigger value="relatorios" className="flex-1">
+              Relatórios
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="vendas" className="space-y-6">
+            <SalesStatistics 
+              totalSales={salesStatistics.totalSales}
+              productsSold={totalProductsSold}
+              totalRevenue={salesStatistics.totalRevenue}
+              isLoading={isLoadingStatistics}
             />
-          )}
-
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-            <TabsList className="w-full max-w-md mx-auto mb-6">
-              <TabsTrigger value="vendas" className="flex-1">
-                Vendas
-              </TabsTrigger>
-              <TabsTrigger value="relatorios" className="flex-1">
-                Relatórios
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="vendas" className="space-y-6">
-              <SalesStatistics 
-                totalSales={salesStatistics.totalSales}
-                productsSold={totalProductsSold}
-                totalRevenue={salesStatistics.totalRevenue}
-                isLoading={isLoadingStatistics}
-              />
-              
-              <Card>
-                <CardHeader className="pb-0">
-                  <CardTitle className="text-lg font-medium text-gray-700">
-                    Histórico de Vendas
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <SalesTable 
-                    sales={paginatedSales}
-                    isLoading={loading}
-                  />
-                  
-                  {/* Pagination */}
-                  {adaptedFilteredSales.length > 0 && totalPages > 1 && (
-                    <div className="flex justify-between items-center mt-4">
-                      <div className="text-sm text-gray-500">
-                        Página {page} de {totalPages}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={goToPrevPage}
-                          disabled={page === 1}
-                          className="px-3 py-1 h-8"
-                        >
-                          Anterior
-                        </Button>
-                        <Button
-                          onClick={goToNextPage}
-                          disabled={page === totalPages}
-                          className="px-3 py-1 h-8"
-                        >
-                          Próxima
-                        </Button>
-                      </div>
+            
+            <Card>
+              <CardHeader className="pb-0">
+                <CardTitle className="text-lg font-medium text-gray-700">
+                  Histórico de Vendas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SalesTable 
+                  sales={paginatedSales}
+                  isLoading={loading}
+                />
+                
+                {/* Pagination */}
+                {adaptedFilteredSales.length > 0 && totalPages > 1 && (
+                  <div className="flex justify-between items-center mt-4">
+                    <div className="text-sm text-gray-500">
+                      Página {page} de {totalPages}
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={goToPrevPage}
+                        disabled={page === 1}
+                        className="px-3 py-1 h-8"
+                      >
+                        Anterior
+                      </Button>
+                      <Button
+                        onClick={goToNextPage}
+                        disabled={page === totalPages}
+                        className="px-3 py-1 h-8"
+                      >
+                        Próxima
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-            <TabsContent value="relatorios">
-              <SalesReportsTab />
-            </TabsContent>
-          </Tabs>
+          <TabsContent value="relatorios">
+            <SalesReportsTab />
+          </TabsContent>
+        </Tabs>
 
-          <div className="fixed bottom-6 right-6">
-            <Button
-              onClick={() => navigate('/sales/new')}
-              className="rounded-full h-14 w-14 bg-primary hover:bg-primary/90 shadow-lg"
-            >
-              <Plus className="h-6 w-6" />
-            </Button>
-          </div>
-        </PageTransition>
-      </main>
+        <div className="fixed bottom-6 right-6">
+          <Button
+            onClick={() => navigate('/sales/new')}
+            className="rounded-full h-14 w-14 bg-primary hover:bg-primary/90 shadow-lg"
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        </div>
+      </PageTransition>
     </div>
   );
 }
