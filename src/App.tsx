@@ -38,7 +38,7 @@ const queryClient = new QueryClient({
 });
 function MainSidebar() {
   return <Sidebar collapsible="icon" variant="inset">
-      <SidebarContent className="mx-[13px] my-[81px] px-0 py-[6px]">
+      <SidebarContent className="mx-[13px] px-0 py-[6px] my-[44px]">
         <SidebarMenu>
           {NavigationItems.map(link => <SidebarMenuItem key={link.path}>
               <SidebarMenuButton asChild tooltip={link.label}>
