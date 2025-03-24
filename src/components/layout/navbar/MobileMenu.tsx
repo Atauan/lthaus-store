@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -8,9 +7,10 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
+import { Menu, ChevronDown, ChevronRight } from 'lucide-react';
 import { NavLink } from './NavLink';
-import { NavigationItems } from './navigationItems';
+import { NavigationCategories } from './navigationItems';
+import { useLocation } from 'react-router-dom';
 
 export function MobileMenu() {
   return (
@@ -29,18 +29,82 @@ export function MobileMenu() {
         <SheetHeader className="p-4 border-b">
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
-        <div className="p-4 space-y-1">
-          {NavigationItems.map((link) => (
-            <NavLink
-              key={link.path}
-              path={link.path}
-              icon={link.icon}
-              label={link.label}
-              isMobile={true}
-            />
+        <div className="py-4 overflow-y-auto max-h-[calc(100vh-80px)]">
+          {NavigationCategories.map((category, index) => (
+            <MobileNavCategory key={index} category={category} />
           ))}
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+interface MobileNavCategoryProps {
+  category: {
+    label: string;
+    icon: React.ReactNode;
+    path?: string;
+    items: {
+      path: string;
+      icon: React.ReactNode;
+      label: string;
+    }[];
+  };
+}
+
+function MobileNavCategory({ category }: MobileNavCategoryProps) {
+  const [isOpen, setIsOpen] = useState(true);
+  const location = useLocation();
+  
+  const hasActiveItem = category.items.some(item => 
+    location.pathname === item.path || location.pathname.startsWith(item.path + '/')
+  );
+  
+  if (category.path && category.items.length === 0) {
+    return (
+      <NavLink
+        path={category.path}
+        icon={category.icon}
+        label={category.label}
+        isMobile={true}
+      />
+    );
+  }
+  
+  return (
+    <div className="space-y-1">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`
+          flex items-center justify-between w-full gap-3 px-4 py-3 transition-colors
+          ${hasActiveItem ? 'text-primary font-medium' : 'text-gray-700'}
+          hover:bg-gray-100
+        `}
+      >
+        <div className="flex items-center gap-3">
+          {category.icon}
+          <span className="text-base">{category.label}</span>
+        </div>
+        {isOpen ? (
+          <ChevronDown className="h-4 w-4" />
+        ) : (
+          <ChevronRight className="h-4 w-4" />
+        )}
+      </button>
+      
+      {isOpen && (
+        <div className="ml-7 border-l pl-3 space-y-1">
+          {category.items.map((item) => (
+            <NavLink
+              key={item.path}
+              path={item.path}
+              icon={item.icon}
+              label={item.label}
+              isMobile={true}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

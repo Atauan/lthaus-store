@@ -57,14 +57,11 @@ export default function CustomerForm() {
     }
   });
 
-  // Fetch customer data if in edit mode
+  // Fetch customer data if in edit mode - removing onSuccess that was causing the error
   const { isLoading: isLoadingCustomer } = useQuery({
     queryKey: ['customer', id],
     queryFn: () => fetchCustomerById(id!),
-    enabled: isEditMode,
-    onSuccess: (data) => {
-      // Move this to a useEffect to handle the success callback
-    }
+    enabled: isEditMode
   });
 
   // Handle the data loading success with useEffect
