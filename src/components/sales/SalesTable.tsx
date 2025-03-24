@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, FileDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 type Sale = {
   id: number;
@@ -20,11 +22,19 @@ type Sale = {
 
 interface SalesTableProps {
   sales: Sale[];
-  formatDate: (dateString: string) => string;
   isLoading?: boolean;
 }
 
-const SalesTable = ({ sales, formatDate, isLoading = false }: SalesTableProps) => {
+const SalesTable = ({ sales, isLoading = false }: SalesTableProps) => {
+  // Internal format date function
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), "dd/MM/yyyy HH:mm", { locale: ptBR });
+    } catch (error) {
+      return dateString;
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="p-6">
@@ -68,11 +78,15 @@ const SalesTable = ({ sales, formatDate, isLoading = false }: SalesTableProps) =
               <TableCell>{formatDate(sale.date)}</TableCell>
               <TableCell>{sale.customer}</TableCell>
               <TableCell>
-                {sale.items.map((item, index) => (
-                  <Badge key={index} variant="outline" className="mr-1 mb-1">
-                    {item.quantity}x {item.name}
-                  </Badge>
-                ))}
+                {sale.items && sale.items.length > 0 ? (
+                  sale.items.map((item, index) => (
+                    <Badge key={index} variant="outline" className="mr-1 mb-1">
+                      {item.quantity}x {item.name}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-muted-foreground text-sm">Sem itens</span>
+                )}
               </TableCell>
               <TableCell>
                 <Badge variant="secondary">{sale.paymentMethod}</Badge>
