@@ -3,16 +3,16 @@ import React, { createContext, useContext } from 'react';
 import { UserProfile, AuthContextType } from '@/types/auth';
 import { toast } from 'sonner';
 
-// Create a default user for development
+// Create a default user for development with proper User type structure
 const defaultDevUser: UserProfile = {
-  id: null,
+  id: 'dev-user-id',
   first_name: 'Developer',
   last_name: 'User',
   role: 'admin',
   created_at: new Date().toISOString(),
 };
 
-// Create a default session for development
+// Create a default session for development with proper Session type structure
 const defaultDevSession = {
   access_token: 'fake-token',
   refresh_token: 'fake-refresh-token',
@@ -21,6 +21,23 @@ const defaultDevSession = {
   user: {
     id: 'dev-user-id',
     email: 'dev@gmail.com',
+    app_metadata: {
+      provider: 'email',
+      providers: ['email']
+    },
+    user_metadata: {
+      first_name: 'Developer',
+      last_name: 'User'
+    },
+    aud: 'authenticated',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    role: 'admin',
+    identities: [],
+    confirmed_at: new Date().toISOString(),
+    email_confirmed_at: new Date().toISOString(),
+    last_sign_in_at: new Date().toISOString(),
+    phone: null
   }
 };
 
