@@ -19,11 +19,11 @@ export interface AuthState {
 }
 
 export interface AuthContextType extends AuthState {
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, data: { firstName: string, lastName: string }) => Promise<void>;
-  signOut: () => Promise<void>;
-  requestPasswordReset: (email: string) => Promise<void>;
-  updatePassword: (password: string) => Promise<void>;
+  signIn: (email?: string, password?: string) => Promise<{data: any; error: any | null}>;
+  signUp: (email?: string, password?: string, data?: { firstName: string, lastName: string }) => Promise<{data: any; error: any | null}>;
+  signOut: () => Promise<{error: any | null}>;
+  requestPasswordReset: (email?: string) => Promise<{error: any | null}>;
+  updatePassword: (password?: string) => Promise<{error: any | null}>;
   clearError: () => void;
   // Additional functions for UserManagement
   updateProfile?: (data: Partial<UserProfile>) => Promise<{error: any | null}>;
@@ -34,7 +34,7 @@ export interface AuthContextType extends AuthState {
 
 // Interface for user profile with created_at field
 export interface UserProfile {
-  id: string;
+  id: string | null;
   first_name?: string;
   last_name?: string;
   role?: UserRole;

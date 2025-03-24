@@ -14,8 +14,12 @@ const defaultDevUser: UserProfile = {
 
 // Create a default session for development
 const defaultDevSession = {
+  access_token: 'fake-token',
+  refresh_token: 'fake-refresh-token',
+  expires_in: 3600,
+  token_type: 'bearer',
   user: {
-    id: defaultDevUser.id,
+    id: 'dev-user-id',
     email: 'dev@gmail.com',
   }
 };
@@ -25,11 +29,11 @@ const AuthContext = createContext<AuthContextType>({
   session: defaultDevSession,
   loading: false,
   error: null,
-  signIn: async () => {},
-  signUp: async () => {},
-  signOut: async () => {},
-  requestPasswordReset: async () => {},
-  updatePassword: async () => {},
+  signIn: async () => ({ data: null, error: null }),
+  signUp: async () => ({ data: null, error: null }),
+  signOut: async () => ({ error: null }),
+  requestPasswordReset: async () => ({ error: null }),
+  updatePassword: async () => ({ error: null }),
   clearError: () => {},
 });
 
