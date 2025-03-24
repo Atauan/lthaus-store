@@ -44,7 +44,7 @@ function MainSidebar() {
               <SidebarMenuButton asChild tooltip={link.label}>
                 <a href={link.path}>
                   {link.icon}
-                  <span>{link.label}</span>
+                  <span className="rounded-sm py-0 my-[61px]">{link.label}</span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>)}
