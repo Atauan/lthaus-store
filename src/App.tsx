@@ -1,13 +1,10 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from './components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
-import { SidebarProvider, Sidebar, SidebarContent, SidebarMenu, 
-  SidebarMenuItem, SidebarMenuButton, SidebarTrigger, 
-  SidebarInset } from './components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger, SidebarInset } from './components/ui/sidebar';
 import { NavigationItems } from './components/layout/navbar/navigationItems';
 import { TopNav } from './components/layout/navbar/TopNav';
 
@@ -35,35 +32,28 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      retry: false,
-    },
-  },
+      retry: false
+    }
+  }
 });
-
 function MainSidebar() {
-  return (
-    <Sidebar collapsible="icon" variant="inset">
-      <SidebarContent>
+  return <Sidebar collapsible="icon" variant="inset">
+      <SidebarContent className="mx-[13px] my-[81px] px-0 py-[6px]">
         <SidebarMenu>
-          {NavigationItems.map((link) => (
-            <SidebarMenuItem key={link.path}>
+          {NavigationItems.map(link => <SidebarMenuItem key={link.path}>
               <SidebarMenuButton asChild tooltip={link.label}>
                 <a href={link.path}>
                   {link.icon}
                   <span>{link.label}</span>
                 </a>
               </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+            </SidebarMenuItem>)}
         </SidebarMenu>
       </SidebarContent>
-    </Sidebar>
-  );
+    </Sidebar>;
 }
-
 function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
+  return <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
           <SidebarProvider>
@@ -107,8 +97,6 @@ function App() {
       </AuthProvider>
       <Toaster />
       <SonnerToaster position="top-right" />
-    </QueryClientProvider>
-  );
+    </QueryClientProvider>;
 }
-
 export default App;
