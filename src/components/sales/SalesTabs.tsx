@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SalesSearchFilters from './SalesSearchFilters';
 import SalesTable from './SalesTable';
 import SalesReportsTab from './SalesReportsTab';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type Sale = {
   id: number;
@@ -39,43 +40,49 @@ const SalesTabs: React.FC<SalesTabsProps> = ({
   filteredSales,
   loading = false
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="bg-white rounded-lg shadow-soft overflow-hidden animate-scale-in mb-8">
       <Tabs defaultValue="list" className="w-full">
-        <div className="px-6 pt-6 border-b">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <TabsList>
+        <div className={`px-4 sm:px-6 pt-4 sm:pt-6 border-b ${isMobile ? 'pb-3' : 'pb-6'}`}>
+          <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between md:gap-4">
+            <TabsList className="mb-2 md:mb-0">
               <TabsTrigger value="list">Lista de Vendas</TabsTrigger>
               <TabsTrigger value="reports">Relatórios</TabsTrigger>
             </TabsList>
             
-            <SalesSearchFilters 
-              searchQuery={searchQuery}
-              selectedDateRange={selectedDateRange}
-              selectedPayment={selectedPayment}
-              handleSearch={handleSearch}
-              setSelectedDateRange={setSelectedDateRange}
-              setSelectedPayment={setSelectedPayment}
-              timeRange={selectedDateRange}
-              setTimeRange={setSelectedDateRange}
-              paymentMethod={selectedPayment}
-              setPaymentMethod={setSelectedPayment}
-              minAmount=""
-              setMinAmount={() => {}}
-              maxAmount=""
-              setMaxAmount={() => {}}
-            />
+            <div className="w-full md:w-auto">
+              <SalesSearchFilters 
+                searchQuery={searchQuery}
+                selectedDateRange={selectedDateRange}
+                selectedPayment={selectedPayment}
+                handleSearch={handleSearch}
+                setSelectedDateRange={setSelectedDateRange}
+                setSelectedPayment={setSelectedPayment}
+                timeRange={selectedDateRange}
+                setTimeRange={setSelectedDateRange}
+                paymentMethod={selectedPayment}
+                setPaymentMethod={setSelectedPayment}
+                minAmount=""
+                setMinAmount={() => {}}
+                maxAmount=""
+                setMaxAmount={() => {}}
+              />
+            </div>
           </div>
         </div>
         
         <TabsContent value="list" className="mt-0">
-          <SalesTable 
-            sales={filteredSales} 
-            isLoading={loading} 
-          />
+          <div className="overflow-x-auto">
+            <SalesTable 
+              sales={filteredSales} 
+              isLoading={loading} 
+            />
+          </div>
         </TabsContent>
         
-        <TabsContent value="reports" className="p-6">
+        <TabsContent value="reports" className="p-4 sm:p-6">
           <SalesReportsTab />
         </TabsContent>
       </Tabs>

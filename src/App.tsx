@@ -69,7 +69,7 @@ function App() {
               <MainSidebar />
               <SidebarInset>
                 <TopNav />
-                <div className="container mx-auto px-4 pt-16 pb-10">
+                <div className="w-full mx-auto px-2 sm:px-4 pt-16 pb-6 sm:pb-10">
                   <SidebarTrigger className="fixed top-4 left-4 z-50 md:hidden" />
                   <Routes>
                     <Route path="/" element={<Dashboard />} />

@@ -6,6 +6,7 @@ import { Eye, FileDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type Sale = {
   id: number;
@@ -26,6 +27,8 @@ interface SalesTableProps {
 }
 
 const SalesTable = ({ sales, isLoading = false }: SalesTableProps) => {
+  const isMobile = useIsMobile();
+  
   // Internal format date function
   const formatDate = (dateString: string) => {
     try {
@@ -37,7 +40,7 @@ const SalesTable = ({ sales, isLoading = false }: SalesTableProps) => {
 
   if (isLoading) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="space-y-4">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="flex items-center space-x-4">
@@ -51,14 +54,63 @@ const SalesTable = ({ sales, isLoading = false }: SalesTableProps) => {
 
   if (sales.length === 0) {
     return (
-      <div className="p-6 text-center">
+      <div className="p-4 sm:p-6 text-center">
         <p className="text-muted-foreground">Nenhuma venda encontrada.</p>
       </div>
     );
   }
 
+  // Simplified view for mobile devices
+  if (isMobile) {
+    return (
+      <div className="px-4 py-3 divide-y">
+        {sales.map((sale) => (
+          <div key={sale.id} className="py-4 space-y-2">
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="font-medium">Venda #{sale.id}</span>
+                <p className="text-sm text-muted-foreground">{formatDate(sale.date)}</p>
+              </div>
+              <Badge variant="secondary">{sale.paymentMethod}</Badge>
+            </div>
+            
+            <div>
+              <p className="text-sm font-medium">Cliente: {sale.customer}</p>
+              <div className="mt-1 flex flex-wrap gap-1">
+                {sale.items && sale.items.length > 0 ? (
+                  sale.items.map((item, index) => (
+                    <Badge key={index} variant="outline" className="text-xs">
+                      {item.quantity}x {item.name}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-muted-foreground text-xs">Sem itens</span>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center mt-2">
+              <div className="font-medium">
+                R$ {sale.total.toFixed(2)}
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline">
+                  <Eye className="h-3.5 w-3.5" />
+                </Button>
+                <Button size="sm" variant="outline">
+                  <FileDown className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Desktop view
   return (
-    <div className="overflow-auto">
+    <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
