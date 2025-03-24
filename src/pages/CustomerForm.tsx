@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { UserPlus, User, Mail, Phone, MapPin, Home, City, Map, FileText, ArrowLeft, Loader2 } from 'lucide-react';
+import { UserPlus, User, Mail, Phone, MapPin, Home, MapPinned, Map, FileText, ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCustomers } from '@/hooks/useCustomers';
 import { CustomerFormValues } from '@/types/customer';
@@ -63,23 +63,33 @@ export default function CustomerForm() {
     queryFn: () => fetchCustomerById(id!),
     enabled: isEditMode,
     onSuccess: (data) => {
-      form.reset({
-        name: data.name,
-        email: data.email || '',
-        phone: data.phone || '',
-        address: data.address || '',
-        city: data.city || '',
-        state: data.state || '',
-        zipcode: data.zipcode || '',
-        notes: data.notes || ''
-      });
-    },
-    onError: (error) => {
-      console.error('Error fetching customer:', error);
-      toast.error('Erro ao carregar dados do cliente');
-      navigate('/customers');
+      // Move this to a useEffect to handle the success callback
     }
   });
+
+  // Handle the data loading success with useEffect
+  useEffect(() => {
+    if (isEditMode && id) {
+      fetchCustomerById(id)
+        .then(data => {
+          form.reset({
+            name: data.name,
+            email: data.email || '',
+            phone: data.phone || '',
+            address: data.address || '',
+            city: data.city || '',
+            state: data.state || '',
+            zipcode: data.zipcode || '',
+            notes: data.notes || ''
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching customer:', error);
+          toast.error('Erro ao carregar dados do cliente');
+          navigate('/customers');
+        });
+    }
+  }, [id, isEditMode, fetchCustomerById, form, navigate]);
 
   const onSubmit = (values: CustomerFormValues) => {
     if (isEditMode) {
