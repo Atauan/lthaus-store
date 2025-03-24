@@ -83,6 +83,48 @@ export type Database = {
           },
         ]
       }
+      customers: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          state: string | null
+          updated_at: string
+          zipcode: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          zipcode?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          zipcode?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           brand: string

@@ -27,6 +27,8 @@ import UserManagement from './pages/UserManagement';
 import Sales from './pages/Sales';
 import SalesForm from './components/sales/SalesForm';
 import Settings from './pages/Settings';
+import Customers from './pages/Customers';
+import CustomerForm from './pages/CustomerForm';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -82,6 +84,11 @@ function App() {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/inventory" element={<Inventory />} />
                     <Route path="/users" element={<UserManagement />} />
+                    
+                    {/* Customer routes */}
+                    <Route path="/customers" element={<Customers />} />
+                    <Route path="/customers/add" element={<CustomerForm />} />
+                    <Route path="/customers/edit/:id" element={<CustomerForm />} />
 
                     {/* Auth routes */}
                     <Route path="/login" element={<Login />} />

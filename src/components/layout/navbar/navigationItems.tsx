@@ -8,7 +8,8 @@ import {
   Store,
   BarChart2,
   Settings,
-  ShoppingCart
+  ShoppingCart,
+  UserPlus
 } from 'lucide-react';
 
 export const NavigationItems = [
@@ -17,6 +18,7 @@ export const NavigationItems = [
   { path: '/inventory', icon: <BarChart2 className="h-5 w-5" />, label: 'Estoque' },
   { path: '/sales', icon: <ShoppingCart className="h-5 w-5" />, label: 'Vendas' },
   { path: '/sales/new', icon: <Store className="h-5 w-5" />, label: 'Nova Venda' },
+  { path: '/customers', icon: <UserPlus className="h-5 w-5" />, label: 'Clientes' },
   { path: '/suppliers', icon: <Truck className="h-5 w-5" />, label: 'Fornecedores' },
   { path: '/users', icon: <Users className="h-5 w-5" />, label: 'Usuários' },
   { path: '/settings', icon: <Settings className="h-5 w-5" />, label: 'Configurações' },
