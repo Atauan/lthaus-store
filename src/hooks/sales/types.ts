@@ -19,7 +19,7 @@ export interface Sale {
   user_id?: string;
   delivery_address?: string;
   delivery_fee?: number;
-  status?: 'completed' | 'revoked' | 'pending';
+  status?: string;  // Changed from 'completed' | 'revoked' | 'pending' to string
 }
 
 export interface SaleItem {

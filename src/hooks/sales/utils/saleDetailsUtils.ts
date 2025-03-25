@@ -27,6 +27,12 @@ export async function getSaleDetails(saleId: number): Promise<{ success: boolean
       
     if (paymentsError) throw paymentsError;
     
+    // Validate and normalize the status field
+    if (saleData.status && !['completed', 'revoked', 'pending'].includes(saleData.status)) {
+      console.warn(`Unknown sale status: ${saleData.status}, defaulting to 'completed'`);
+      saleData.status = 'completed';
+    }
+    
     // Mapear os dados dos itens para o formato esperado por SaleItem
     const mappedItems: SaleItem[] = (itemsData || []).map(item => ({
       id: item.id,
