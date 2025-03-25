@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -99,7 +98,7 @@ const SalesTable = ({
   // Get status badge
   const getStatusBadge = (status?: string) => {
     if (!status || status === 'completed') {
-      return <Badge variant="success">Concluída</Badge>;
+      return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">Concluída</Badge>;
     }
     if (status === 'revoked') {
       return <Badge variant="destructive">Cancelada</Badge>;
@@ -107,7 +106,7 @@ const SalesTable = ({
     if (status === 'pending') {
       return <Badge variant="outline">Pendente</Badge>;
     }
-    return <Badge>{status}</Badge>;
+    return <Badge variant="outline">{status}</Badge>;
   };
 
   if (isLoading) {

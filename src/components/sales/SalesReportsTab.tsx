@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer } from '@/components/ui/chart';
-import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { useSales } from '@/hooks/useSales';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -143,7 +143,14 @@ const SalesReportsTab = () => {
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="name" />
         <YAxis />
-        <Tooltip formatter={(value) => [`R$ ${value.toFixed(2)}`, 'Vendas']} />
+        <Tooltip 
+          formatter={(value) => {
+            return typeof value === 'number' 
+              ? `R$ ${value.toFixed(2)}` 
+              : value;
+          }}
+          labelFormatter={(label) => `${label}`}
+        />
         <Legend />
         <Bar dataKey="sales" name="Vendas (R$)" fill="#8884d8" />
       </ReChartsBarChart>
@@ -167,7 +174,13 @@ const SalesReportsTab = () => {
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
-        <Tooltip />
+        <Tooltip 
+          formatter={(value) => {
+            return typeof value === 'number' 
+              ? value.toString() 
+              : value;
+          }}
+        />
         <Legend />
       </ReChartsPieChart>
     </ResponsiveContainer>
@@ -184,9 +197,13 @@ const SalesReportsTab = () => {
         <YAxis yAxisId="left" />
         <YAxis yAxisId="right" orientation="right" />
         <Tooltip 
-          formatter={(value, name) => 
-            [name === "sales" ? value : `R$ ${value.toFixed(2)}`, 
-            name === "sales" ? "Número de vendas" : "Valor total"]} 
+          formatter={(value, name) => {
+            if (typeof value === 'number') {
+              return name === "sales" ? value.toString() : `R$ ${value.toFixed(2)}`;
+            }
+            return value;
+          }}
+          labelFormatter={(label) => `${label}`}
         />
         <Legend />
         <Line 

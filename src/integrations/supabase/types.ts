@@ -266,6 +266,7 @@ export type Database = {
           sale_channel: string | null
           sale_date: string | null
           sale_number: number
+          status: string | null
           subtotal: number
           updated_at: string | null
           user_id: string | null
@@ -285,6 +286,7 @@ export type Database = {
           sale_channel?: string | null
           sale_date?: string | null
           sale_number: number
+          status?: string | null
           subtotal: number
           updated_at?: string | null
           user_id?: string | null
@@ -304,6 +306,7 @@ export type Database = {
           sale_channel?: string | null
           sale_date?: string | null
           sale_number?: number
+          status?: string | null
           subtotal?: number
           updated_at?: string | null
           user_id?: string | null

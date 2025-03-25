@@ -1,4 +1,3 @@
-
 /**
  * Sale types for interaction with the Supabase database
  */
@@ -20,7 +19,7 @@ export interface Sale {
   user_id?: string;
   delivery_address?: string;
   delivery_fee?: number;
-  status?: string; // 'completed', 'revoked', 'pending'
+  status?: 'completed' | 'revoked' | 'pending';
 }
 
 export interface SaleItem {
