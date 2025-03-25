@@ -5,6 +5,7 @@ import { useSaleCreate } from './sales/useSaleCreate';
 import { useSalesStatistics } from './sales/useSalesStatistics';
 import { useSalesFiltering } from './sales/useSalesFiltering';
 import { useSalesSort } from './sales/useSalesSort';
+import { useRevokeSale } from './sales/useRevokeSale';
 import { useState } from 'react';
 
 export type { Sale, SaleItem, SalePayment, DateRange, SaleDetails, SalesStatistics } from './sales/types';
@@ -13,7 +14,8 @@ export function useSales() {
   const { sales, setSales, loading, isAuthenticated, refresh } = useSalesData();
   const { getSaleDetails } = useSaleDetails();
   const { createSale } = useSaleCreate();
-  const { salesStatistics, getSalesStatistics } = useSalesStatistics(sales);
+  const { revokeSale, isRevoking } = useRevokeSale();
+  const { salesStatistics, getSalesStatistics, periodSales, isLoadingStatistics } = useSalesStatistics(sales);
   const { 
     searchTerm, 
     setSearchTerm, 
@@ -27,7 +29,9 @@ export function useSales() {
     setMaxAmount,
     setMinAmount,
     maxAmount,
-    filteredSales 
+    filteredSales,
+    showFilters,
+    setShowFilters
   } = useSalesFiltering(sales);
   const { sortedSales, sortBy, setSortBy, sortDirection, setSortDirection } = useSalesSort(filteredSales);
 
@@ -53,9 +57,16 @@ export function useSales() {
     sortDirection, 
     setSortDirection,
     getSaleDetails,
+    salesStatistics,
     getSalesStatistics,
+    periodSales,
+    isLoadingStatistics,
     createSale,
+    revokeSale,
+    isRevoking,
     isAuthenticated,
-    refresh
+    refresh,
+    showFilters,
+    setShowFilters
   };
 }

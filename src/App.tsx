@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -36,24 +37,31 @@ const queryClient = new QueryClient({
     }
   }
 });
+
 function MainSidebar() {
-  return <Sidebar collapsible="icon" variant="inset">
+  return (
+    <Sidebar collapsible="icon" variant="inset">
       <SidebarContent className="mx-[13px] px-0 py-[6px] my-[44px]">
         <SidebarMenu>
-          {NavigationItems.map(link => <SidebarMenuItem key={link.path}>
+          {NavigationItems.map(link => (
+            <SidebarMenuItem key={link.path}>
               <SidebarMenuButton asChild tooltip={link.label}>
                 <a href={link.path}>
                   {link.icon}
                   <span className="rounded-sm py-0 my-[61px]">{link.label}</span>
                 </a>
               </SidebarMenuButton>
-            </SidebarMenuItem>)}
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
       </SidebarContent>
-    </Sidebar>;
+    </Sidebar>
+  );
 }
+
 function App() {
-  return <QueryClientProvider client={queryClient}>
+  return (
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
           <SidebarProvider>
@@ -71,6 +79,7 @@ function App() {
                     <Route path="/suppliers" element={<Suppliers />} />
                     <Route path="/sales" element={<Sales />} />
                     <Route path="/sales/new" element={<SalesForm />} />
+                    <Route path="/sales/edit/:id" element={<SalesForm />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/inventory" element={<Inventory />} />
                     <Route path="/users" element={<UserManagement />} />
@@ -97,6 +106,8 @@ function App() {
       </AuthProvider>
       <Toaster />
       <SonnerToaster position="top-right" />
-    </QueryClientProvider>;
+    </QueryClientProvider>
+  );
 }
+
 export default App;

@@ -20,6 +20,7 @@ export interface Sale {
   user_id?: string;
   delivery_address?: string;
   delivery_fee?: number;
+  status?: string; // 'completed', 'revoked', 'pending'
 }
 
 export interface SaleItem {
@@ -51,7 +52,7 @@ export interface SalesStatistics {
   totalSales: number;
   totalRevenue: number;
   totalProfit: number;
-  period: 'day' | 'week' | 'month';
+  period: 'day' | 'week' | 'month' | 'year';
   sales: Sale[];
 }
 
