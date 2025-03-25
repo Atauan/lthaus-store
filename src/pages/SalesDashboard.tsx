@@ -100,7 +100,7 @@ export default function SalesDashboard() {
               <TabsContent value="inventory">
                 <InventoryModule 
                   products={products}
-                  lowStockProducts={getLowStockProducts()}
+                  lowStockProducts={getLowStockProducts() || []}
                   isLoading={productsLoading}
                 />
               </TabsContent>
