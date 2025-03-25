@@ -1,112 +1,69 @@
-
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from './components/ui/toaster';
-import { Toaster as SonnerToaster } from 'sonner';
-import { AuthProvider } from './contexts/AuthContext';
-import { SidebarProvider, Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger, SidebarInset } from './components/ui/sidebar';
-import { NavigationItems } from './components/layout/navbar/navigationItems';
-import { TopNav } from './components/layout/navbar/TopNav';
-
-// Import your page components
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Dashboard from './pages/Dashboard';
-import NotFound from './pages/NotFound';
 import Products from './pages/Products';
-import AddProduct from './pages/AddProduct';
-import EditProduct from './pages/EditProduct';
-import Login from './pages/Auth/Login';
-import Register from './pages/Auth/Register';
-import ResetPassword from './pages/Auth/ResetPassword';
-import UpdatePassword from './pages/Auth/UpdatePassword';
-import Suppliers from './pages/Suppliers';
-import Inventory from './pages/Inventory';
-import UserManagement from './pages/UserManagement';
 import Sales from './pages/Sales';
-import SalesForm from './components/sales/SalesForm';
+import NewSale from './pages/NewSale';
+import EditSale from './pages/EditSale';
 import Settings from './pages/Settings';
-import Customers from './pages/Customers';
-import CustomerForm from './pages/CustomerForm';
-
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: false
-    }
-  }
-});
-
-function MainSidebar() {
-  return (
-    <Sidebar collapsible="icon" variant="inset">
-      <SidebarContent className="mx-[13px] px-0 py-[6px] my-[44px]">
-        <SidebarMenu>
-          {NavigationItems.map(link => (
-            <SidebarMenuItem key={link.path}>
-              <SidebarMenuButton asChild tooltip={link.label}>
-                <a href={link.path}>
-                  {link.icon}
-                  <span className="rounded-sm py-0 my-[61px]">{link.label}</span>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarContent>
-    </Sidebar>
-  );
-}
+import SalesDashboard from './pages/SalesDashboard';
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <SidebarProvider>
-            <div className="min-h-screen w-full flex bg-background">
-              <MainSidebar />
-              <SidebarInset>
-                <TopNav />
-                <div className="w-full mx-auto px-2 sm:px-4 pt-16 pb-6 sm:pb-10">
-                  <SidebarTrigger className="fixed top-4 left-4 z-50 md:hidden" />
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/products" element={<Products />} />
-                    <Route path="/products/add" element={<AddProduct />} />
-                    <Route path="/products/edit/:id" element={<EditProduct />} />
-                    <Route path="/suppliers" element={<Suppliers />} />
-                    <Route path="/sales" element={<Sales />} />
-                    <Route path="/sales/new" element={<SalesForm />} />
-                    <Route path="/sales/edit/:id" element={<SalesForm />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/inventory" element={<Inventory />} />
-                    <Route path="/users" element={<UserManagement />} />
-                    
-                    {/* Customer routes */}
-                    <Route path="/customers" element={<Customers />} />
-                    <Route path="/customers/add" element={<CustomerForm />} />
-                    <Route path="/customers/edit/:id" element={<CustomerForm />} />
-
-                    {/* Auth routes */}
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/update-password" element={<UpdatePassword />} />
-
-                    {/* Not found */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </div>
-              </SidebarInset>
-            </div>
-          </SidebarProvider>
-        </Router>
-      </AuthProvider>
-      <Toaster />
-      <SonnerToaster position="top-right" />
-    </QueryClientProvider>
+    <div className="app">
+      <div className="app-container">
+        <RouterProvider
+          router={createBrowserRouter([
+            {
+              element: (
+                <AppLayout />
+              ),
+              errorElement: <ErrorBoundary />,
+              children: [
+                {
+                  path: "/",
+                  element: <Navigate to="/dashboard" replace />,
+                },
+                {
+                  path: "/dashboard",
+                  element: <Dashboard />,
+                },
+                {
+                  path: "/analytics",
+                  element: <SalesDashboard />,
+                },
+                {
+                  path: "/products",
+                  element: <Products />,
+                },
+                {
+                  path: "/sales",
+                  element: <Sales />,
+                },
+                {
+                  path: "/sales/new",
+                  element: <NewSale />,
+                },
+                {
+                  path: "/sales/edit/:id",
+                  element: <EditSale />,
+                },
+                {
+                  path: "/settings",
+                  element: <Settings />,
+                },
+              ],
+            },
+          ])}
+        />
+      </div>
+    </div>
   );
 }
 

@@ -1,61 +1,42 @@
-
-import React from 'react';
-import {
-  Home,
-  Package,
-  Truck,
-  Users,
-  Store,
-  BarChart2,
-  Settings,
-  ShoppingCart,
-  UserPlus,
-  Layers
+import { 
+  Home, ShoppingBag, Users, Settings, Package, FileText, ShoppingCart, 
+  BarChart2, CreditCard, TrendingUp
 } from 'lucide-react';
 
-// Main navigation categories
-export const NavigationCategories = [
+export const navigationItems = [
   {
-    label: 'Dashboard',
-    icon: <Home className="h-5 w-5" />,
-    path: '/',
-    items: []
+    title: "Dashboard",
+    href: "/dashboard",
+    icon: Home,
   },
   {
-    label: 'Produtos',
-    icon: <Package className="h-5 w-5" />,
-    items: [
-      { path: '/products', icon: <Package className="h-5 w-5" />, label: 'Produtos' },
-      { path: '/inventory', icon: <BarChart2 className="h-5 w-5" />, label: 'Estoque' },
-    ]
+    title: "Análise de Vendas",
+    href: "/analytics",
+    icon: TrendingUp,
   },
   {
-    label: 'Vendas',
-    icon: <ShoppingCart className="h-5 w-5" />,
-    items: [
-      { path: '/sales', icon: <ShoppingCart className="h-5 w-5" />, label: 'Vendas' },
-      { path: '/sales/new', icon: <Store className="h-5 w-5" />, label: 'Nova Venda' },
-    ]
+    title: "Vendas",
+    href: "/sales",
+    icon: ShoppingCart,
   },
   {
-    label: 'Usuários',
-    icon: <Users className="h-5 w-5" />,
-    items: [
-      { path: '/customers', icon: <UserPlus className="h-5 w-5" />, label: 'Clientes' },
-      { path: '/suppliers', icon: <Truck className="h-5 w-5" />, label: 'Fornecedores' },
-    ]
+    title: "Produtos",
+    href: "/products",
+    icon: Package,
   },
   {
-    label: 'Configurações',
-    icon: <Settings className="h-5 w-5" />,
-    path: '/settings',
-    items: []
+    title: "Relatórios",
+    href: "/reports",
+    icon: FileText,
+  },
+  {
+    title: "Usuários",
+    href: "/users",
+    icon: Users,
+  },
+  {
+    title: "Configurações",
+    href: "/settings",
+    icon: Settings,
   },
 ];
-
-// Flatten the navigation categories for use in components that need a flat list
-export const NavigationItems = NavigationCategories.flatMap(category => 
-  category.items.length > 0 
-    ? category.items 
-    : [{ path: category.path, icon: category.icon, label: category.label }]
-);
