@@ -8,10 +8,12 @@ import StoreCostsModule from '@/components/dashboard/StoreCostsModule';
 import { useSales } from '@/hooks/useSales';
 import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/hooks/products/useProductTypes';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
   const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year'>('month');
   const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
+  const [isLoadingLowStock, setIsLoadingLowStock] = useState(false);
   
   // Fetch data from hooks
   const { 
@@ -19,6 +21,7 @@ const Dashboard = () => {
     loading: salesLoading, 
     salesStatistics, 
     getSalesStatistics, 
+    refresh: refreshSales
   } = useSales();
   
   const { 
@@ -29,22 +32,26 @@ const Dashboard = () => {
   
   // Load initial data
   useEffect(() => {
+    refreshSales();
     getSalesStatistics(timeRange);
-  }, [timeRange, getSalesStatistics]);
+  }, [timeRange, refreshSales, getSalesStatistics]);
   
   // Fetch low stock products
   useEffect(() => {
     const fetchLowStockProducts = async () => {
       try {
+        setIsLoadingLowStock(true);
         const result = await getLowStockProducts();
         
-        // Check if result is Promise or already resolved
-        if (result && typeof result === 'object' && 'success' in result) {
+        if (result && 'success' in result) {
           // It's the result object with success/data properties
           if (result.success && result.data) {
             setLowStockProducts(result.data);
           } else {
             setLowStockProducts([]);
+            if (result.error) {
+              toast.error(`Error fetching low stock products: ${result.error}`);
+            }
           }
         } else if (Array.isArray(result)) {
           // It's already an array
@@ -56,13 +63,16 @@ const Dashboard = () => {
       } catch (error) {
         console.error('Error fetching low stock products:', error);
         setLowStockProducts([]);
+        toast.error('Failed to fetch low stock products');
+      } finally {
+        setIsLoadingLowStock(false);
       }
     };
     
     fetchLowStockProducts();
   }, [getLowStockProducts]);
   
-  const isLoading = salesLoading || productsLoading;
+  const isLoading = salesLoading || productsLoading || isLoadingLowStock;
 
   return (
     <PageTransition>
@@ -79,7 +89,7 @@ const Dashboard = () => {
           <InventoryModule 
             products={products}
             lowStockProducts={lowStockProducts}
-            isLoading={productsLoading}
+            isLoading={productsLoading || isLoadingLowStock}
           />
           <SalesAnalysisModule 
             sales={sales}

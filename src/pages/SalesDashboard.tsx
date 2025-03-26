@@ -11,11 +11,13 @@ import SalesAnalysisModule from '@/components/dashboard/SalesAnalysisModule';
 import CustomersModule from '@/components/dashboard/CustomersModule';
 import ProductAnalysisModule from '@/components/dashboard/ProductAnalysisModule';
 import { Product } from '@/hooks/products/useProductTypes';
+import { toast } from 'sonner';
 
 export default function SalesDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year'>('month');
   const [lowStockItems, setLowStockItems] = useState<Product[]>([]);
+  const [isLoadingLowStock, setIsLoadingLowStock] = useState(false);
   
   // Fetch data from hooks
   const { 
@@ -36,19 +38,24 @@ export default function SalesDashboard() {
   useEffect(() => {
     refreshSales();
     getSalesStatistics(timeRange);
-    
-    // Get low stock products
+  }, [timeRange, refreshSales, getSalesStatistics]);
+  
+  // Get low stock products
+  useEffect(() => {
     const fetchLowStock = async () => {
       try {
+        setIsLoadingLowStock(true);
         const result = await getLowStockProducts();
         
-        // Check if result is Promise or already resolved
-        if (result && typeof result === 'object' && 'success' in result) {
+        if (result && 'success' in result) {
           // It's the result object with success/data properties
           if (result.success && result.data) {
             setLowStockItems(result.data);
           } else {
             setLowStockItems([]);
+            if (result.error) {
+              toast.error(`Error fetching low stock products: ${result.error}`);
+            }
           }
         } else if (Array.isArray(result)) {
           // It's already an array
@@ -60,11 +67,14 @@ export default function SalesDashboard() {
       } catch (error) {
         console.error('Error fetching low stock products:', error);
         setLowStockItems([]);
+        toast.error('Failed to fetch low stock products');
+      } finally {
+        setIsLoadingLowStock(false);
       }
     };
     
     fetchLowStock();
-  }, [timeRange, refreshSales, getSalesStatistics, getLowStockProducts]);
+  }, [getLowStockProducts]);
 
   const handlePeriodChange = (value: string) => {
     setTimeRange(value as 'day' | 'week' | 'month' | 'year');
@@ -99,7 +109,7 @@ export default function SalesDashboard() {
             </div>
             
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full max-w-3xl mx-auto mb-6">
+              <TabsList className="w-full max-w-3xl mx-auto mb-6 overflow-x-auto flex-nowrap">
                 <TabsTrigger value="overview" className="flex-1">
                   Visão Geral
                 </TabsTrigger>
@@ -123,7 +133,7 @@ export default function SalesDashboard() {
                   products={products}
                   salesStatistics={salesStatistics}
                   timeRange={timeRange}
-                  isLoading={salesLoading || productsLoading}
+                  isLoading={salesLoading || productsLoading || isLoadingLowStock}
                 />
               </TabsContent>
               
@@ -131,7 +141,7 @@ export default function SalesDashboard() {
                 <InventoryModule 
                   products={products}
                   lowStockProducts={lowStockItems}
-                  isLoading={productsLoading}
+                  isLoading={productsLoading || isLoadingLowStock}
                 />
               </TabsContent>
               

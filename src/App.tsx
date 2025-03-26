@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import {
   createBrowserRouter,
@@ -10,6 +9,7 @@ import Products from './pages/Products';
 import Sales from './pages/Sales';
 import Settings from './pages/Settings';
 import SalesDashboard from './pages/SalesDashboard';
+import SalesReportsPage from './pages/SalesReportsPage';
 import { Toaster } from "@/components/ui/toaster";
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -24,11 +24,12 @@ function App() {
         <RouterProvider
           router={createBrowserRouter([
             {
+              path: "/",
               element: <AppLayout />,
               errorElement: <ErrorBoundary />,
               children: [
                 {
-                  path: "/",
+                  index: true,
                   element: <Navigate to="/dashboard" replace />,
                 },
                 {
@@ -58,6 +59,10 @@ function App() {
                 {
                   path: "/settings",
                   element: <Settings />,
+                },
+                {
+                  path: "/reports",
+                  element: <SalesReportsPage />,
                 }
               ]
             }

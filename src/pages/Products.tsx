@@ -90,41 +90,45 @@ const Products = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen lg:pl-64 pt-16">
+      <div className="min-h-screen pt-16">
         <div className="container mx-auto px-4 pb-10">
           <ProductsHeader handleAddProduct={handleAddProduct} />
 
-          <Tabs defaultValue="products">
-            <TabsList className="mb-4">
+          <Tabs defaultValue="products" className="w-full">
+            <TabsList className="mb-4 w-full sm:w-auto">
               <TabsTrigger value="products">Products</TabsTrigger>
               <TabsTrigger value="cost-changes">Cost Changes</TabsTrigger>
             </TabsList>
             
             <TabsContent value="products">
-              <ProductsFilters
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
-                selectedBrand={selectedBrand}
-                setSelectedBrand={setSelectedBrand}
-                categories={['Todas', 'Cabos', 'Capas', 'Áudio', 'Carregadores', 'Proteção', 'Acessórios']}
-                brands={['Todas', 'Apple', 'Samsung', 'Anker', 'JBL', 'Generic']}
-              />
-
-              {loading ? (
-                <div className="flex justify-center items-center h-64">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <span className="ml-2 text-lg">Loading products...</span>
-                </div>
-              ) : (
-                <ProductsTable 
-                  filteredProducts={filteredProducts}
-                  totalProducts={products.length}
-                  openEditDialog={openEditDialog}
-                  onDelete={handleDeleteProduct}
+              <div className="space-y-4">
+                <ProductsFilters
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                  selectedBrand={selectedBrand}
+                  setSelectedBrand={setSelectedBrand}
+                  categories={['Todas', 'Cabos', 'Capas', 'Áudio', 'Carregadores', 'Proteção', 'Acessórios']}
+                  brands={['Todas', 'Apple', 'Samsung', 'Anker', 'JBL', 'Generic']}
                 />
-              )}
+
+                {loading ? (
+                  <div className="flex justify-center items-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="ml-2 text-lg">Loading products...</span>
+                  </div>
+                ) : (
+                  <div className="overflow-hidden rounded-lg border bg-white shadow">
+                    <ProductsTable 
+                      filteredProducts={filteredProducts}
+                      totalProducts={products.length}
+                      openEditDialog={openEditDialog}
+                      onDelete={handleDeleteProduct}
+                    />
+                  </div>
+                )}
+              </div>
             </TabsContent>
             
             <TabsContent value="cost-changes">

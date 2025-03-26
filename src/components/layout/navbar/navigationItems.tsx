@@ -1,102 +1,127 @@
+import {
+  BarChart3,
+  Building2,
+  Calendar,
+  CreditCard,
+  Gauge,
+  LayoutDashboard,
+  ListChecks,
+  Package,
+  Settings,
+  ShoppingBag,
+  User,
+  Users,
+} from "lucide-react";
 
-import { 
-  Home, ShoppingBag, Users, Settings, Package, FileText, ShoppingCart, 
-  BarChart2, CreditCard, TrendingUp
-} from 'lucide-react';
-import React from 'react';
-
-// Define the navigation categories
-export const NavigationCategories = [
-  {
-    label: "Main",
-    icon: <Home className="h-4 w-4" />,
-    items: [
-      {
-        path: "/dashboard",
-        icon: <Home className="h-4 w-4" />,
-        label: "Dashboard",
-      },
-      {
-        path: "/analytics",
-        icon: <TrendingUp className="h-4 w-4" />,
-        label: "Análise de Vendas",
-      }
-    ]
-  },
-  {
-    label: "Operations",
-    icon: <ShoppingBag className="h-4 w-4" />,
-    items: [
-      {
-        path: "/sales",
-        icon: <ShoppingCart className="h-4 w-4" />,
-        label: "Vendas",
-      },
-      {
-        path: "/products",
-        icon: <Package className="h-4 w-4" />,
-        label: "Produtos",
-      },
-      {
-        path: "/reports",
-        icon: <FileText className="h-4 w-4" />,
-        label: "Relatórios",
-      },
-    ]
-  },
-  {
-    label: "Management",
-    icon: <Settings className="h-4 w-4" />,
-    items: [
-      {
-        path: "/users",
-        icon: <Users className="h-4 w-4" />,
-        label: "Usuários",
-      },
-      {
-        path: "/settings",
-        icon: <Settings className="h-4 w-4" />,
-        label: "Configurações",
-      },
-    ]
-  }
-];
-
-// Keep the original flat list for components that still use it
 export const navigationItems = [
   {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: Home,
-  },
-  {
-    title: "Análise de Vendas",
-    href: "/analytics",
-    icon: TrendingUp,
+    title: "Painel",
+    items: [
+      {
+        title: "Dashboard",
+        href: "/",
+        icon: LayoutDashboard,
+      },
+    ],
   },
   {
     title: "Vendas",
-    href: "/sales",
-    icon: ShoppingCart,
+    items: [
+      {
+        title: "Dashboard de Vendas",
+        href: "/sales-dashboard",
+        icon: Gauge,
+      },
+      {
+        title: "Nova Venda",
+        href: "/sales/new",
+        icon: ShoppingBag,
+      },
+      {
+        title: "Lista de Vendas",
+        href: "/sales",
+        icon: ListChecks,
+      },
+    ],
   },
   {
     title: "Produtos",
-    href: "/products",
-    icon: Package,
+    items: [
+      {
+        title: "Lista de Produtos",
+        href: "/products",
+        icon: Package,
+      },
+    ],
+  },
+  {
+    title: "Clientes",
+    items: [
+      {
+        title: "Lista de Clientes",
+        href: "/customers",
+        icon: Users,
+      },
+      {
+        title: "Novo Cliente",
+        href: "/customers/new",
+        icon: User,
+      },
+    ],
+  },
+  {
+    title: "Financeiro",
+    items: [
+      {
+        title: "Contas a Pagar",
+        href: "/financial/bills-to-pay",
+        icon: CreditCard,
+      },
+      {
+        title: "Contas a Receber",
+        href: "/financial/bills-to-receive",
+        icon: CreditCard,
+      },
+    ],
+  },
+  {
+    title: "Loja",
+    items: [
+      {
+        title: "Informações da Loja",
+        href: "/store",
+        icon: Building2,
+      },
+    ],
+  },
+  {
+    title: "Agendamentos",
+    items: [
+      {
+        title: "Lista de Agendamentos",
+        href: "/schedules",
+        icon: Calendar,
+      },
+    ],
   },
   {
     title: "Relatórios",
-    href: "/reports",
-    icon: FileText,
-  },
-  {
-    title: "Usuários",
-    href: "/users",
-    icon: Users,
+    items: [
+      {
+        title: "Relatórios de Vendas",
+        href: "/reports",
+        icon: BarChart3,
+      },
+    ],
   },
   {
     title: "Configurações",
-    href: "/settings",
-    icon: Settings,
+    items: [
+      {
+        title: "Configurações da Loja",
+        href: "/settings",
+        icon: Settings,
+      },
+    ],
   },
 ];

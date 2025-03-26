@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Zap } from 'lucide-react';
 
 interface ProductMarginData {
@@ -31,9 +31,23 @@ const PriceComparisonChart: React.FC<PriceComparisonChartProps> = ({ productMarg
             margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" angle={-45} textAnchor="end" height={70} />
-            <YAxis />
-            <Tooltip formatter={(value) => `R$ ${value}`} />
+            <XAxis 
+              dataKey="name" 
+              angle={-45} 
+              textAnchor="end" 
+              height={70}
+              interval={0}
+              tick={{ fontSize: 12 }}
+            />
+            <YAxis 
+              tickFormatter={(value) => `R$ ${value}`}
+            />
+            <Tooltip 
+              formatter={(value, name) => {
+                return [`R$ ${Number(value).toFixed(2)}`, name === "custo" ? "Custo" : "Preço de Venda"];
+              }}
+            />
+            <Legend />
             <Bar dataKey="custo" name="Custo" fill="#8884d8" />
             <Bar dataKey="preco" name="Preço de Venda" fill="#82ca9d" />
           </BarChart>
