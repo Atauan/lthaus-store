@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import {
   createBrowserRouter,
   RouterProvider,
@@ -13,6 +13,9 @@ import SalesDashboard from './pages/SalesDashboard';
 import { Toaster } from "@/components/ui/toaster";
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+
+// Lazy-loaded component
+const EditProduct = React.lazy(() => import('./pages/EditProduct'));
 
 function App() {
   return (
@@ -42,7 +45,11 @@ function App() {
                 },
                 {
                   path: "/products/edit/:productId",
-                  element: <React.lazy(() => import('./pages/EditProduct')) />,
+                  element: (
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <EditProduct />
+                    </Suspense>
+                  ),
                 },
                 {
                   path: "/sales",
