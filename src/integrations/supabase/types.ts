@@ -357,6 +357,45 @@ export type Database = {
           },
         ]
       }
+      store_costs: {
+        Row: {
+          created_at: string
+          id: string
+          marketing: number
+          month: string
+          other: number
+          rent: number
+          salaries: number
+          updated_at: string
+          utilities: number
+          year: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          marketing?: number
+          month: string
+          other?: number
+          rent?: number
+          salaries?: number
+          updated_at?: string
+          utilities?: number
+          year: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          marketing?: number
+          month?: string
+          other?: number
+          rent?: number
+          salaries?: number
+          updated_at?: string
+          utilities?: number
+          year?: string
+        }
+        Relationships: []
+      }
       store_info: {
         Row: {
           address: string
