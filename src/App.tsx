@@ -4,7 +4,6 @@ import {
   createBrowserRouter,
   RouterProvider,
   Navigate,
-  Outlet,
 } from "react-router-dom";
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
