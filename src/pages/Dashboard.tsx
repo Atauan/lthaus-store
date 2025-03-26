@@ -7,9 +7,11 @@ import SalesAnalysisModule from '@/components/dashboard/SalesAnalysisModule';
 import StoreCostsModule from '@/components/dashboard/StoreCostsModule';
 import { useSales } from '@/hooks/useSales';
 import { useProducts } from '@/hooks/useProducts';
+import { Product } from '@/hooks/products/useProductTypes';
 
 const Dashboard = () => {
   const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year'>('month');
+  const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
   
   // Fetch data from hooks
   const { 
@@ -30,7 +32,36 @@ const Dashboard = () => {
     getSalesStatistics(timeRange);
   }, [timeRange, getSalesStatistics]);
   
-  const lowStockProducts = getLowStockProducts() || [];
+  // Fetch low stock products
+  useEffect(() => {
+    const fetchLowStockProducts = async () => {
+      try {
+        const result = await getLowStockProducts();
+        
+        // Check if result is Promise or already resolved
+        if (result && typeof result === 'object' && 'success' in result) {
+          // It's the result object with success/data properties
+          if (result.success && result.data) {
+            setLowStockProducts(result.data);
+          } else {
+            setLowStockProducts([]);
+          }
+        } else if (Array.isArray(result)) {
+          // It's already an array
+          setLowStockProducts(result);
+        } else {
+          // Default to empty array for any other case
+          setLowStockProducts([]);
+        }
+      } catch (error) {
+        console.error('Error fetching low stock products:', error);
+        setLowStockProducts([]);
+      }
+    };
+    
+    fetchLowStockProducts();
+  }, [getLowStockProducts]);
+  
   const isLoading = salesLoading || productsLoading;
 
   return (

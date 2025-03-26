@@ -10,11 +10,12 @@ import InventoryModule from '@/components/dashboard/InventoryModule';
 import SalesAnalysisModule from '@/components/dashboard/SalesAnalysisModule';
 import CustomersModule from '@/components/dashboard/CustomersModule';
 import ProductAnalysisModule from '@/components/dashboard/ProductAnalysisModule';
+import { Product } from '@/hooks/products/useProductTypes';
 
 export default function SalesDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year'>('month');
-  const [lowStockItems, setLowStockItems] = useState<any[]>([]);
+  const [lowStockItems, setLowStockItems] = useState<Product[]>([]);
   
   // Fetch data from hooks
   const { 
@@ -36,21 +37,29 @@ export default function SalesDashboard() {
     refreshSales();
     getSalesStatistics(timeRange);
     
-    // Get low stock products and handle the potential Promise
+    // Get low stock products
     const fetchLowStock = async () => {
-      const lowStock = getLowStockProducts();
-      // Check if it's a Promise
-      if (lowStock && typeof (lowStock as any).then === 'function') {
-        const result = await lowStock;
-        // Check the shape of the result (if it has a data property, it's probably a result object)
-        if (result && 'data' in result && result.success) {
-          setLowStockItems(result.data || []);
+      try {
+        const result = await getLowStockProducts();
+        
+        // Check if result is Promise or already resolved
+        if (result && typeof result === 'object' && 'success' in result) {
+          // It's the result object with success/data properties
+          if (result.success && result.data) {
+            setLowStockItems(result.data);
+          } else {
+            setLowStockItems([]);
+          }
+        } else if (Array.isArray(result)) {
+          // It's already an array
+          setLowStockItems(result);
         } else {
+          // Default to empty array for any other case
           setLowStockItems([]);
         }
-      } else {
-        // It's already an array
-        setLowStockItems(lowStock || []);
+      } catch (error) {
+        console.error('Error fetching low stock products:', error);
+        setLowStockItems([]);
       }
     };
     
