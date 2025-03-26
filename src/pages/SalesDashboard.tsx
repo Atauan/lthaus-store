@@ -14,6 +14,7 @@ import ProductAnalysisModule from '@/components/dashboard/ProductAnalysisModule'
 export default function SalesDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year'>('month');
+  const [lowStockItems, setLowStockItems] = useState<any[]>([]);
   
   // Fetch data from hooks
   const { 
@@ -34,7 +35,27 @@ export default function SalesDashboard() {
   useEffect(() => {
     refreshSales();
     getSalesStatistics(timeRange);
-  }, [timeRange]);
+    
+    // Get low stock products and handle the potential Promise
+    const fetchLowStock = async () => {
+      const lowStock = getLowStockProducts();
+      // Check if it's a Promise
+      if (lowStock && typeof (lowStock as any).then === 'function') {
+        const result = await lowStock;
+        // Check the shape of the result (if it has a data property, it's probably a result object)
+        if (result && 'data' in result && result.success) {
+          setLowStockItems(result.data || []);
+        } else {
+          setLowStockItems([]);
+        }
+      } else {
+        // It's already an array
+        setLowStockItems(lowStock || []);
+      }
+    };
+    
+    fetchLowStock();
+  }, [timeRange, refreshSales, getSalesStatistics, getLowStockProducts]);
 
   const handlePeriodChange = (value: string) => {
     setTimeRange(value as 'day' | 'week' | 'month' | 'year');
@@ -100,7 +121,7 @@ export default function SalesDashboard() {
               <TabsContent value="inventory">
                 <InventoryModule 
                   products={products}
-                  lowStockProducts={getLowStockProducts() || []}
+                  lowStockProducts={lowStockItems}
                   isLoading={productsLoading}
                 />
               </TabsContent>

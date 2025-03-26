@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import TopNav from '@/components/layout/navbar/TopNav';
-import Sidebar from '@/components/layout/navbar/Sidebar';
-import { useMediaQuery } from '@/hooks/use-mobile';
-import MobileMenu from './navbar/MobileMenu';
+import { TopNav } from '@/components/layout/navbar/TopNav';
+import { Sidebar } from '@/components/layout/navbar/Sidebar';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileMenu } from './navbar/MobileMenu';
 import { Toaster } from '@/components/ui/sonner';
 
 export const AppLayout = () => {
-  const isMobile = useMediaQuery('(max-width: 1024px)');
+  const isMobile = useIsMobile();
 
   return (
     <div className="min-h-screen bg-background relative">

@@ -1,57 +1,62 @@
+
 import { 
   Home, ShoppingBag, Users, Settings, Package, FileText, ShoppingCart, 
   BarChart2, CreditCard, TrendingUp
 } from 'lucide-react';
+import React from 'react';
 
 // Define the navigation categories
 export const NavigationCategories = [
   {
-    title: "Main",
+    label: "Main",
+    icon: <Home className="h-4 w-4" />,
     items: [
       {
-        title: "Dashboard",
-        href: "/dashboard",
-        icon: Home,
+        path: "/dashboard",
+        icon: <Home className="h-4 w-4" />,
+        label: "Dashboard",
       },
       {
-        title: "Análise de Vendas",
-        href: "/analytics",
-        icon: TrendingUp,
+        path: "/analytics",
+        icon: <TrendingUp className="h-4 w-4" />,
+        label: "Análise de Vendas",
       }
     ]
   },
   {
-    title: "Operations",
+    label: "Operations",
+    icon: <ShoppingBag className="h-4 w-4" />,
     items: [
       {
-        title: "Vendas",
-        href: "/sales",
-        icon: ShoppingCart,
+        path: "/sales",
+        icon: <ShoppingCart className="h-4 w-4" />,
+        label: "Vendas",
       },
       {
-        title: "Produtos",
-        href: "/products",
-        icon: Package,
+        path: "/products",
+        icon: <Package className="h-4 w-4" />,
+        label: "Produtos",
       },
       {
-        title: "Relatórios",
-        href: "/reports",
-        icon: FileText,
+        path: "/reports",
+        icon: <FileText className="h-4 w-4" />,
+        label: "Relatórios",
       },
     ]
   },
   {
-    title: "Management",
+    label: "Management",
+    icon: <Settings className="h-4 w-4" />,
     items: [
       {
-        title: "Usuários",
-        href: "/users",
-        icon: Users,
+        path: "/users",
+        icon: <Users className="h-4 w-4" />,
+        label: "Usuários",
       },
       {
-        title: "Configurações",
-        href: "/settings",
-        icon: Settings,
+        path: "/settings",
+        icon: <Settings className="h-4 w-4" />,
+        label: "Configurações",
       },
     ]
   }
