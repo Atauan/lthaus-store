@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { NavLink } from './NavLink';
-import { NavigationCategories } from './navigationItems';
+import { navigationItems } from './navigationItems';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
@@ -8,7 +9,7 @@ export function Sidebar() {
   return (
     <aside className="fixed left-0 top-16 bottom-0 w-64 border-r bg-white p-4 hidden lg:block overflow-y-auto">
       <div className="space-y-1">
-        {NavigationCategories.map((category, index) => (
+        {navigationItems.map((category, index) => (
           <NavCategory key={index} category={category} />
         ))}
       </div>
@@ -18,12 +19,12 @@ export function Sidebar() {
 
 interface NavCategoryProps {
   category: {
-    label: string;
-    icon: React.ReactNode;
+    title: string;
+    icon?: React.ComponentType;
     path?: string;
     items: {
       path: string;
-      icon: React.ReactNode;
+      icon: React.ComponentType;
       label: string;
     }[];
   };
@@ -42,7 +43,7 @@ function NavCategory({ category }: NavCategoryProps) {
       <NavLink
         path={category.path}
         icon={category.icon}
-        label={category.label}
+        label={category.title}
       />
     );
   }
@@ -58,8 +59,8 @@ function NavCategory({ category }: NavCategoryProps) {
         `}
       >
         <div className="flex items-center gap-3">
-          {category.icon}
-          <span>{category.label}</span>
+          {category.icon && React.createElement(category.icon, { className: "h-5 w-5" })}
+          <span>{category.title}</span>
         </div>
         {isOpen ? (
           <ChevronDown className="h-4 w-4" />

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Sheet,
@@ -9,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Menu, ChevronDown, ChevronRight } from 'lucide-react';
 import { NavLink } from './NavLink';
-import { NavigationCategories } from './navigationItems';
+import { navigationItems } from './navigationItems';
 import { useLocation } from 'react-router-dom';
 
 export function MobileMenu() {
@@ -30,7 +31,7 @@ export function MobileMenu() {
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
         <div className="py-4 overflow-y-auto max-h-[calc(100vh-80px)]">
-          {NavigationCategories.map((category, index) => (
+          {navigationItems.map((category, index) => (
             <MobileNavCategory key={index} category={category} />
           ))}
         </div>
@@ -41,12 +42,12 @@ export function MobileMenu() {
 
 interface MobileNavCategoryProps {
   category: {
-    label: string;
-    icon: React.ReactNode;
+    title: string;
+    icon?: React.ComponentType;
     path?: string;
     items: {
       path: string;
-      icon: React.ReactNode;
+      icon: React.ComponentType;
       label: string;
     }[];
   };
@@ -65,7 +66,7 @@ function MobileNavCategory({ category }: MobileNavCategoryProps) {
       <NavLink
         path={category.path}
         icon={category.icon}
-        label={category.label}
+        label={category.title}
         isMobile={true}
       />
     );
@@ -82,8 +83,8 @@ function MobileNavCategory({ category }: MobileNavCategoryProps) {
         `}
       >
         <div className="flex items-center gap-3">
-          {category.icon}
-          <span className="text-base">{category.label}</span>
+          {category.icon && React.createElement(category.icon, { className: "h-5 w-5" })}
+          <span className="text-base">{category.title}</span>
         </div>
         {isOpen ? (
           <ChevronDown className="h-4 w-4" />
