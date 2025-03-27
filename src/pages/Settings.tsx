@@ -1,4 +1,3 @@
-
 import React from 'react';
 import PageTransition from '@/components/layout/PageTransition';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

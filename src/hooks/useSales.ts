@@ -1,4 +1,3 @@
-
 import { useSalesData } from './sales/useSalesData';
 import { useSaleDetails } from './sales/useSaleDetails';
 import { useSaleCreate } from './sales/useSaleCreate';

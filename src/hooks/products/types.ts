@@ -1,4 +1,3 @@
-
 export interface ProductFormValues {
   name: string;
   description: string;

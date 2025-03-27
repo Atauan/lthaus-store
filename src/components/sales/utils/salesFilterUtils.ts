@@ -1,4 +1,3 @@
-
 export const getDateRangeFilter = (dateRange: string) => {
   const now = new Date();
   const pastDate = new Date();

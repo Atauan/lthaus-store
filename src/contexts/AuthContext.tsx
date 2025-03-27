@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext } from 'react';
 import { UserProfile, AuthContextType } from '@/types/auth';
 import { toast } from 'sonner';

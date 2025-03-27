@@ -1,4 +1,3 @@
-
 // Sample data for testing the sales page
 export const sampleProducts = [
   {

@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { getSaleDetails } from './utils/saleDetailsUtils';
 

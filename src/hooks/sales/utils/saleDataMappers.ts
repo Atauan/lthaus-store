@@ -1,4 +1,3 @@
-
 export function mapSaleFormToDatabase(saleData: any) {
   // Map form data to database schema
   return {

@@ -1,4 +1,3 @@
-
 import {
   BarChart3,
   Building2,
@@ -13,144 +12,119 @@ import {
   User,
   Users,
 } from "lucide-react";
-import React from "react";
 
-// Define the type for a navigation item
-export type NavigationItem = {
-  path: string;
-  icon: React.ComponentType<any>;
-  label: string;
-};
-
-// Define the type for a navigation category
-export type NavigationCategory = {
-  title: string;
-  icon?: React.ComponentType<any>;
-  path?: string;
-  items: NavigationItem[];
-};
-
-// Export the type for the navigation categories array
-export type NavigationCategories = Array<NavigationCategory>;
-
-export const navigationItems: NavigationCategories = [
+export const navigationItems = [
   {
     title: "Painel",
-    icon: LayoutDashboard,
     items: [
       {
-        path: "/dashboard",
+        title: "Dashboard",
+        href: "/",
         icon: LayoutDashboard,
-        label: "Dashboard",
       },
     ],
   },
   {
     title: "Vendas",
-    icon: ShoppingBag,
     items: [
       {
-        path: "/analytics",
+        title: "Dashboard de Vendas",
+        href: "/sales-dashboard",
         icon: Gauge,
-        label: "Dashboard de Vendas",
       },
       {
-        path: "/sales/new",
+        title: "Nova Venda",
+        href: "/sales/new",
         icon: ShoppingBag,
-        label: "Nova Venda",
       },
       {
-        path: "/sales",
+        title: "Lista de Vendas",
+        href: "/sales",
         icon: ListChecks,
-        label: "Lista de Vendas",
       },
     ],
   },
   {
     title: "Produtos",
-    icon: Package,
     items: [
       {
-        path: "/products",
+        title: "Lista de Produtos",
+        href: "/products",
         icon: Package,
-        label: "Lista de Produtos",
       },
     ],
   },
   {
     title: "Clientes",
-    icon: Users,
     items: [
       {
-        path: "/customers",
+        title: "Lista de Clientes",
+        href: "/customers",
         icon: Users,
-        label: "Lista de Clientes",
       },
       {
-        path: "/customers/new",
+        title: "Novo Cliente",
+        href: "/customers/new",
         icon: User,
-        label: "Novo Cliente",
       },
     ],
   },
   {
     title: "Financeiro",
-    icon: CreditCard,
     items: [
       {
-        path: "/financial/bills-to-pay",
+        title: "Contas a Pagar",
+        href: "/financial/bills-to-pay",
         icon: CreditCard,
-        label: "Contas a Pagar",
       },
       {
-        path: "/financial/bills-to-receive",
+        title: "Contas a Receber",
+        href: "/financial/bills-to-receive",
         icon: CreditCard,
-        label: "Contas a Receber",
       },
     ],
   },
   {
     title: "Loja",
-    icon: Building2,
     items: [
       {
-        path: "/store",
+        title: "Informações da Loja",
+        href: "/store",
         icon: Building2,
-        label: "Informações da Loja",
       },
     ],
   },
   {
     title: "Agendamentos",
-    icon: Calendar,
     items: [
       {
-        path: "/schedules",
+        title: "Lista de Agendamentos",
+        href: "/schedules",
         icon: Calendar,
-        label: "Lista de Agendamentos",
       },
     ],
   },
   {
     title: "Relatórios",
-    icon: BarChart3,
     items: [
       {
-        path: "/reports",
+        title: "Relatórios de Vendas",
+        href: "/reports",
         icon: BarChart3,
-        label: "Relatórios de Vendas",
       },
     ],
   },
   {
     title: "Configurações",
-    icon: Settings,
     items: [
       {
-        path: "/settings",
+        title: "Configurações da Loja",
+        href: "/settings",
         icon: Settings,
-        label: "Configurações da Loja",
       },
     ],
   },
 ];
+
+// Export the navigation items as NavigationCategories
+export const NavigationCategories = navigationItems;

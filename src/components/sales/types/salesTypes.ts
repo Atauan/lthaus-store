@@ -1,4 +1,3 @@
-
 export type SaleItem = {
   id?: number;
   type: 'product' | 'service';

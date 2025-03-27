@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Upload, XCircle, Info } from 'lucide-react';
 import {

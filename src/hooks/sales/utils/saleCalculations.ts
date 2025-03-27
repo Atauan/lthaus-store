@@ -1,4 +1,3 @@
-
 import { SaleItem } from '../types';
 
 export function generateSaleNumber() {

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Sale } from './types';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval } from 'date-fns';

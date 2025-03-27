@@ -1,4 +1,3 @@
-
 export * from './fetchSalesUtils';
 export * from './saleCalculations';
 export * from './saleDataMappers';

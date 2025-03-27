@@ -1,4 +1,3 @@
-
 import { SaleItem } from '../types/salesTypes';
 import { calculateProfit as calculateItemProfit } from '@/hooks/products/utils/pricingUtils';
 

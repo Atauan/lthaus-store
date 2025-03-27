@@ -1,16 +1,11 @@
-
-import { supabase, handleSupabaseError } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { requestCache } from '@/utils/requestCache';
 
 // Helper function to get current date time as string
 const currentDateTimeString = () => new Date().toISOString();
 
 export const createNewSale = async (saleData: any) => {
   try {
-    // Invalidate sales cache
-    requestCache.clear('sales_list');
-    
     // Create a new sale entry with null user_id
     const saleResult = await supabase
       .from('sales')
@@ -29,7 +24,7 @@ export const createNewSale = async (saleData: any) => {
         delivery_address: saleData.delivery_address,
         delivery_fee: saleData.delivery_fee || 0,
         user_id: null // Explicitly setting user_id to null
-      } as any)
+      })
       .select('id')
       .single();
 
@@ -37,10 +32,7 @@ export const createNewSale = async (saleData: any) => {
       throw saleResult.error;
     }
 
-    const saleData_id = saleResult.data?.id;
-    if (!saleData_id) {
-      throw new Error('Failed to get sale ID after insertion');
-    }
+    const saleId = saleResult.data.id;
 
     // Create sale items entries and update stock
     if (saleData.items && Array.isArray(saleData.items)) {
@@ -49,16 +41,15 @@ export const createNewSale = async (saleData: any) => {
         const itemResult = await supabase
           .from('sale_items')
           .insert({
-            sale_id: saleData_id,
+            sale_id: saleId,
             product_id: item.id || 0,
             price: item.price,
             quantity: item.quantity,
             cost: item.cost || null
-          } as any);
+          });
 
         if (itemResult.error) {
           console.error('Error creating sale item:', itemResult.error);
-          requestCache.logError(itemResult.error, `sale_items_${saleData_id}`, 'createNewSale');
           continue;
         }
 
@@ -73,23 +64,21 @@ export const createNewSale = async (saleData: any) => {
 
           if (productError) {
             console.error('Error fetching product stock:', productError);
-            requestCache.logError(productError, `product_${item.id}`, 'createNewSale');
             continue;
           }
 
           if (product) {
-            const previousStock = product.stock as number;
+            const previousStock = product.stock;
             const newStock = Math.max(0, previousStock - item.quantity);
 
             // Update product stock
             const { error: updateError } = await supabase
               .from('products')
-              .update({ stock: newStock } as any)
+              .update({ stock: newStock })
               .eq('id', item.id);
 
             if (updateError) {
               console.error('Error updating product stock:', updateError);
-              requestCache.logError(updateError, `product_update_${item.id}`, 'createNewSale');
               continue;
             }
 
@@ -102,12 +91,9 @@ export const createNewSale = async (saleData: any) => {
                 new_stock: newStock,
                 change_amount: -item.quantity,
                 reference_type: 'sale',
-                reference_id: saleData_id.toString(),
-                notes: `Venda #${saleData_id}`
-              } as any);
-              
-            // Invalidate product cache
-            requestCache.clear(`product_${item.id}`);
+                reference_id: saleId.toString(),
+                notes: `Venda #${saleId}`
+              });
           }
         }
       }
@@ -119,19 +105,18 @@ export const createNewSale = async (saleData: any) => {
         await supabase
           .from('sale_payments')
           .insert({
-            sale_id: saleData_id,
+            sale_id: saleId,
             method: payment.method,
             amount: payment.amount
-          } as any);
+          });
       }
     }
 
     toast.success('Venda registrada com sucesso!');
-    return { success: true, saleId: saleData_id };
+    return { success: true, saleId };
   } catch (error: any) {
     console.error('Error creating sale:', error);
-    requestCache.logError(error, 'create_sale', 'createNewSale');
-    handleSupabaseError(error, "Erro ao registrar venda");
+    toast.error(`Erro ao registrar venda: ${error.message}`);
     return { success: false, error };
   }
 };

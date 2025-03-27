@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { Sale, DateRange } from './types';
 

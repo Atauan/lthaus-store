@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BarChart3, ArrowUpRight, CreditCard } from 'lucide-react';
 import GlassCard from '@/components/ui/custom/GlassCard';

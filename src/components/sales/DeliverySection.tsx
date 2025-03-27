@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { MapPin, Truck, DollarSign, ExternalLink, Share2, Copy } from 'lucide-react';

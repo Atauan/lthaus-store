@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { NavLink } from './NavLink';
-import { navigationItems } from './navigationItems';
+import { NavigationCategories } from './navigationItems';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
@@ -9,7 +8,7 @@ export function Sidebar() {
   return (
     <aside className="fixed left-0 top-16 bottom-0 w-64 border-r bg-white p-4 hidden lg:block overflow-y-auto">
       <div className="space-y-1">
-        {navigationItems.map((category, index) => (
+        {NavigationCategories.map((category, index) => (
           <NavCategory key={index} category={category} />
         ))}
       </div>
@@ -19,12 +18,12 @@ export function Sidebar() {
 
 interface NavCategoryProps {
   category: {
-    title: string;
-    icon?: React.ComponentType<any>;
+    label: string;
+    icon: React.ReactNode;
     path?: string;
     items: {
       path: string;
-      icon: React.ComponentType<any>;
+      icon: React.ReactNode;
       label: string;
     }[];
   };
@@ -42,8 +41,8 @@ function NavCategory({ category }: NavCategoryProps) {
     return (
       <NavLink
         path={category.path}
-        icon={category.icon && <category.icon className="h-5 w-5" />}
-        label={category.title}
+        icon={category.icon}
+        label={category.label}
       />
     );
   }
@@ -59,8 +58,8 @@ function NavCategory({ category }: NavCategoryProps) {
         `}
       >
         <div className="flex items-center gap-3">
-          {category.icon && <category.icon className="h-5 w-5" />}
-          <span>{category.title}</span>
+          {category.icon}
+          <span>{category.label}</span>
         </div>
         {isOpen ? (
           <ChevronDown className="h-4 w-4" />
@@ -75,7 +74,7 @@ function NavCategory({ category }: NavCategoryProps) {
             <NavLink
               key={item.path}
               path={item.path}
-              icon={<item.icon className="h-5 w-5" />}
+              icon={item.icon}
               label={item.label}
             />
           ))}

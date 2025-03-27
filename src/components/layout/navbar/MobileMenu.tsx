@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Sheet,
@@ -10,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Menu, ChevronDown, ChevronRight } from 'lucide-react';
 import { NavLink } from './NavLink';
-import { navigationItems } from './navigationItems';
+import { NavigationCategories } from './navigationItems';
 import { useLocation } from 'react-router-dom';
 
 export function MobileMenu() {
@@ -31,7 +30,7 @@ export function MobileMenu() {
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
         <div className="py-4 overflow-y-auto max-h-[calc(100vh-80px)]">
-          {navigationItems.map((category, index) => (
+          {NavigationCategories.map((category, index) => (
             <MobileNavCategory key={index} category={category} />
           ))}
         </div>
@@ -42,12 +41,12 @@ export function MobileMenu() {
 
 interface MobileNavCategoryProps {
   category: {
-    title: string;
-    icon?: React.ComponentType<any>;
+    label: string;
+    icon: React.ReactNode;
     path?: string;
     items: {
       path: string;
-      icon: React.ComponentType<any>;
+      icon: React.ReactNode;
       label: string;
     }[];
   };
@@ -65,8 +64,8 @@ function MobileNavCategory({ category }: MobileNavCategoryProps) {
     return (
       <NavLink
         path={category.path}
-        icon={category.icon && <category.icon className="h-5 w-5" />}
-        label={category.title}
+        icon={category.icon}
+        label={category.label}
         isMobile={true}
       />
     );
@@ -83,8 +82,8 @@ function MobileNavCategory({ category }: MobileNavCategoryProps) {
         `}
       >
         <div className="flex items-center gap-3">
-          {category.icon && <category.icon className="h-5 w-5" />}
-          <span className="text-base">{category.title}</span>
+          {category.icon}
+          <span className="text-base">{category.label}</span>
         </div>
         {isOpen ? (
           <ChevronDown className="h-4 w-4" />
@@ -99,7 +98,7 @@ function MobileNavCategory({ category }: MobileNavCategoryProps) {
             <NavLink
               key={item.path}
               path={item.path}
-              icon={<item.icon className="h-5 w-5" />}
+              icon={item.icon}
               label={item.label}
               isMobile={true}
             />
