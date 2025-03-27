@@ -43,11 +43,11 @@ export function MobileMenu() {
 interface MobileNavCategoryProps {
   category: {
     title: string;
-    icon?: React.ComponentType;
+    icon?: React.ComponentType<any>;
     path?: string;
     items: {
       path: string;
-      icon: React.ComponentType;
+      icon: React.ComponentType<any>;
       label: string;
     }[];
   };
@@ -65,7 +65,7 @@ function MobileNavCategory({ category }: MobileNavCategoryProps) {
     return (
       <NavLink
         path={category.path}
-        icon={category.icon}
+        icon={category.icon && <category.icon className="h-5 w-5" />}
         label={category.title}
         isMobile={true}
       />
@@ -83,7 +83,7 @@ function MobileNavCategory({ category }: MobileNavCategoryProps) {
         `}
       >
         <div className="flex items-center gap-3">
-          {category.icon && React.createElement(category.icon, { className: "h-5 w-5" })}
+          {category.icon && <category.icon className="h-5 w-5" />}
           <span className="text-base">{category.title}</span>
         </div>
         {isOpen ? (
@@ -99,7 +99,7 @@ function MobileNavCategory({ category }: MobileNavCategoryProps) {
             <NavLink
               key={item.path}
               path={item.path}
-              icon={item.icon}
+              icon={<item.icon className="h-5 w-5" />}
               label={item.label}
               isMobile={true}
             />

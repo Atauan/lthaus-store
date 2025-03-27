@@ -13,17 +13,34 @@ import {
   User,
   Users,
 } from "lucide-react";
+import React from "react";
 
-export const navigationItems = [
+// Define the type for a navigation item
+export type NavigationItem = {
+  path: string;
+  icon: React.ComponentType<any>;
+  label: string;
+};
+
+// Define the type for a navigation category
+export type NavigationCategory = {
+  title: string;
+  icon?: React.ComponentType<any>;
+  path?: string;
+  items: NavigationItem[];
+};
+
+// Export the type for the navigation categories array
+export type NavigationCategories = Array<NavigationCategory>;
+
+export const navigationItems: NavigationCategories = [
   {
     title: "Painel",
     icon: LayoutDashboard,
     items: [
       {
-        title: "Dashboard",
-        href: "/dashboard",
-        icon: LayoutDashboard,
         path: "/dashboard",
+        icon: LayoutDashboard,
         label: "Dashboard",
       },
     ],
@@ -33,24 +50,18 @@ export const navigationItems = [
     icon: ShoppingBag,
     items: [
       {
-        title: "Dashboard de Vendas",
-        href: "/analytics",
-        icon: Gauge,
         path: "/analytics",
+        icon: Gauge,
         label: "Dashboard de Vendas",
       },
       {
-        title: "Nova Venda",
-        href: "/sales/new",
-        icon: ShoppingBag,
         path: "/sales/new",
+        icon: ShoppingBag,
         label: "Nova Venda",
       },
       {
-        title: "Lista de Vendas",
-        href: "/sales",
-        icon: ListChecks,
         path: "/sales",
+        icon: ListChecks,
         label: "Lista de Vendas",
       },
     ],
@@ -60,10 +71,8 @@ export const navigationItems = [
     icon: Package,
     items: [
       {
-        title: "Lista de Produtos",
-        href: "/products",
-        icon: Package,
         path: "/products",
+        icon: Package,
         label: "Lista de Produtos",
       },
     ],
@@ -73,17 +82,13 @@ export const navigationItems = [
     icon: Users,
     items: [
       {
-        title: "Lista de Clientes",
-        href: "/customers",
-        icon: Users,
         path: "/customers",
+        icon: Users,
         label: "Lista de Clientes",
       },
       {
-        title: "Novo Cliente",
-        href: "/customers/new",
-        icon: User,
         path: "/customers/new",
+        icon: User,
         label: "Novo Cliente",
       },
     ],
@@ -93,17 +98,13 @@ export const navigationItems = [
     icon: CreditCard,
     items: [
       {
-        title: "Contas a Pagar",
-        href: "/financial/bills-to-pay",
-        icon: CreditCard,
         path: "/financial/bills-to-pay",
+        icon: CreditCard,
         label: "Contas a Pagar",
       },
       {
-        title: "Contas a Receber",
-        href: "/financial/bills-to-receive",
-        icon: CreditCard,
         path: "/financial/bills-to-receive",
+        icon: CreditCard,
         label: "Contas a Receber",
       },
     ],
@@ -113,10 +114,8 @@ export const navigationItems = [
     icon: Building2,
     items: [
       {
-        title: "Informações da Loja",
-        href: "/store",
-        icon: Building2,
         path: "/store",
+        icon: Building2,
         label: "Informações da Loja",
       },
     ],
@@ -126,10 +125,8 @@ export const navigationItems = [
     icon: Calendar,
     items: [
       {
-        title: "Lista de Agendamentos",
-        href: "/schedules",
-        icon: Calendar,
         path: "/schedules",
+        icon: Calendar,
         label: "Lista de Agendamentos",
       },
     ],
@@ -139,10 +136,8 @@ export const navigationItems = [
     icon: BarChart3,
     items: [
       {
-        title: "Relatórios de Vendas",
-        href: "/reports",
-        icon: BarChart3,
         path: "/reports",
+        icon: BarChart3,
         label: "Relatórios de Vendas",
       },
     ],
@@ -152,28 +147,10 @@ export const navigationItems = [
     icon: Settings,
     items: [
       {
-        title: "Configurações da Loja",
-        href: "/settings",
-        icon: Settings,
         path: "/settings",
+        icon: Settings,
         label: "Configurações da Loja",
       },
     ],
   },
 ];
-
-// Define the type for a navigation category
-export type NavigationCategory = {
-  title: string;
-  icon: React.ComponentType;
-  items: Array<{
-    title: string;
-    href: string;
-    icon: React.ComponentType;
-    path: string;
-    label: string;
-  }>;
-};
-
-// Export the type for the navigation categories array
-export type NavigationCategories = Array<NavigationCategory>;
