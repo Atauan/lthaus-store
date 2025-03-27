@@ -35,22 +35,144 @@ type RequestLog = {
 const recentRequests: RequestLog[] = [];
 const MAX_REQUEST_LOGS = 100;
 
+// IndexedDB Support for persistent cache
+const initIndexedDB = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (!window.indexedDB) {
+      console.log("IndexedDB not supported, using memory cache only");
+      resolve(false);
+      return;
+    }
+
+    try {
+      const request = window.indexedDB.open("supabaseCache", 1);
+      
+      request.onerror = () => {
+        console.error("Error opening IndexedDB");
+        resolve(false);
+      };
+      
+      request.onupgradeneeded = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        if (!db.objectStoreNames.contains("cacheStore")) {
+          db.createObjectStore("cacheStore", { keyPath: "key" });
+        }
+      };
+      
+      request.onsuccess = () => {
+        resolve(true);
+      };
+    } catch (error) {
+      console.error("IndexedDB error:", error);
+      resolve(false);
+    }
+  });
+};
+
+let dbPromise = initIndexedDB();
+
+const saveToIndexedDB = async (key: string, data: any): Promise<void> => {
+  const isDBAvailable = await dbPromise;
+  if (!isDBAvailable) return;
+
+  try {
+    const request = window.indexedDB.open("supabaseCache", 1);
+    request.onsuccess = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      const transaction = db.transaction(["cacheStore"], "readwrite");
+      const store = transaction.objectStore("cacheStore");
+      
+      store.put({
+        key,
+        data,
+        timestamp: Date.now(),
+        expiresAt: Date.now() + DEFAULT_CACHE_TIME
+      });
+    };
+  } catch (error) {
+    console.error("Error saving to IndexedDB:", error);
+  }
+};
+
+const getFromIndexedDB = async (key: string): Promise<any> => {
+  const isDBAvailable = await dbPromise;
+  if (!isDBAvailable) return null;
+
+  return new Promise((resolve) => {
+    try {
+      const request = window.indexedDB.open("supabaseCache", 1);
+      request.onsuccess = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        const transaction = db.transaction(["cacheStore"], "readonly");
+        const store = transaction.objectStore("cacheStore");
+        const getRequest = store.get(key);
+        
+        getRequest.onsuccess = () => {
+          const result = getRequest.result;
+          if (!result) {
+            resolve(null);
+            return;
+          }
+          
+          if (Date.now() > result.expiresAt) {
+            // Cache expired, delete it
+            const deleteTransaction = db.transaction(["cacheStore"], "readwrite");
+            const deleteStore = deleteTransaction.objectStore("cacheStore");
+            deleteStore.delete(key);
+            resolve(null);
+            return;
+          }
+          
+          resolve(result.data);
+        };
+        
+        getRequest.onerror = () => {
+          resolve(null);
+        };
+      };
+    } catch (error) {
+      console.error("Error getting from IndexedDB:", error);
+      resolve(null);
+    }
+  });
+};
+
+const clearFromIndexedDB = async (key: string): Promise<void> => {
+  const isDBAvailable = await dbPromise;
+  if (!isDBAvailable) return;
+
+  try {
+    const request = window.indexedDB.open("supabaseCache", 1);
+    request.onsuccess = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      const transaction = db.transaction(["cacheStore"], "readwrite");
+      const store = transaction.objectStore("cacheStore");
+      store.delete(key);
+    };
+  } catch (error) {
+    console.error("Error clearing from IndexedDB:", error);
+  }
+};
+
 export const requestCache = {
   /**
    * Get a value from the cache
    */
-  get: (key: string): any | null => {
+  get: async (key: string): Promise<any | null> => {
+    // First try memory cache
     const entry = cache[key];
-    if (!entry) return null;
-    
-    const now = Date.now();
-    if (now > entry.expiresAt) {
-      // Cache expired
-      delete cache[key];
-      return null;
+    if (entry) {
+      const now = Date.now();
+      if (now > entry.expiresAt) {
+        // Cache expired
+        delete cache[key];
+      } else {
+        return entry.data;
+      }
     }
     
-    return entry.data;
+    // Then try indexedDB
+    return await getFromIndexedDB(key);
   },
   
   /**
@@ -60,27 +182,33 @@ export const requestCache = {
    * @param ttl Optional time-to-live in milliseconds (defaults to DEFAULT_CACHE_TIME)
    */
   set: (key: string, data: any, ttl = DEFAULT_CACHE_TIME): void => {
+    // Store in memory cache
     cache[key] = {
       data,
       timestamp: Date.now(),
       expiresAt: Date.now() + ttl,
       loading: false
     };
+    
+    // Also store in IndexedDB for persistence
+    saveToIndexedDB(key, data);
   },
   
   /**
    * Mark a key as loading
+   * @param key Cache key
+   * @param isLoading Whether the key is loading (defaults to true)
    */
-  setLoading: (key: string): void => {
+  setLoading: (key: string, isLoading: boolean = true): void => {
     if (!cache[key]) {
       cache[key] = {
         data: null,
         timestamp: Date.now(),
         expiresAt: Date.now() + DEFAULT_CACHE_TIME,
-        loading: true
+        loading: isLoading
       };
     } else {
-      cache[key].loading = true;
+      cache[key].loading = isLoading;
     }
   },
   
@@ -192,6 +320,7 @@ export const requestCache = {
    */
   clear: (key: string): void => {
     delete cache[key];
+    clearFromIndexedDB(key);
   },
   
   /**
@@ -201,6 +330,22 @@ export const requestCache = {
     Object.keys(cache).forEach(key => {
       delete cache[key];
     });
+    
+    // Clear IndexedDB
+    const isDBAvailable = dbPromise;
+    if (isDBAvailable) {
+      try {
+        const request = window.indexedDB.open("supabaseCache", 1);
+        request.onsuccess = (event) => {
+          const db = (event.target as IDBOpenDBRequest).result;
+          const transaction = db.transaction(["cacheStore"], "readwrite");
+          const store = transaction.objectStore("cacheStore");
+          store.clear();
+        };
+      } catch (error) {
+        console.error("Error clearing IndexedDB:", error);
+      }
+    }
   },
   
   /**
@@ -212,5 +357,48 @@ export const requestCache = {
     maxRequests: MAX_REQUESTS_PER_MINUTE,
     throttleEndTime: isThrottled ? new Date(throttleEndTime).toLocaleTimeString() : null,
     resetTime: new Date(requestResetTime).toLocaleTimeString()
-  })
+  }),
+  
+  /**
+   * Sync memory cache with IndexedDB
+   * Useful when the app starts up
+   */
+  syncWithPersistentStorage: async (): Promise<void> => {
+    const isDBAvailable = await dbPromise;
+    if (!isDBAvailable) return;
+
+    try {
+      const request = window.indexedDB.open("supabaseCache", 1);
+      request.onsuccess = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        const transaction = db.transaction(["cacheStore"], "readonly");
+        const store = transaction.objectStore("cacheStore");
+        const getAllRequest = store.getAll();
+        
+        getAllRequest.onsuccess = () => {
+          const items = getAllRequest.result;
+          const now = Date.now();
+          
+          items.forEach(item => {
+            if (now <= item.expiresAt) {
+              // Only load non-expired items into memory
+              cache[item.key] = {
+                data: item.data,
+                timestamp: item.timestamp,
+                expiresAt: item.expiresAt,
+                loading: false
+              };
+            }
+          });
+          
+          console.log(`Synced ${Object.keys(cache).length} items from persistent storage`);
+        };
+      };
+    } catch (error) {
+      console.error("Error syncing with IndexedDB:", error);
+    }
+  }
 };
+
+// Initialize cache from persistent storage when this module is imported
+requestCache.syncWithPersistentStorage();

@@ -15,8 +15,9 @@ export function useSalesData() {
       
       // Use cached data if available and not forcing refresh
       if (!forceRefresh) {
-        const cachedSales = requestCache.get(cacheKey);
+        const cachedSales = await requestCache.get(cacheKey);
         if (cachedSales) {
+          console.log('Using cached sales data');
           setSales(cachedSales as Sale[]);
           setLoading(false);
           return;
@@ -25,11 +26,24 @@ export function useSalesData() {
       
       // If a request is already in progress, don't start another one
       if (requestCache.isLoading(cacheKey)) {
+        console.log('Sales request already in progress');
         return;
       }
       
-      requestCache.setLoading(cacheKey);
+      requestCache.setLoading(cacheKey, true);
       setLoading(true);
+      
+      // Track this request for rate limiting
+      requestCache.trackRequest('useSalesData');
+      
+      // Check if we should throttle this request
+      if (requestCache.shouldThrottle()) {
+        console.log('Throttling sales request due to rate limiting');
+        toast.warning('Muitas requisições! Aguarde um momento antes de tentar novamente.');
+        setLoading(false);
+        requestCache.setLoading(cacheKey, false);
+        return;
+      }
       
       // Implement retry logic with exponential backoff
       const maxRetries = 3;
@@ -72,8 +86,10 @@ export function useSalesData() {
       }
     } catch (error: any) {
       console.error("Failed to fetch sales:", error);
+      requestCache.logError(error, 'sales_list', 'useSalesData');
     } finally {
       setLoading(false);
+      requestCache.setLoading('sales_list', false);
     }
   }, []);
   

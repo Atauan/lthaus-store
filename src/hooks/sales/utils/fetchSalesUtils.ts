@@ -67,9 +67,9 @@ export async function fetchSales(): Promise<{ data: Sale[] | null; error: any }>
     return { data: null, error };
   } finally {
     // Clear loading state if it's still set
-    const entry = cache['sales_list'];
-    if (entry?.loading) {
-      entry.loading = false;
+    // Fix: Use requestCache.isLoading to check and then clear if needed
+    if (requestCache.isLoading('sales_list')) {
+      requestCache.setLoading('sales_list', false);
     }
   }
 }
