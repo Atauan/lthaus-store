@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, handleSupabaseError } from '@/integrations/supabase/client';
 import { Sale } from './types';
 import { toast } from 'sonner';
 import { requestCache } from '@/utils/requestCache';
@@ -31,21 +31,42 @@ export function useSalesData() {
       requestCache.setLoading(cacheKey);
       setLoading(true);
       
-      const { data, error } = await supabase
-        .from('sales')
-        .select('*')
-        .order('sale_date', { ascending: false });
-        
-      if (error) {
-        throw error;
-      }
+      // Implement retry logic with exponential backoff
+      const maxRetries = 3;
+      let retries = 0;
+      let success = false;
       
-      if (data) {
-        setSales(data as Sale[]);
-        requestCache.set(cacheKey, data);
+      while (!success && retries < maxRetries) {
+        try {
+          const { data, error } = await supabase
+            .from('sales')
+            .select('*')
+            .order('sale_date', { ascending: false });
+            
+          if (error) {
+            throw error;
+          }
+          
+          if (data) {
+            setSales(data as Sale[]);
+            requestCache.set(cacheKey, data);
+            success = true;
+          }
+        } catch (error: any) {
+          retries++;
+          
+          if (retries >= maxRetries) {
+            handleSupabaseError(error, "Erro ao carregar vendas");
+            throw error;
+          }
+          
+          // Exponential backoff
+          const delay = Math.pow(2, retries) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
       }
     } catch (error: any) {
-      toast.error(`Erro ao carregar vendas: ${error.message}`);
+      console.error("Failed to fetch sales:", error);
     } finally {
       setLoading(false);
     }

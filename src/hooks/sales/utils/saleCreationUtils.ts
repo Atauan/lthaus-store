@@ -1,12 +1,16 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, handleSupabaseError } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { requestCache } from '@/utils/requestCache';
 
 // Helper function to get current date time as string
 const currentDateTimeString = () => new Date().toISOString();
 
 export const createNewSale = async (saleData: any) => {
   try {
+    // Invalidate sales cache
+    requestCache.clear('sales_list');
+    
     // Create a new sale entry with null user_id
     const saleResult = await supabase
       .from('sales')
@@ -95,6 +99,9 @@ export const createNewSale = async (saleData: any) => {
                 reference_id: saleId.toString(),
                 notes: `Venda #${saleId}`
               });
+              
+            // Invalidate product cache
+            requestCache.clear(`product_${item.id}`);
           }
         }
       }
@@ -117,7 +124,7 @@ export const createNewSale = async (saleData: any) => {
     return { success: true, saleId };
   } catch (error: any) {
     console.error('Error creating sale:', error);
-    toast.error(`Erro ao registrar venda: ${error.message}`);
+    handleSupabaseError(error, "Erro ao registrar venda");
     return { success: false, error };
   }
 };
