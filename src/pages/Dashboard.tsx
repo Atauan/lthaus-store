@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PageTransition from '@/components/layout/PageTransition';
 import DashboardOverview from '@/components/dashboard/DashboardOverview';
 import InventoryModule from '@/components/dashboard/InventoryModule';
@@ -37,40 +37,41 @@ const Dashboard = () => {
   }, [timeRange, refreshSales, getSalesStatistics]);
   
   // Fetch low stock products
-  useEffect(() => {
-    const fetchLowStockProducts = async () => {
-      try {
-        setIsLoadingLowStock(true);
-        const result = await getLowStockProducts();
-        
-        if (result && 'success' in result) {
-          // It's the result object with success/data properties
-          if (result.success && result.data) {
-            setLowStockProducts(result.data);
-          } else {
-            setLowStockProducts([]);
-            if (result.error) {
-              toast.error(`Error fetching low stock products: ${result.error}`);
-            }
-          }
-        } else if (Array.isArray(result)) {
-          // It's already an array
-          setLowStockProducts(result);
+  const fetchLowStockProducts = useCallback(async () => {
+    try {
+      setIsLoadingLowStock(true);
+      const result = await getLowStockProducts();
+      
+      if (result && 'success' in result) {
+        // It's the result object with success/data properties
+        if (result.success && result.data) {
+          setLowStockProducts(result.data);
         } else {
-          // Default to empty array for any other case
           setLowStockProducts([]);
+          if (result.error) {
+            console.error('Error fetching low stock products:', result.error);
+          }
         }
-      } catch (error) {
-        console.error('Error fetching low stock products:', error);
+      } else if (Array.isArray(result)) {
+        // It's already an array
+        setLowStockProducts(result);
+      } else {
+        // Default to empty array for any other case
         setLowStockProducts([]);
-        toast.error('Failed to fetch low stock products');
-      } finally {
-        setIsLoadingLowStock(false);
       }
-    };
-    
-    fetchLowStockProducts();
+    } catch (error) {
+      console.error('Error fetching low stock products:', error);
+      setLowStockProducts([]);
+    } finally {
+      setIsLoadingLowStock(false);
+    }
   }, [getLowStockProducts]);
+  
+  useEffect(() => {
+    fetchLowStockProducts();
+    // Only run this effect once when component mounts
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   const isLoading = salesLoading || productsLoading || isLoadingLowStock;
 

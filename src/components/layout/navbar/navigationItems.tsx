@@ -1,3 +1,4 @@
+
 import {
   BarChart3,
   Building2,
@@ -19,7 +20,7 @@ export const navigationItems = [
     items: [
       {
         title: "Dashboard",
-        href: "/",
+        href: "/dashboard",
         icon: LayoutDashboard,
       },
     ],
@@ -29,7 +30,7 @@ export const navigationItems = [
     items: [
       {
         title: "Dashboard de Vendas",
-        href: "/sales-dashboard",
+        href: "/analytics",
         icon: Gauge,
       },
       {
@@ -125,3 +126,7 @@ export const navigationItems = [
     ],
   },
 ];
+
+// Add this export to fix the NavigationCategories error
+export type NavigationCategory = typeof navigationItems[0];
+export type NavigationCategories = typeof navigationItems;
