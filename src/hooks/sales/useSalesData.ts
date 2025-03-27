@@ -17,7 +17,7 @@ export function useSalesData() {
       if (!forceRefresh) {
         const cachedSales = requestCache.get(cacheKey);
         if (cachedSales) {
-          setSales(cachedSales);
+          setSales(cachedSales as Sale[]);
           setLoading(false);
           return;
         }
@@ -48,12 +48,16 @@ export function useSalesData() {
           }
           
           if (data) {
-            setSales(data as Sale[]);
-            requestCache.set(cacheKey, data);
+            const typedData = data as unknown as Sale[];
+            setSales(typedData);
+            requestCache.set(cacheKey, typedData);
             success = true;
           }
         } catch (error: any) {
           retries++;
+          
+          // Log the error
+          requestCache.logError(error, cacheKey, 'useSalesData');
           
           if (retries >= maxRetries) {
             handleSupabaseError(error, "Erro ao carregar vendas");
@@ -62,6 +66,7 @@ export function useSalesData() {
           
           // Exponential backoff
           const delay = Math.pow(2, retries) * 1000;
+          console.log(`Retry ${retries}/${maxRetries} after ${delay}ms`);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }

@@ -1,6 +1,7 @@
 
 /**
  * A simple in-memory cache for API requests to reduce duplicate calls to Supabase
+ * with rate limiting, request tracking, and exponential backoff for retries
  */
 
 interface CacheEntry {
@@ -16,9 +17,23 @@ const cache: Record<string, CacheEntry> = {};
 const DEFAULT_CACHE_TIME = 5 * 60 * 1000;
 
 // Rate limiter settings
-const MAX_REQUESTS_PER_MINUTE = 80; // Lower than Supabase's limit
+const MAX_REQUESTS_PER_MINUTE = 80; // Lower than Supabase's limit to provide buffer
 let requestCount = 0;
 let requestResetTime = Date.now() + 60 * 1000;
+let isThrottled = false;
+let throttleEndTime = 0;
+
+// Request tracking
+type RequestLog = {
+  timestamp: number;
+  key?: string;
+  success: boolean;
+  error?: any;
+  source?: string;
+};
+
+const recentRequests: RequestLog[] = [];
+const MAX_REQUEST_LOGS = 100;
 
 export const requestCache = {
   /**
@@ -77,28 +92,58 @@ export const requestCache = {
   },
   
   /**
-   * Check if we've hit rate limits
+   * Check if we're currently throttled
    * Returns true if we should throttle requests
    */
   shouldThrottle: (): boolean => {
     const now = Date.now();
     
+    // If we're in a throttled state and the throttle period hasn't expired
+    if (isThrottled && now < throttleEndTime) {
+      return true;
+    }
+    
+    // If throttle period expired, reset the throttle state
+    if (isThrottled && now >= throttleEndTime) {
+      isThrottled = false;
+    }
+    
     // Reset counter if minute has passed
     if (now > requestResetTime) {
       requestCount = 0;
       requestResetTime = now + 60 * 1000;
+      return false;
     }
     
-    // Increment counter and check if we're over limit
-    requestCount++;
-    return requestCount > MAX_REQUESTS_PER_MINUTE;
+    // If we've exceeded our rate limit, enable throttling
+    if (requestCount > MAX_REQUESTS_PER_MINUTE) {
+      isThrottled = true;
+      throttleEndTime = now + 60 * 1000; // Throttle for 1 minute
+      console.warn(`Rate limit hit: Throttling requests for 1 minute until ${new Date(throttleEndTime).toLocaleTimeString()}`);
+      return true;
+    }
+    
+    return false;
   },
   
   /**
    * Track a new request for rate limiting
+   * @param source Optional source identifier for debugging
    */
-  trackRequest: (): void => {
+  trackRequest: (source?: string): void => {
     const now = Date.now();
+    
+    // Add to recent requests log
+    recentRequests.unshift({
+      timestamp: now,
+      source: source || 'unknown',
+      success: true
+    });
+    
+    // Trim log if it gets too large
+    if (recentRequests.length > MAX_REQUEST_LOGS) {
+      recentRequests.length = MAX_REQUEST_LOGS;
+    }
     
     // Reset counter if minute has passed
     if (now > requestResetTime) {
@@ -107,6 +152,39 @@ export const requestCache = {
     }
     
     requestCount++;
+  },
+  
+  /**
+   * Log an error with a request
+   * @param error The error that occurred
+   * @param key Optional cache key
+   * @param source Optional source identifier
+   */
+  logError: (error: any, key?: string, source?: string): void => {
+    const now = Date.now();
+    
+    // Add to recent requests log
+    recentRequests.unshift({
+      timestamp: now,
+      key,
+      source: source || 'unknown',
+      success: false,
+      error
+    });
+    
+    // Trim log if it gets too large
+    if (recentRequests.length > MAX_REQUEST_LOGS) {
+      recentRequests.length = MAX_REQUEST_LOGS;
+    }
+    
+    console.error(`Request error from ${source || 'unknown'}${key ? ` (${key})` : ''}:`, error);
+  },
+  
+  /**
+   * Get recent request logs for debugging
+   */
+  getRequestLogs: (): RequestLog[] => {
+    return [...recentRequests];
   },
   
   /**
@@ -123,5 +201,16 @@ export const requestCache = {
     Object.keys(cache).forEach(key => {
       delete cache[key];
     });
-  }
+  },
+  
+  /**
+   * Get the current throttling status
+   */
+  getThrottleStatus: () => ({
+    isThrottled,
+    requestCount,
+    maxRequests: MAX_REQUESTS_PER_MINUTE,
+    throttleEndTime: isThrottled ? new Date(throttleEndTime).toLocaleTimeString() : null,
+    resetTime: new Date(requestResetTime).toLocaleTimeString()
+  })
 };

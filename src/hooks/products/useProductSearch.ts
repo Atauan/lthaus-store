@@ -31,10 +31,13 @@ export function useProductSearch() {
         throw error;
       }
       
-      const result = { success: true, data: data as Product[] };
+      // Type casting to ensure compatibility
+      const typedData = data as unknown as Product[];
+      const result = { success: true, data: typedData };
       requestCache.set(cacheKey, result);
       return result;
     } catch (error: any) {
+      requestCache.logError(error, `search_products_${query}`, 'searchProducts');
       toast.error(`Erro ao pesquisar produtos: ${error.message}`);
       return { success: false, error, data: [] as Product[] };
     }
@@ -66,10 +69,13 @@ export function useProductSearch() {
         throw error;
       }
       
-      const result = { success: true, data: data as Product[] };
+      // Type casting to ensure compatibility
+      const typedData = data as unknown as Product[];
+      const result = { success: true, data: typedData };
       requestCache.set(cacheKey, result);
       return result;
     } catch (error: any) {
+      requestCache.logError(error, 'low_stock_products', 'getLowStockProducts');
       toast.error(`Erro ao buscar produtos com estoque baixo: ${error.message}`);
       return { success: false, error, data: [] as Product[] };
     }

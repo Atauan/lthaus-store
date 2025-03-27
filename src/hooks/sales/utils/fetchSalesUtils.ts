@@ -10,7 +10,7 @@ export async function fetchSales(): Promise<{ data: Sale[] | null; error: any }>
     // Check if data is in cache
     const cachedData = requestCache.get(cacheKey);
     if (cachedData) {
-      return { data: cachedData, error: null };
+      return { data: cachedData as Sale[], error: null };
     }
     
     // If request is already in progress, don't start another one
@@ -34,13 +34,18 @@ export async function fetchSales(): Promise<{ data: Sale[] | null; error: any }>
         if (error) throw error;
         
         if (data) {
-          requestCache.set(cacheKey, data);
-          return { data: data as Sale[], error: null };
+          // Type assertion to ensure compatibility
+          const typedData = data as unknown as Sale[];
+          requestCache.set(cacheKey, typedData);
+          return { data: typedData, error: null };
         }
         
         return { data: null, error: "No data returned" };
       } catch (error: any) {
         retries++;
+        
+        // Log the error
+        requestCache.logError(error, cacheKey, 'fetchSales');
         
         if (retries >= maxRetries) {
           handleSupabaseError(error, "Erro ao carregar vendas");
@@ -49,13 +54,22 @@ export async function fetchSales(): Promise<{ data: Sale[] | null; error: any }>
         
         // Exponential backoff
         const delay = Math.pow(2, retries) * 1000;
+        console.log(`Retry ${retries}/${maxRetries} after ${delay}ms`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
     
     return { data: null, error: "Max retries exceeded" };
   } catch (error: any) {
+    // Log the error
+    requestCache.logError(error, 'sales_list', 'fetchSales');
     handleSupabaseError(error, "Erro ao carregar vendas");
     return { data: null, error };
+  } finally {
+    // Clear loading state if it's still set
+    const entry = cache['sales_list'];
+    if (entry?.loading) {
+      entry.loading = false;
+    }
   }
 }

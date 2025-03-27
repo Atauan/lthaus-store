@@ -29,7 +29,7 @@ export const createNewSale = async (saleData: any) => {
         delivery_address: saleData.delivery_address,
         delivery_fee: saleData.delivery_fee || 0,
         user_id: null // Explicitly setting user_id to null
-      })
+      } as any)
       .select('id')
       .single();
 
@@ -37,7 +37,10 @@ export const createNewSale = async (saleData: any) => {
       throw saleResult.error;
     }
 
-    const saleId = saleResult.data.id;
+    const saleData_id = saleResult.data?.id;
+    if (!saleData_id) {
+      throw new Error('Failed to get sale ID after insertion');
+    }
 
     // Create sale items entries and update stock
     if (saleData.items && Array.isArray(saleData.items)) {
@@ -46,15 +49,16 @@ export const createNewSale = async (saleData: any) => {
         const itemResult = await supabase
           .from('sale_items')
           .insert({
-            sale_id: saleId,
+            sale_id: saleData_id,
             product_id: item.id || 0,
             price: item.price,
             quantity: item.quantity,
             cost: item.cost || null
-          });
+          } as any);
 
         if (itemResult.error) {
           console.error('Error creating sale item:', itemResult.error);
+          requestCache.logError(itemResult.error, `sale_items_${saleData_id}`, 'createNewSale');
           continue;
         }
 
@@ -69,21 +73,23 @@ export const createNewSale = async (saleData: any) => {
 
           if (productError) {
             console.error('Error fetching product stock:', productError);
+            requestCache.logError(productError, `product_${item.id}`, 'createNewSale');
             continue;
           }
 
           if (product) {
-            const previousStock = product.stock;
+            const previousStock = product.stock as number;
             const newStock = Math.max(0, previousStock - item.quantity);
 
             // Update product stock
             const { error: updateError } = await supabase
               .from('products')
-              .update({ stock: newStock })
+              .update({ stock: newStock } as any)
               .eq('id', item.id);
 
             if (updateError) {
               console.error('Error updating product stock:', updateError);
+              requestCache.logError(updateError, `product_update_${item.id}`, 'createNewSale');
               continue;
             }
 
@@ -96,9 +102,9 @@ export const createNewSale = async (saleData: any) => {
                 new_stock: newStock,
                 change_amount: -item.quantity,
                 reference_type: 'sale',
-                reference_id: saleId.toString(),
-                notes: `Venda #${saleId}`
-              });
+                reference_id: saleData_id.toString(),
+                notes: `Venda #${saleData_id}`
+              } as any);
               
             // Invalidate product cache
             requestCache.clear(`product_${item.id}`);
@@ -113,17 +119,18 @@ export const createNewSale = async (saleData: any) => {
         await supabase
           .from('sale_payments')
           .insert({
-            sale_id: saleId,
+            sale_id: saleData_id,
             method: payment.method,
             amount: payment.amount
-          });
+          } as any);
       }
     }
 
     toast.success('Venda registrada com sucesso!');
-    return { success: true, saleId };
+    return { success: true, saleId: saleData_id };
   } catch (error: any) {
     console.error('Error creating sale:', error);
+    requestCache.logError(error, 'create_sale', 'createNewSale');
     handleSupabaseError(error, "Erro ao registrar venda");
     return { success: false, error };
   }

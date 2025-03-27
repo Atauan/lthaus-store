@@ -18,7 +18,7 @@ export function useFetchProducts() {
       if (!forceRefresh) {
         const cachedProducts = requestCache.get(cacheKey);
         if (cachedProducts) {
-          setProducts(cachedProducts);
+          setProducts(cachedProducts as Product[]);
           setLoading(false);
           return;
         }
@@ -42,10 +42,13 @@ export function useFetchProducts() {
       }
       
       if (data) {
-        setProducts(data as Product[]);
-        requestCache.set(cacheKey, data);
+        // Cast data to Product[] to handle type compatibility
+        const typedProducts = data as unknown as Product[];
+        setProducts(typedProducts);
+        requestCache.set(cacheKey, typedProducts);
       }
     } catch (error: any) {
+      requestCache.logError(error, 'products_list', 'useFetchProducts');
       toast.error(`Erro ao carregar produtos: ${error.message}`);
     } finally {
       setLoading(false);

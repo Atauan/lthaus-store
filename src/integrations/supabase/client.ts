@@ -15,26 +15,47 @@ const supabaseOptions = {
     detectSessionInUrl: true
   },
   global: {
-    fetch: (...args) => {
+    fetch: (url: RequestInfo, options?: RequestInit) => {
+      // Extract caller information from stack trace for better debugging
+      const stack = new Error().stack || '';
+      const caller = stack.split('\n')[2]?.trim() || 'unknown';
+      
       // Track request for rate limiting
-      requestCache.trackRequest();
+      requestCache.trackRequest(caller);
       
       // If we've hit rate limits, delay the request
       if (requestCache.shouldThrottle()) {
         return new Promise((resolve) => {
           // Random delay between 1-3 seconds to spread out requests
           const delay = Math.floor(Math.random() * 2000) + 1000;
-          setTimeout(() => resolve(fetch(...args)), delay);
-        }).then(response => response);
+          console.log(`Request throttled, delaying by ${delay}ms`);
+          setTimeout(() => resolve(fetch(url, options)), delay);
+        }) as Promise<Response>;
       }
       
-      return fetch(...args);
+      // Implement exponential backoff for failed requests
+      return fetch(url, options)
+        .then(response => {
+          if (!response.ok && (response.status === 429 || response.status >= 500)) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response;
+        })
+        .catch(error => {
+          // Log the error with the request cache
+          requestCache.logError(error, url.toString(), caller);
+          throw error;
+        });
     }
   }
 };
 
 // Create a single client - no need for admin client anymore since RLS is disabled
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, supabaseOptions);
+export const supabase = createClient<Database>(
+  SUPABASE_URL, 
+  SUPABASE_PUBLISHABLE_KEY, 
+  supabaseOptions
+);
 
 // Keep the adminSupabase export for backward compatibility so we don't break existing code
 export const adminSupabase = supabase;
