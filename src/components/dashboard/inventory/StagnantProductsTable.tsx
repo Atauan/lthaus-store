@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -6,9 +7,10 @@ import { Product } from '@/hooks/products/useProductTypes';
 
 interface StagnantProductsTableProps {
   stagnantProducts: Product[];
+  daysThreshold?: number;
 }
 
-const StagnantProductsTable: React.FC<StagnantProductsTableProps> = ({ stagnantProducts }) => {
+const StagnantProductsTable: React.FC<StagnantProductsTableProps> = ({ stagnantProducts, daysThreshold = 30 }) => {
   return (
     <Card>
       <CardHeader>

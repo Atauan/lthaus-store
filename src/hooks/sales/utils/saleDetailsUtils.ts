@@ -64,8 +64,9 @@ export async function getSaleDetails(saleId: number): Promise<{
         type: 'product' as const, // Default to product type
         custom_price: false,
         created_at: item.created_at,
-        updated_at: item.updated_at || null,
-        user_id: item.user_id || null
+        // Use optional chaining for properties that might not exist on the item
+        updated_at: null, // Since this property doesn't exist in the database response
+        user_id: null // Since this property doesn't exist in the database response
       };
     });
     

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -21,7 +20,7 @@ const SalesDashboard = () => {
   const navigate = useNavigate();
   const { getLowStockProducts, products } = useProducts();
   const { salesStatistics, getSalesStatistics, isLoadingStatistics } = useSales();
-  const { costs: storeCosts, calculateNetProfit } = useStoreCosts();
+  const { costs: storeCosts } = useStoreCosts();
   
   const [lowStockItems, setLowStockItems] = useState<Product[]>([]);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
@@ -35,7 +34,6 @@ const SalesDashboard = () => {
   const [productMarginData, setProductMarginData] = useState<any[]>([]);
   
   useEffect(() => {
-    // Load low stock products
     const loadLowStockProducts = async () => {
       try {
         const response = await getLowStockProducts();
@@ -54,7 +52,6 @@ const SalesDashboard = () => {
     
     loadLowStockProducts();
     
-    // Generate some example stagnant products (would be calculated from real data in a production app)
     setStagnantProducts([
       {
         id: 1,
@@ -88,15 +85,13 @@ const SalesDashboard = () => {
       }
     ]);
     
-    // Calculate dashboard metrics
     setDashboardMetrics({
       totalStock: products.reduce((sum, product) => sum + product.stock, 0),
       productsCount: products.length,
       lowStockCount: lowStockItems.length, 
-      stagnantCount: 5 // Example count for stagnant products
+      stagnantCount: 5
     });
     
-    // Generate sample product margin data for the chart
     setProductMarginData([
       { category: 'Cabos', costToPrice: 0.4 },
       { category: 'Capas', costToPrice: 0.5 },
@@ -105,11 +100,11 @@ const SalesDashboard = () => {
       { category: 'Proteção', costToPrice: 0.4 },
     ]);
     
-    // Load sales statistics for the last year
-    const yearDateRange = periodToDateRange('year');
-    getSalesStatistics(yearDateRange);
+    getSalesStatistics({
+      from: new Date(new Date().setFullYear(new Date().getFullYear() - 1)),
+      to: new Date()
+    });
     
-    // Generate monthly profit data
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthlyProfitData = months.map((month, index) => {
       const revenue = Math.random() * 5000 + 3000;
@@ -139,7 +134,6 @@ const SalesDashboard = () => {
             </TabsList>
             
             <TabsContent value="overview" className="space-y-6">
-              {/* Monthly Profit Chart */}
               <Card>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
@@ -155,7 +149,6 @@ const SalesDashboard = () => {
                 </CardContent>
               </Card>
               
-              {/* Inventory and Low Stock Preview */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader className="pb-2">
@@ -177,7 +170,7 @@ const SalesDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <LowStockTable 
-                      products={lowStockItems.slice(0, 5)} 
+                      lowStockProducts={lowStockItems.slice(0, 5)} 
                       totalStock={dashboardMetrics.totalStock}
                       lowStockCount={dashboardMetrics.lowStockCount}
                     />
@@ -208,7 +201,6 @@ const SalesDashboard = () => {
                 </Card>
               </div>
               
-              {/* Stagnant Products */}
               <Card>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
@@ -228,7 +220,7 @@ const SalesDashboard = () => {
                   <CardDescription>Products with low sales velocity that might need attention</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <StagnantProductsTable products={stagnantProducts} daysThreshold={30} />
+                  <StagnantProductsTable stagnantProducts={stagnantProducts} daysThreshold={30} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -249,7 +241,7 @@ const SalesDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <LowStockTable 
-                      products={lowStockItems} 
+                      lowStockProducts={lowStockItems} 
                       totalStock={dashboardMetrics.totalStock}
                       lowStockCount={dashboardMetrics.lowStockCount}
                     />
@@ -262,14 +254,13 @@ const SalesDashboard = () => {
                     <CardDescription>Products with low sales velocity</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <StagnantProductsTable products={stagnantProducts} daysThreshold={30} />
+                    <StagnantProductsTable stagnantProducts={stagnantProducts} daysThreshold={30} />
                   </CardContent>
                 </Card>
               </div>
             </TabsContent>
             
             <TabsContent value="sales" className="space-y-6">
-              {/* Sales analytics content - to be implemented */}
               <Card>
                 <CardHeader>
                   <CardTitle>Sales Analytics Dashboard</CardTitle>

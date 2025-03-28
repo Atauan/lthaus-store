@@ -27,7 +27,7 @@ export default function Dashboard() {
   
   const { products, loading: productsLoading, lowStockProducts } = useProducts();
   
-  // Calculate metric for low stock alert
+  // Calculate metric for low stock alert - lowStockProducts is now directly available from useProducts
   const lowStockCount = lowStockProducts?.length || 0;
   
   if (salesLoading || productsLoading) {

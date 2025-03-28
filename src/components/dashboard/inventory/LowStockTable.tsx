@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -7,9 +8,11 @@ import { Product } from '@/hooks/products/useProductTypes';
 
 interface LowStockTableProps {
   lowStockProducts: Product[];
+  totalStock?: number;
+  lowStockCount?: number;
 }
 
-const LowStockTable: React.FC<LowStockTableProps> = ({ lowStockProducts }) => {
+const LowStockTable: React.FC<LowStockTableProps> = ({ lowStockProducts, totalStock, lowStockCount }) => {
   return (
     <Card>
       <CardHeader>

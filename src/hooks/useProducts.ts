@@ -14,6 +14,7 @@ export function useProducts() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todas');
   const [selectedBrand, setSelectedBrand] = useState('Todas');
+  const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
 
   // Computed filtered products
   const filteredProducts = useCallback(() => {
@@ -46,6 +47,8 @@ export function useProducts() {
       
       if (data) {
         setProducts(data as Product[]);
+        // Update low stock products when products are fetched
+        updateLowStockProducts(data as Product[]);
       }
     } catch (error: any) {
       toast.error(`Erro ao carregar produtos: ${error.message}`);
@@ -54,6 +57,14 @@ export function useProducts() {
       setLoading(false);
     }
   }, []);
+  
+  // Update low stock products
+  const updateLowStockProducts = (productsList: Product[]) => {
+    const lowStock = productsList.filter(product => 
+      product.stock <= product.min_stock
+    );
+    setLowStockProducts(lowStock);
+  };
   
   // Fetch stock logs
   const fetchStockLogs = useCallback(async () => {
@@ -326,6 +337,7 @@ export function useProducts() {
     selectedBrand,
     setSelectedBrand,
     categories,
-    brands
+    brands,
+    lowStockProducts // Added this to fix the Dashboard.tsx error
   };
 }

@@ -143,6 +143,7 @@ const Products = () => {
               ) : (
                 <CostChangesTab 
                   recentCostChanges={recentCostChanges}
+                  loading={false} // Added the missing loading prop
                 />
               )}
             </TabsContent>
