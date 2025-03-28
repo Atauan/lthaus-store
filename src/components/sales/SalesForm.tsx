@@ -2,13 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { SaleDetails } from '@/hooks/sales/types';
-import SaleFormContainer from './form/SaleFormContainer';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { SalesFormValues, SaleItem } from './types/salesTypes';
-import SaleInfoSection from './SaleInfoSection';
-import ItemsSection from './ItemsSection';
-import PaymentMethodsSection from './PaymentMethodsSection';
-import DeliverySection from './DeliverySection';
-import { useSalesFormSubmit } from './hooks/useSalesFormSubmit';
+import { useNavigate } from 'react-router-dom';
+import { CheckCircle } from 'lucide-react';
 import { calculateSubtotal, calculateProfit, calculateFinalTotal } from './utils/salesUtils';
 
 interface SalesFormProps {
@@ -26,6 +24,7 @@ const defaultFormValues: SalesFormValues = {
 };
 
 const SalesForm: React.FC<SalesFormProps> = ({ initialData }) => {
+  const navigate = useNavigate();
   const [selectedItems, setSelectedItems] = useState<SaleItem[]>([]);
   const [subtotal, setSubtotal] = useState(0);
   const [profit, setProfit] = useState(0);
@@ -34,17 +33,6 @@ const SalesForm: React.FC<SalesFormProps> = ({ initialData }) => {
   const form = useForm<SalesFormValues>({
     defaultValues: defaultFormValues
   });
-
-  const { 
-    saleNumber, 
-    onSubmit: handleFormSubmit,
-    isReceiptModalOpen,
-    savingInProgress,
-    setIsReceiptModalOpen,
-    handleNewSale,
-    handleFinishSale,
-    saleData
-  } = useSalesFormSubmit();
 
   // Initialize form with data if editing
   useEffect(() => {
@@ -88,43 +76,76 @@ const SalesForm: React.FC<SalesFormProps> = ({ initialData }) => {
     setFinalTotal(calculatedTotal);
   }, [selectedItems, form.watch(['discount', 'discountType', 'deliveryFee'])]);
 
-  const getFinalTotal = () => {
-    return finalTotal;
+  const handleSubmit = (values: SalesFormValues) => {
+    // This is just a placeholder - in a real implementation, this would call
+    // the appropriate functions to save the sale
+    console.log('Form values:', values);
+    console.log('Selected items:', selectedItems);
+    console.log('Subtotal:', subtotal);
+    console.log('Profit:', profit);
+    console.log('Final total:', finalTotal);
+    
+    // Navigate back to sales list
+    navigate('/sales');
   };
 
-  const handleSubmit = (values: SalesFormValues) => {
-    handleFormSubmit(values, selectedItems, subtotal, profit, getFinalTotal);
-  };
+  // Temporary placeholder component for ItemsSection
+  const ItemsSection = () => (
+    <div className="bg-white rounded-lg shadow p-6">
+      <h2 className="text-xl font-semibold mb-4">Items Section Placeholder</h2>
+      <p>This is where the items selection would go.</p>
+    </div>
+  );
+
+  // Temporary placeholder component for DeliverySection
+  const DeliverySection = () => (
+    <div className="bg-white rounded-lg shadow p-6">
+      <h2 className="text-xl font-semibold mb-4">Delivery Section Placeholder</h2>
+      <p>This is where delivery information would go.</p>
+    </div>
+  );
+
+  // Temporary placeholder component for PaymentMethodsSection
+  const PaymentMethodsSection = () => (
+    <div className="bg-white rounded-lg shadow p-6">
+      <h2 className="text-xl font-semibold mb-4">Payment Methods Placeholder</h2>
+      <p>This is where payment methods would go.</p>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <SaleInfoSection form={form} />
-          <ItemsSection 
-            selectedItems={selectedItems} 
-            setSelectedItems={setSelectedItems} 
-          />
-          <DeliverySection 
-            form={form} 
-            saleChannel={form.watch('saleChannel')} 
-          />
+          <ItemsSection />
+          <DeliverySection />
         </div>
         
         <div className="space-y-6">
-          <PaymentMethodsSection 
-            form={form} 
-            finalTotal={finalTotal}
-          />
+          <PaymentMethodsSection />
         </div>
       </div>
       
-      <SaleFormContainer 
-        form={form}
-        onSubmit={handleSubmit}
-        saleNumber={saleNumber}
-        initialData={initialData}
-      />
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Observações (opcional)</label>
+          <Textarea 
+            placeholder="Observações sobre a venda..." 
+            className="resize-none" 
+            {...form.register('notes')} 
+          />
+        </div>
+        
+        <div className="flex justify-end gap-3 pt-4">
+          <Button variant="outline" type="button" onClick={() => navigate('/sales')}>
+            Cancelar
+          </Button>
+          <Button type="submit">
+            <CheckCircle className="mr-2 h-4 w-4" />
+            Finalizar Venda
+          </Button>
+        </div>
+      </form>
     </div>
   );
 };

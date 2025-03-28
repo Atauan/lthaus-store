@@ -168,29 +168,19 @@ export function useSales() {
       
       const newSale = saleData[0] as Sale;
       
-      // Insert the sale items, ensuring product_id is not optional
-      const itemsWithSaleId = items.map(item => ({
-        sale_id: newSale.id,
-        price: item.price,
-        quantity: item.quantity,
-        product_id: item.product_id || 0, // Default to 0 if not provided
-        cost: item.cost || 0,
-        name: item.name,
-        type: item.type || 'product',
-        custom_price: item.custom_price || false
-      }));
-      
-      // Use separate inserts for each item to avoid batch issues
-      for (const item of itemsWithSaleId) {
+      // Insert each item individually
+      for (const item of items) {
+        const itemToInsert = {
+          sale_id: newSale.id,
+          product_id: item.product_id || 0, // Default to 0 if not provided
+          quantity: item.quantity,
+          price: item.price,
+          cost: item.cost || 0
+        };
+        
         const { error: itemError } = await supabase
           .from('sale_items')
-          .insert({
-            sale_id: item.sale_id,
-            product_id: item.product_id,
-            quantity: item.quantity,
-            price: item.price,
-            cost: item.cost
-          });
+          .insert(itemToInsert);
           
         if (itemError) {
           console.error('Error inserting sale item:', itemError);

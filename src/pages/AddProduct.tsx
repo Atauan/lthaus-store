@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import PageTransition from '@/components/layout/PageTransition';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useForm } from 'react-hook-form';
@@ -12,10 +12,13 @@ import { useProducts } from '@/hooks/useProducts';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { categories, brands } from '@/hooks/products/types';
+import { Loader2 } from 'lucide-react';
 
 const AddProduct = () => {
   const navigate = useNavigate();
   const { addProduct } = useProducts();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const form = useForm({
     defaultValues: {
       name: '',
@@ -31,7 +34,18 @@ const AddProduct = () => {
 
   const onSubmit = async (data: any) => {
     try {
-      const result = await addProduct(data);
+      setIsSubmitting(true);
+      const result = await addProduct({
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        brand: data.brand,
+        price: parseFloat(data.price),
+        cost: parseFloat(data.cost),
+        stock: parseInt(data.stock),
+        min_stock: parseInt(data.min_stock)
+      });
+      
       if (result.success) {
         toast.success('Produto adicionado com sucesso!');
         setTimeout(() => {
@@ -42,6 +56,8 @@ const AddProduct = () => {
       }
     } catch (error: any) {
       toast.error(`Erro ao adicionar produto: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -117,7 +133,7 @@ const AddProduct = () => {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <Label htmlFor="price">Preço de Venda (R$)</Label>
                     <Input id="price" type="number" step="0.01" min="0" {...form.register('price')} required />
@@ -132,14 +148,26 @@ const AddProduct = () => {
                     <Label htmlFor="stock">Estoque Inicial</Label>
                     <Input id="stock" type="number" min="0" {...form.register('stock')} required />
                   </div>
+                  
+                  <div>
+                    <Label htmlFor="min_stock">Estoque Mínimo</Label>
+                    <Input id="min_stock" type="number" min="0" {...form.register('min_stock')} required />
+                  </div>
                 </div>
                 
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => navigate('/products')}>
                     Cancelar
                   </Button>
-                  <Button type="submit">
-                    Adicionar Produto
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Adicionando...
+                      </>
+                    ) : (
+                      'Adicionar Produto'
+                    )}
                   </Button>
                 </div>
               </form>

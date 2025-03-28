@@ -1,4 +1,5 @@
 
+// Product-related types
 export interface ProductFormValues {
   name: string;
   description: string;
@@ -25,7 +26,7 @@ export interface Product {
   category: string;
   brand: string;
   price: number;
-  cost: number; // Making cost required to match existing usage
+  cost: number;
   stock: number;
   min_stock: number;
   image?: string;

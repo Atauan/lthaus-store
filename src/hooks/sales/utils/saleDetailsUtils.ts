@@ -60,7 +60,6 @@ export async function getSaleDetails(saleId: number): Promise<{
         quantity: item.quantity,
         price: item.price,
         cost: item.cost || 0,
-        // Provide default values for the missing properties
         name: productData?.name || 'Unknown Product',
         type: 'product' as const, // Default to product type
         custom_price: false,

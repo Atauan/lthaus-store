@@ -64,7 +64,6 @@ const Products = () => {
   useEffect(() => {
     if (!editDialogOpen && (editType === 'cost' || editType === 'profit' || (editType === 'price' && selectedProduct?.cost))) {
       // Update cost logs after closing dialog if we made changes that could affect costs
-      console.log('Edit dialog closed, refreshing cost logs...');
       setRefreshingData(true);
       
       setTimeout(() => {
@@ -144,7 +143,6 @@ const Products = () => {
               ) : (
                 <CostChangesTab 
                   recentCostChanges={recentCostChanges}
-                  loading={loading}
                 />
               )}
             </TabsContent>
