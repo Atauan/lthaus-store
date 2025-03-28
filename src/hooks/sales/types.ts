@@ -1,3 +1,4 @@
+
 /**
  * Sale types for interaction with the Supabase database
  */

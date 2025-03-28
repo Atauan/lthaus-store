@@ -1,9 +1,10 @@
+
 import React from 'react';
 import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { Product } from '@/hooks/useProducts';
+import { Product } from '@/hooks/products/types';
 import SimpleEditForm from './dialog/SimpleEditForm';
 import FullEditForm from './dialog/FullEditForm';
 import DialogTitleSection from './dialog/DialogTitleSection';
@@ -71,6 +72,12 @@ const EditProductDialog = ({
     onSave();
   };
 
+  const handleProductChange = (field: keyof Product, value: any) => {
+    if (handleFullEditChange) {
+      handleFullEditChange(field, value);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[550px] border-primary/20">
@@ -82,7 +89,7 @@ const EditProductDialog = ({
         {editType === 'full' && fullEditProduct ? (
           <FullEditForm
             product={fullEditProduct}
-            onProductChange={handleFullEditChange}
+            onProductChange={handleProductChange}
             onSave={handleFullSave}
             onCancel={handleClose}
           />

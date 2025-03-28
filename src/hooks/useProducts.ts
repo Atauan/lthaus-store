@@ -1,67 +1,82 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Product, StockLog, CostChangeLog } from './products/types';
+import { useFetchProducts } from './products/useFetchProducts';
+import { useProductFilters } from './products/useProductFilters';
+import { useProductOperations } from './products/useProductOperations';
+import { useProductLogs } from './products/useProductLogs';
 
 const ITEMS_PER_PAGE = 50;
 
-export interface Product {
-  id: number;
-  name: string;
-  category: string;
-  brand: string;
-  price: number;
-  cost: number;
-  stock: number;
-}
+// Re-export types
+export type { Product, StockLog, CostChangeLog };
 
 // Exportando brands diretamente
 export const brands = ['Todas', 'Apple', 'Samsung', 'Anker', 'JBL', 'Generic'];
 
 export function useProducts() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Use the extracted hooks
+  const { products, setProducts, loading } = useFetchProducts();
+  const { filteredProducts, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, selectedBrand, setSelectedBrand } = useProductFilters(products);
+  const { addProduct, updateProduct, updateStock, updateCost, deleteProduct } = useProductOperations(products, setProducts);
+  const { stockLogs, costChangeLogs, fetchStockLogs, fetchCostChangeLogs } = useProductLogs();
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [categories, setCategories] = useState<string[]>([]);
-
-  const fetchProducts = async (page = 1) => {
-    try {
-      setLoading(true);
-      const from = (page - 1) * ITEMS_PER_PAGE;
-      const to = from + ITEMS_PER_PAGE - 1;
-
-      const { data, error, count } = await supabase
-        .from('products')
-        .select('*', { count: 'exact' })
-        .range(from, to);
-
-      if (error) throw error;
-
-      if (data) {
-        setProducts(prevProducts => page === 1 ? data : [...prevProducts, ...data]);
-        setHasMore(count > to + 1);
-        setCurrentPage(page);
-
-        // Extract unique categories
-        const uniqueCategories = [...new Set(data.map(product => product.category))];
-        setCategories(uniqueCategories);
-      }
-    } catch (error) {
-      toast.error(`Erro ao carregar produtos: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
+  
+  // Calculate if there are more items to load
   useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const loadMore = () => {
-    if (hasMore && !loading) {
-      fetchProducts(currentPage + 1);
+    setHasMore(products.length > currentPage * ITEMS_PER_PAGE);
+  }, [products, currentPage]);
+  
+  // Set low stock products
+  useEffect(() => {
+    const lowStock = products.filter(product => 
+      product.stock <= (product.min_stock || 5)
+    );
+    setLowStockProducts(lowStock);
+  }, [products]);
+  
+  // Function to load more products for pagination
+  const loadMore = useCallback(() => {
+    if (hasMore) {
+      setCurrentPage(prev => prev + 1);
     }
-  };
+  }, [hasMore]);
+  
+  // Function to get low stock products
+  const getLowStockProducts = useCallback(async () => {
+    return lowStockProducts;
+  }, [lowStockProducts]);
 
-  return { products, loading, hasMore, loadMore, categories };
+  // Return all necessary properties and functions
+  return {
+    products,
+    loading,
+    currentPage,
+    hasMore,
+    loadMore,
+    categories: ['Todas', 'Cabos', 'Capas', 'Áudio', 'Carregadores', 'Proteção', 'Acessórios'],
+    filteredProducts,
+    searchQuery,
+    setSearchQuery,
+    selectedCategory,
+    setSelectedCategory,
+    selectedBrand,
+    setSelectedBrand,
+    addProduct,
+    updateProduct,
+    updateStock,
+    updateCost,
+    deleteProduct,
+    stockLogs,
+    costChangeLogs,
+    fetchStockLogs,
+    fetchCostChangeLogs,
+    lowStockProducts,
+    getLowStockProducts
+  };
 }

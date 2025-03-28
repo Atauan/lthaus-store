@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { SaleDetails } from '../types';
+import { SaleDetails, SaleItem } from '../types';
 import { getFromCache, saveToCache } from '@/utils/requestCache';
 import { handleRequestRateLimit } from '@/utils/rateLimiter';
 
@@ -36,7 +36,7 @@ export async function getSaleDetails(saleId: number): Promise<{ success: boolean
     }
     
     // Fetch sale items
-    const { data: items, error: itemsError } = await supabase
+    const { data: itemsData, error: itemsError } = await supabase
       .from('sale_items')
       .select('*')
       .eq('sale_id', saleId);
@@ -44,6 +44,20 @@ export async function getSaleDetails(saleId: number): Promise<{ success: boolean
     if (itemsError) {
       throw itemsError;
     }
+    
+    // Convert to proper SaleItem type with required fields
+    const items: SaleItem[] = (itemsData || []).map(item => ({
+      id: item.id,
+      sale_id: item.sale_id,
+      product_id: item.product_id,
+      name: item.name || 'Produto sem nome',
+      price: item.price,
+      cost: item.cost,
+      quantity: item.quantity,
+      type: item.type || 'product',
+      created_at: item.created_at,
+      custom_price: item.custom_price
+    }));
     
     // Fetch payment methods
     const { data: payments, error: paymentsError } = await supabase
@@ -57,7 +71,7 @@ export async function getSaleDetails(saleId: number): Promise<{ success: boolean
     
     const saleDetails: SaleDetails = {
       sale,
-      items: items || [],
+      items,
       payments: payments || []
     };
     

@@ -1,404 +1,77 @@
 
-/**
- * A simple in-memory cache for API requests to reduce duplicate calls to Supabase
- * with rate limiting, request tracking, and exponential backoff for retries
- */
+// A simple in-memory cache for API requests
+const cache: Record<string, { data: any, timestamp: number, expiry: number }> = {};
 
-interface CacheEntry {
-  data: any;
-  timestamp: number;
-  loading?: boolean;
-  expiresAt: number;
-}
-
-const cache: Record<string, CacheEntry> = {};
-
-// Default cache expiration time (5 minutes)
+// Default cache time (5 minutes)
 const DEFAULT_CACHE_TIME = 5 * 60 * 1000;
 
-// Rate limiter settings
-const MAX_REQUESTS_PER_MINUTE = 80; // Lower than Supabase's limit to provide buffer
-let requestCount = 0;
-let requestResetTime = Date.now() + 60 * 1000;
-let isThrottled = false;
-let throttleEndTime = 0;
-
-// Request tracking
-type RequestLog = {
-  timestamp: number;
-  key?: string;
-  success: boolean;
-  error?: any;
-  source?: string;
-};
-
-const recentRequests: RequestLog[] = [];
-const MAX_REQUEST_LOGS = 100;
-
-// IndexedDB Support for persistent cache
-const initIndexedDB = (): Promise<boolean> => {
-  return new Promise((resolve) => {
-    if (!window.indexedDB) {
-      console.log("IndexedDB not supported, using memory cache only");
-      resolve(false);
-      return;
-    }
-
-    try {
-      const request = window.indexedDB.open("supabaseCache", 1);
-      
-      request.onerror = () => {
-        console.error("Error opening IndexedDB");
-        resolve(false);
-      };
-      
-      request.onupgradeneeded = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
-        if (!db.objectStoreNames.contains("cacheStore")) {
-          db.createObjectStore("cacheStore", { keyPath: "key" });
-        }
-      };
-      
-      request.onsuccess = () => {
-        resolve(true);
-      };
-    } catch (error) {
-      console.error("IndexedDB error:", error);
-      resolve(false);
-    }
-  });
-};
-
-let dbPromise = initIndexedDB();
-
-const saveToIndexedDB = async (key: string, data: any): Promise<void> => {
-  const isDBAvailable = await dbPromise;
-  if (!isDBAvailable) return;
-
-  try {
-    const request = window.indexedDB.open("supabaseCache", 1);
-    request.onsuccess = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      const transaction = db.transaction(["cacheStore"], "readwrite");
-      const store = transaction.objectStore("cacheStore");
-      
-      store.put({
-        key,
-        data,
-        timestamp: Date.now(),
-        expiresAt: Date.now() + DEFAULT_CACHE_TIME
-      });
-    };
-  } catch (error) {
-    console.error("Error saving to IndexedDB:", error);
-  }
-};
-
-const getFromIndexedDB = async (key: string): Promise<any> => {
-  const isDBAvailable = await dbPromise;
-  if (!isDBAvailable) return null;
-
-  return new Promise((resolve) => {
-    try {
-      const request = window.indexedDB.open("supabaseCache", 1);
-      request.onsuccess = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
-        const transaction = db.transaction(["cacheStore"], "readonly");
-        const store = transaction.objectStore("cacheStore");
-        const getRequest = store.get(key);
-        
-        getRequest.onsuccess = () => {
-          const result = getRequest.result;
-          if (!result) {
-            resolve(null);
-            return;
-          }
-          
-          if (Date.now() > result.expiresAt) {
-            // Cache expired, delete it
-            const deleteTransaction = db.transaction(["cacheStore"], "readwrite");
-            const deleteStore = deleteTransaction.objectStore("cacheStore");
-            deleteStore.delete(key);
-            resolve(null);
-            return;
-          }
-          
-          resolve(result.data);
-        };
-        
-        getRequest.onerror = () => {
-          resolve(null);
-        };
-      };
-    } catch (error) {
-      console.error("Error getting from IndexedDB:", error);
-      resolve(null);
-    }
-  });
-};
-
-const clearFromIndexedDB = async (key: string): Promise<void> => {
-  const isDBAvailable = await dbPromise;
-  if (!isDBAvailable) return;
-
-  try {
-    const request = window.indexedDB.open("supabaseCache", 1);
-    request.onsuccess = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      const transaction = db.transaction(["cacheStore"], "readwrite");
-      const store = transaction.objectStore("cacheStore");
-      store.delete(key);
-    };
-  } catch (error) {
-    console.error("Error clearing from IndexedDB:", error);
-  }
-};
-
-export const requestCache = {
-  /**
-   * Get a value from the cache
-   */
-  get: async (key: string): Promise<any | null> => {
-    // First try memory cache
-    const entry = cache[key];
-    if (entry) {
-      const now = Date.now();
-      if (now > entry.expiresAt) {
-        // Cache expired
-        delete cache[key];
-      } else {
-        return entry.data;
-      }
-    }
-    
-    // Then try indexedDB
-    return await getFromIndexedDB(key);
-  },
+/**
+ * Get data from cache by key
+ * @param key Cache key
+ * @returns The cached data or null if not found or expired
+ */
+export async function getFromCache(key: string): Promise<any | null> {
+  const entry = cache[key];
+  if (!entry) return null;
   
-  /**
-   * Store a value in the cache
-   * @param key Cache key
-   * @param data Data to store
-   * @param ttl Optional time-to-live in milliseconds (defaults to DEFAULT_CACHE_TIME)
-   */
-  set: (key: string, data: any, ttl = DEFAULT_CACHE_TIME): void => {
-    // Store in memory cache
-    cache[key] = {
-      data,
-      timestamp: Date.now(),
-      expiresAt: Date.now() + ttl,
-      loading: false
-    };
-    
-    // Also store in IndexedDB for persistence
-    saveToIndexedDB(key, data);
-  },
-  
-  /**
-   * Mark a key as loading
-   * @param key Cache key
-   * @param isLoading Whether the key is loading (defaults to true)
-   */
-  setLoading: (key: string, isLoading: boolean = true): void => {
-    if (!cache[key]) {
-      cache[key] = {
-        data: null,
-        timestamp: Date.now(),
-        expiresAt: Date.now() + DEFAULT_CACHE_TIME,
-        loading: isLoading
-      };
-    } else {
-      cache[key].loading = isLoading;
-    }
-  },
-  
-  /**
-   * Check if a key is currently loading
-   */
-  isLoading: (key: string): boolean => {
-    return cache[key]?.loading === true;
-  },
-  
-  /**
-   * Check if we're currently throttled
-   * Returns true if we should throttle requests
-   */
-  shouldThrottle: (): boolean => {
-    const now = Date.now();
-    
-    // If we're in a throttled state and the throttle period hasn't expired
-    if (isThrottled && now < throttleEndTime) {
-      return true;
-    }
-    
-    // If throttle period expired, reset the throttle state
-    if (isThrottled && now >= throttleEndTime) {
-      isThrottled = false;
-    }
-    
-    // Reset counter if minute has passed
-    if (now > requestResetTime) {
-      requestCount = 0;
-      requestResetTime = now + 60 * 1000;
-      return false;
-    }
-    
-    // If we've exceeded our rate limit, enable throttling
-    if (requestCount > MAX_REQUESTS_PER_MINUTE) {
-      isThrottled = true;
-      throttleEndTime = now + 60 * 1000; // Throttle for 1 minute
-      console.warn(`Rate limit hit: Throttling requests for 1 minute until ${new Date(throttleEndTime).toLocaleTimeString()}`);
-      return true;
-    }
-    
-    return false;
-  },
-  
-  /**
-   * Track a new request for rate limiting
-   * @param source Optional source identifier for debugging
-   */
-  trackRequest: (source?: string): void => {
-    const now = Date.now();
-    
-    // Add to recent requests log
-    recentRequests.unshift({
-      timestamp: now,
-      source: source || 'unknown',
-      success: true
-    });
-    
-    // Trim log if it gets too large
-    if (recentRequests.length > MAX_REQUEST_LOGS) {
-      recentRequests.length = MAX_REQUEST_LOGS;
-    }
-    
-    // Reset counter if minute has passed
-    if (now > requestResetTime) {
-      requestCount = 0;
-      requestResetTime = now + 60 * 1000;
-    }
-    
-    requestCount++;
-  },
-  
-  /**
-   * Log an error with a request
-   * @param error The error that occurred
-   * @param key Optional cache key
-   * @param source Optional source identifier
-   */
-  logError: (error: any, key?: string, source?: string): void => {
-    const now = Date.now();
-    
-    // Add to recent requests log
-    recentRequests.unshift({
-      timestamp: now,
-      key,
-      source: source || 'unknown',
-      success: false,
-      error
-    });
-    
-    // Trim log if it gets too large
-    if (recentRequests.length > MAX_REQUEST_LOGS) {
-      recentRequests.length = MAX_REQUEST_LOGS;
-    }
-    
-    console.error(`Request error from ${source || 'unknown'}${key ? ` (${key})` : ''}:`, error);
-  },
-  
-  /**
-   * Get recent request logs for debugging
-   */
-  getRequestLogs: (): RequestLog[] => {
-    return [...recentRequests];
-  },
-  
-  /**
-   * Clear the cache for a specific key
-   */
-  clear: (key: string): void => {
+  const now = Date.now();
+  if (now > entry.expiry) {
+    // Expired, remove from cache
     delete cache[key];
-    clearFromIndexedDB(key);
-  },
-  
-  /**
-   * Clear all cache entries
-   */
-  clearAll: (): void => {
-    Object.keys(cache).forEach(key => {
-      delete cache[key];
-    });
-    
-    // Clear IndexedDB
-    const isDBAvailable = dbPromise;
-    if (isDBAvailable) {
-      try {
-        const request = window.indexedDB.open("supabaseCache", 1);
-        request.onsuccess = (event) => {
-          const db = (event.target as IDBOpenDBRequest).result;
-          const transaction = db.transaction(["cacheStore"], "readwrite");
-          const store = transaction.objectStore("cacheStore");
-          store.clear();
-        };
-      } catch (error) {
-        console.error("Error clearing IndexedDB:", error);
-      }
-    }
-  },
-  
-  /**
-   * Get the current throttling status
-   */
-  getThrottleStatus: () => ({
-    isThrottled,
-    requestCount,
-    maxRequests: MAX_REQUESTS_PER_MINUTE,
-    throttleEndTime: isThrottled ? new Date(throttleEndTime).toLocaleTimeString() : null,
-    resetTime: new Date(requestResetTime).toLocaleTimeString()
-  }),
-  
-  /**
-   * Sync memory cache with IndexedDB
-   * Useful when the app starts up
-   */
-  syncWithPersistentStorage: async (): Promise<void> => {
-    const isDBAvailable = await dbPromise;
-    if (!isDBAvailable) return;
-
-    try {
-      const request = window.indexedDB.open("supabaseCache", 1);
-      request.onsuccess = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
-        const transaction = db.transaction(["cacheStore"], "readonly");
-        const store = transaction.objectStore("cacheStore");
-        const getAllRequest = store.getAll();
-        
-        getAllRequest.onsuccess = () => {
-          const items = getAllRequest.result;
-          const now = Date.now();
-          
-          items.forEach(item => {
-            if (now <= item.expiresAt) {
-              // Only load non-expired items into memory
-              cache[item.key] = {
-                data: item.data,
-                timestamp: item.timestamp,
-                expiresAt: item.expiresAt,
-                loading: false
-              };
-            }
-          });
-          
-          console.log(`Synced ${Object.keys(cache).length} items from persistent storage`);
-        };
-      };
-    } catch (error) {
-      console.error("Error syncing with IndexedDB:", error);
-    }
+    return null;
   }
-};
+  
+  return entry.data;
+}
 
-// Initialize cache from persistent storage when this module is imported
-requestCache.syncWithPersistentStorage();
+/**
+ * Save data to cache
+ * @param key Cache key
+ * @param data Data to cache
+ * @param ttl Time to live in milliseconds (default: 5 minutes)
+ */
+export function saveToCache(key: string, data: any, ttl: number = DEFAULT_CACHE_TIME): void {
+  const now = Date.now();
+  
+  cache[key] = {
+    data,
+    timestamp: now,
+    expiry: now + ttl
+  };
+}
+
+/**
+ * Clear an item from cache
+ * @param key Cache key to clear
+ */
+export function clearCache(key: string): void {
+  delete cache[key];
+}
+
+/**
+ * Clear all items from cache
+ */
+export function clearAllCache(): void {
+  Object.keys(cache).forEach(key => {
+    delete cache[key];
+  });
+}
+
+/**
+ * Get cache information
+ * @returns Object with cache stats
+ */
+export function getCacheInfo(): { keys: string[], count: number, oldestTimestamp: number | null } {
+  const keys = Object.keys(cache);
+  
+  let oldestTimestamp: number | null = null;
+  if (keys.length > 0) {
+    oldestTimestamp = Math.min(...Object.values(cache).map(entry => entry.timestamp));
+  }
+  
+  return {
+    keys,
+    count: keys.length,
+    oldestTimestamp
+  };
+}
