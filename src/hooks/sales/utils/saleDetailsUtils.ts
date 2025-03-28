@@ -1,103 +1,87 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Sale, SaleDetails } from '../types';
-import { toast } from 'sonner';
-import { getFromCache, saveToCache } from '@/utils/requestCache';
-import { handleRequestRateLimit } from '@/utils/rateLimiter';
+import { Sale, SaleItem, SalePayment, SaleDetails } from '../types';
 
-export const getSaleDetails = async (saleId: number): Promise<{ success: boolean; data?: SaleDetails; error?: string }> => {
+export async function getSaleDetails(saleId: number): Promise<{ 
+  success: boolean; 
+  data?: SaleDetails; 
+  error?: string 
+}> {
   try {
-    // Check rate limit
-    if (!handleRequestRateLimit(`getSaleDetails_${saleId}`)) {
-      const cachedData = getFromCache<SaleDetails>(`sale_${saleId}`, 60 * 1000);
-      if (cachedData) {
-        return { success: true, data: cachedData };
-      }
-      return { success: false, error: 'Taxa de requisições excedida. Tente novamente em alguns instantes.' };
-    }
-
-    // Try to get from cache first
-    const cachedData = getFromCache<SaleDetails>(`sale_${saleId}`, 5 * 60 * 1000); // 5 minutes cache
-    if (cachedData) {
-      return { success: true, data: cachedData };
-    }
-
-    // Get sale details
-    const { data: sale, error: saleError } = await supabase
+    // Fetch the sale
+    const { data: saleData, error: saleError } = await supabase
       .from('sales')
       .select('*')
       .eq('id', saleId)
       .single();
-
+      
     if (saleError) {
-      return { success: false, error: saleError.message };
+      throw saleError;
     }
-
-    if (!sale) {
-      return { success: false, error: 'Venda não encontrada' };
+    
+    if (!saleData) {
+      return { 
+        success: false,
+        error: 'Venda não encontrada'
+      };
     }
-
-    // Get sale items
-    const { data: items, error: itemsError } = await supabase
+    
+    // Fetch the sale items
+    const { data: itemsData, error: itemsError } = await supabase
       .from('sale_items')
-      .select('*')
+      .select(`
+        *,
+        products(*)
+      `)
       .eq('sale_id', saleId);
-
+      
     if (itemsError) {
-      return { success: false, error: itemsError.message };
+      throw itemsError;
     }
-
-    // Get payment methods
-    const { data: payments, error: paymentsError } = await supabase
+    
+    // Fetch the payments
+    const { data: paymentsData, error: paymentsError } = await supabase
       .from('sale_payments')
       .select('*')
       .eq('sale_id', saleId);
-
+      
     if (paymentsError) {
-      return { success: false, error: paymentsError.message };
+      throw paymentsError;
     }
-
-    // Add product names to items by fetching products
-    const enhancedItems = await Promise.all(
-      items.map(async (item) => {
-        // If no product_id, it's a custom item (service) with no related product
-        if (!item.product_id) {
-          return {
-            ...item,
-            name: item.name || 'Item personalizado',
-            type: item.type || 'service',
-            custom_price: true
-          };
-        }
-
-        const { data: product } = await supabase
-          .from('products')
-          .select('name')
-          .eq('id', item.product_id)
-          .single();
-
-        return {
-          ...item,
-          name: product?.name || `Produto #${item.product_id}`,
-          type: 'product',
-          custom_price: false
-        };
-      })
-    );
-
-    const saleDetails: SaleDetails = {
-      sale: sale as Sale,
-      items: enhancedItems,
-      payments: payments || []
+    
+    // Map the items to include product details
+    const mappedItems: SaleItem[] = (itemsData || []).map(item => {
+      const productData = item.products;
+      
+      return {
+        id: item.id,
+        sale_id: item.sale_id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.price,
+        cost: item.cost || 0,
+        name: item.name || productData?.name || 'Unknown',
+        type: item.type || 'product',
+        custom_price: item.custom_price || false,
+        created_at: item.created_at,
+        updated_at: item.updated_at || null,
+        user_id: item.user_id || null
+      };
+    });
+    
+    return {
+      success: true,
+      data: {
+        sale: saleData as Sale,
+        items: mappedItems,
+        payments: (paymentsData || []) as SalePayment[]
+      }
     };
-
-    // Save to cache
-    saveToCache(`sale_${saleId}`, saleDetails);
-
-    return { success: true, data: saleDetails };
   } catch (error: any) {
     console.error('Error fetching sale details:', error);
-    toast.error(`Erro ao carregar detalhes da venda: ${error.message}`);
-    return { success: false, error: error.message };
+    return {
+      success: false,
+      error: error.message || 'An error occurred while fetching sale details'
+    };
   }
-};
+}

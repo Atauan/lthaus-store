@@ -1,5 +1,5 @@
+
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
 import { Check, ChevronsUpDown, User, Phone, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { UseFormReturn } from 'react-hook-form';
+import { SalesFormValues } from './types/salesTypes';
 
 export type Customer = {
   id: string;
@@ -30,18 +32,18 @@ export type Customer = {
 };
 
 interface CustomerSelectorProps {
-  onSelectCustomer: (customer: Customer) => void;
-  selectedCustomer?: Customer | null;
+  form: UseFormReturn<SalesFormValues>;
 }
 
-const CustomerSelector: React.FC<CustomerSelectorProps> = ({ 
-  onSelectCustomer,
-  selectedCustomer
-}) => {
+const CustomerSelector: React.FC<CustomerSelectorProps> = ({ form }) => {
   const [open, setOpen] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  const { setValue, watch } = form;
+  const customerName = watch('customerName');
+  const customerContact = watch('customerContact');
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -74,6 +76,19 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
         (customer.email && customer.email.toLowerCase().includes(searchQuery.toLowerCase()))
       )
     : customers;
+  
+  // Handler for when a customer is selected
+  const handleSelectCustomer = (customer: Customer) => {
+    setValue('customerName', customer.name);
+    setValue('customerContact', customer.phone || '');
+    
+    // If delivery address fields exist and there's an address, set them
+    if (customer.address) {
+      setValue('deliveryAddress', `${customer.address}, ${customer.city || ''} - ${customer.state || ''} ${customer.zipcode || ''}`);
+    }
+    
+    setOpen(false);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -84,7 +99,7 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {selectedCustomer ? selectedCustomer.name : "Selecionar Cliente"}
+          {customerName ? customerName : "Selecionar Cliente"}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -108,16 +123,13 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({
                   <CommandItem
                     key={customer.id}
                     value={customer.id}
-                    onSelect={() => {
-                      onSelectCustomer(customer);
-                      setOpen(false);
-                    }}
+                    onSelect={() => handleSelectCustomer(customer)}
                     className="cursor-pointer"
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        selectedCustomer?.id === customer.id ? "opacity-100" : "opacity-0"
+                        customerName === customer.name ? "opacity-100" : "opacity-0"
                       )}
                     />
                     <div className="flex flex-col">

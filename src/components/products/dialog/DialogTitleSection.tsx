@@ -1,10 +1,11 @@
+
 import React from 'react';
 import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Product } from '@/hooks/useProducts';
+import { Product } from '@/hooks/products/types';
 
 interface DialogTitleSectionProps {
   editType: 'price' | 'profit' | 'stock' | 'cost' | 'full';

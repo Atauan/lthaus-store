@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { SaleDetails } from '@/hooks/sales/types';
 import SaleFormContainer from './form/SaleFormContainer';
-import { SalesFormValues } from './types/salesTypes';
-import { CustomerSelector } from './CustomerSelector';
+import { SalesFormValues, SaleItem } from './types/salesTypes';
+import CustomerSelector from './CustomerSelector';
 import SaleInfoSection from './SaleInfoSection';
 import ItemsSection from './ItemsSection';
 import PaymentMethodsSection from './PaymentMethodsSection';
 import DeliverySection from './DeliverySection';
+import { useSalesFormSubmit } from './hooks/useSalesFormSubmit';
+import { calculateSubtotal, calculateProfit, calculateFinalTotal } from './utils/salesUtils';
 
 interface SalesFormProps {
   initialData?: SaleDetails | null;
@@ -25,13 +27,25 @@ const defaultFormValues: SalesFormValues = {
 };
 
 const SalesForm: React.FC<SalesFormProps> = ({ initialData }) => {
-  const [items, setItems] = useState<any[]>([]);
+  const [selectedItems, setSelectedItems] = useState<SaleItem[]>([]);
   const [subtotal, setSubtotal] = useState(0);
+  const [profit, setProfit] = useState(0);
   const [finalTotal, setFinalTotal] = useState(0);
   
   const form = useForm<SalesFormValues>({
     defaultValues: defaultFormValues
   });
+
+  const { 
+    saleNumber, 
+    onSubmit: handleFormSubmit,
+    isReceiptModalOpen,
+    savingInProgress,
+    setIsReceiptModalOpen,
+    handleNewSale,
+    handleFinishSale,
+    saleData
+  } = useSalesFormSubmit();
 
   // Initialize form with data if editing
   useEffect(() => {
@@ -47,40 +61,40 @@ const SalesForm: React.FC<SalesFormProps> = ({ initialData }) => {
           amount: p.amount
         })),
         discount: sale.discount || 0,
-        discountType: 'percentage', // Default to percentage
+        discountType: 'percentage' as const, // Default to percentage
         notes: sale.notes || '',
         deliveryAddress: sale.delivery_address || '',
         deliveryFee: sale.delivery_fee || 0
       };
       
       form.reset(formValues);
-      setItems(initialData.items);
+      setSelectedItems(initialData.items);
     }
   }, [initialData, form]);
 
   // Calculate totals whenever items or discount changes
   useEffect(() => {
-    const itemsTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const itemsTotal = calculateSubtotal(selectedItems);
     setSubtotal(itemsTotal);
+    
+    const calculatedProfit = calculateProfit(selectedItems);
+    setProfit(calculatedProfit);
     
     // Apply discount
     const discount = form.watch('discount') || 0;
     const discountType = form.watch('discountType');
     const deliveryFee = form.watch('deliveryFee') || 0;
     
-    let discountAmount = 0;
-    if (discountType === 'percentage') {
-      discountAmount = itemsTotal * (discount / 100);
-    } else {
-      discountAmount = discount;
-    }
-    
-    setFinalTotal(Math.max(0, itemsTotal - discountAmount + deliveryFee));
-  }, [items, form.watch(['discount', 'discountType', 'deliveryFee'])]);
+    const calculatedTotal = calculateFinalTotal(itemsTotal, discountType, discount, deliveryFee);
+    setFinalTotal(calculatedTotal);
+  }, [selectedItems, form.watch(['discount', 'discountType', 'deliveryFee'])]);
 
-  const handleSubmit = () => {
-    // Handle submission logic
-    console.log("Form submitted", form.getValues(), items);
+  const getFinalTotal = () => {
+    return finalTotal;
+  };
+
+  const handleSubmit = (values: SalesFormValues) => {
+    handleFormSubmit(values, selectedItems, subtotal, profit, getFinalTotal);
   };
 
   return (
@@ -89,14 +103,19 @@ const SalesForm: React.FC<SalesFormProps> = ({ initialData }) => {
         <div className="lg:col-span-2 space-y-6">
           <CustomerSelector form={form} />
           <SaleInfoSection form={form} />
-          <ItemsSection items={items} setItems={setItems} />
-          <DeliverySection form={form} />
+          <ItemsSection 
+            selectedItems={selectedItems} 
+            setSelectedItems={setSelectedItems} 
+          />
+          <DeliverySection 
+            form={form} 
+            saleChannel={form.watch('saleChannel')} 
+          />
         </div>
         
         <div className="space-y-6">
           <PaymentMethodsSection 
             form={form} 
-            subtotal={subtotal}
             finalTotal={finalTotal}
           />
         </div>
@@ -105,9 +124,9 @@ const SalesForm: React.FC<SalesFormProps> = ({ initialData }) => {
       <SaleFormContainer 
         form={form}
         onSubmit={handleSubmit}
-      >
-        {/* This is where children would go */}
-      </SaleFormContainer>
+        saleNumber={saleNumber}
+        initialData={initialData}
+      />
     </div>
   );
 };

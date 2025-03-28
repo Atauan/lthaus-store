@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { TopNav } from '@/components/layout/navbar/TopNav';
 import { Sidebar } from '@/components/layout/navbar/Sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { MobileMenu } from './navbar/MobileMenu';
+import MobileMenu from './navbar/MobileMenu';
 import { Toaster } from '@/components/ui/sonner';
 
 export const AppLayout = () => {

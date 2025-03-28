@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner";
@@ -56,7 +57,7 @@ export function useSalesFormSubmit() {
       otherChannel: '',
       paymentMethods: [{ method: 'pix', amount: 0 }],
       discount: 0,
-      discountType: 'percentage',
+      discountType: 'percentage' as const,
       notes: '',
       deliveryAddress: '',
       deliveryFee: 0,

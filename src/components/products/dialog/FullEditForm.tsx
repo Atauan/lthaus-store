@@ -1,5 +1,5 @@
 
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,8 +30,7 @@ const FullEditForm: React.FC<FullEditFormProps> = ({
     onProductChange(field, value);
   };
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+  const handleImageChange = (file: File | null) => {
     setSelectedFile(file);
     if (file) {
       onProductChange('file', file);

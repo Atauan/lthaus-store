@@ -82,7 +82,7 @@ const EditProductDialog = ({
         
         {editType === 'full' && fullEditProduct ? (
           <FullEditForm
-            product={fullEditProduct}
+            product={fullEditProduct as Product}
             onProductChange={handleFullEditChange}
             onSave={handleFullSave}
             onCancel={handleClose}

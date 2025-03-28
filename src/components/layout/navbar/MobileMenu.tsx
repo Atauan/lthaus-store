@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { cn } from '@/lib/utils';
 import { useLocation, Link } from 'react-router-dom';
-import navigationItems from './navigationItems';
+import { navigationItems } from './navigationItems';
 
 interface MobileMenuProps {
   className?: string;
 }
 
-export default function MobileMenu({ className }: MobileMenuProps) {
+const MobileMenu = ({ className }: MobileMenuProps) => {
   const location = useLocation();
   const [open, setOpen] = React.useState(false);
 
@@ -70,4 +70,6 @@ export default function MobileMenu({ className }: MobileMenuProps) {
       </SheetContent>
     </Sheet>
   );
-}
+};
+
+export default MobileMenu;
