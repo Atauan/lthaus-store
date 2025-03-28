@@ -1,55 +1,42 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { SaleDetails } from './types';
-import { getSaleDetails } from './utils/saleDetailsUtils';
+import { getSaleDetails as fetchSaleDetails } from './utils/saleDetailsUtils';
 import { toast } from 'sonner';
 
-export function useSaleDetails(saleId?: number) {
+export function useSaleDetails() {
   const [saleDetails, setSaleDetails] = useState<SaleDetails | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchSaleDetails = async () => {
-      if (!saleId) return;
+  const getSaleDetails = async (saleId: number) => {
+    try {
+      setIsLoading(true);
+      setError(null);
       
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        const response = await getSaleDetails(saleId);
-        
-        if (isMounted) {
-          if (response.success) {
-            setSaleDetails(response.data);
-          } else {
-            setError(response.error || 'Não foi possível carregar os detalhes da venda');
-          }
-        }
-      } catch (err: any) {
-        if (isMounted) {
-          setError(err.message || 'Erro ao buscar detalhes da venda');
-          toast.error(`Erro ao carregar venda: ${err.message}`);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+      const response = await fetchSaleDetails(saleId);
+      
+      if (response.success) {
+        setSaleDetails(response.data!);
+        return response.data;
+      } else {
+        setError(response.error || 'Não foi possível carregar os detalhes da venda');
+        toast.error(`Erro ao carregar venda: ${response.error}`);
+        return null;
       }
-    };
-
-    fetchSaleDetails();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [saleId]);
+    } catch (err: any) {
+      setError(err.message || 'Erro ao buscar detalhes da venda');
+      toast.error(`Erro ao carregar venda: ${err.message}`);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return {
     saleDetails,
     isLoading,
-    error
+    error,
+    getSaleDetails
   };
 }

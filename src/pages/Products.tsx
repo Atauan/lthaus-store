@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner";
@@ -28,7 +29,9 @@ const Products = () => {
     deleteProduct,
     fetchCostChangeLogs,
     costChangeLogs,
-    loading
+    loading,
+    hasMore,
+    loadMore
   } = useProducts();
 
   const {
@@ -124,6 +127,8 @@ const Products = () => {
                       totalProducts={products.length}
                       openEditDialog={openEditDialog}
                       onDelete={handleDeleteProduct}
+                      hasMore={hasMore}
+                      loadMore={loadMore}
                     />
                   </div>
                 )}

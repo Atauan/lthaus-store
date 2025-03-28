@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Form } from '@/components/ui/form';
 import { UseFormReturn } from 'react-hook-form';
@@ -10,7 +11,8 @@ import { useNavigate } from 'react-router-dom';
 interface SaleFormContainerProps {
   form: UseFormReturn<SalesFormValues>;
   onSubmit: () => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  initialData?: any;
 }
 
 const SaleFormContainer: React.FC<SaleFormContainerProps> = ({

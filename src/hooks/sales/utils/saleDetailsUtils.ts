@@ -48,15 +48,15 @@ export async function getSaleDetails(saleId: number): Promise<{ success: boolean
       id: item.id,
       sale_id: item.sale_id,
       product_id: item.product_id,
-      name: item.name || 'Produto', // Set a default name if not present
+      name: item.name || 'Produto', // Set a default name
       price: item.price,
       cost: item.cost,
       quantity: item.quantity,
-      type: item.type || 'product', // Set a default type if not present
+      type: item.type || 'product', // Set a default type
       custom_price: item.custom_price || false,
       created_at: item.created_at,
-      updated_at: item.updated_at,
-      user_id: item.user_id
+      updated_at: item.updated_at || null,
+      user_id: item.user_id || null
     }));
 
     // Return combined data

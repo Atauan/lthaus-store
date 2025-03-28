@@ -13,7 +13,7 @@ const ITEMS_PER_PAGE = 50;
 // Re-export types
 export type { Product, StockLog, CostChangeLog };
 
-// Exportando brands diretamente
+// Export brands directly
 export const brands = ['Todas', 'Apple', 'Samsung', 'Anker', 'JBL', 'Generic'];
 
 export function useProducts() {
@@ -29,13 +29,13 @@ export function useProducts() {
   
   // Calculate if there are more items to load
   useEffect(() => {
-    setHasMore(products.length > currentPage * ITEMS_PER_PAGE);
-  }, [products, currentPage]);
+    setHasMore(filteredProducts.length > currentPage * ITEMS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
   
   // Set low stock products
   useEffect(() => {
     const lowStock = products.filter(product => 
-      product.stock <= (product.min_stock || 5)
+      product.stock <= product.min_stock
     );
     setLowStockProducts(lowStock);
   }, [products]);
@@ -49,7 +49,10 @@ export function useProducts() {
   
   // Function to get low stock products
   const getLowStockProducts = useCallback(async () => {
-    return lowStockProducts;
+    return {
+      success: true,
+      data: lowStockProducts
+    };
   }, [lowStockProducts]);
 
   // Return all necessary properties and functions

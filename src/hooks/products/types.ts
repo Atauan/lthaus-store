@@ -25,7 +25,7 @@ export interface Product {
   category: string;
   brand: string;
   price: number;
-  cost: number;
+  cost: number; // Making cost required as per error messages
   stock: number;
   min_stock: number;
   image?: string;
@@ -33,7 +33,6 @@ export interface Product {
   created_at?: string;
   updated_at?: string;
   file?: File;
-  images?: any[];
 }
 
 export interface StockLog {

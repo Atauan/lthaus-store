@@ -72,12 +72,6 @@ const EditProductDialog = ({
     onSave();
   };
 
-  const handleProductChange = (field: keyof Product, value: any) => {
-    if (handleFullEditChange) {
-      handleFullEditChange(field, value);
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[550px] border-primary/20">
@@ -89,7 +83,7 @@ const EditProductDialog = ({
         {editType === 'full' && fullEditProduct ? (
           <FullEditForm
             product={fullEditProduct}
-            onProductChange={handleProductChange}
+            onProductChange={handleFullEditChange}
             onSave={handleFullSave}
             onCancel={handleClose}
           />

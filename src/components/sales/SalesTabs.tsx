@@ -1,15 +1,10 @@
 
 import React from 'react';
-import { Tab } from '@headlessui/react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SalesTable from './SalesTable';
 import SalesStatistics from './SalesStatistics';
 import SalesReportsTab from './SalesReportsTab';
 import { Sale } from '@/hooks/sales/types';
-
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
-}
 
 interface SalesTabsProps {
   sales: Sale[];
@@ -41,7 +36,10 @@ const SalesTabs: React.FC<SalesTabsProps> = ({
   const totalRevenue = sales
     .filter(sale => sale.status !== 'canceled')
     .reduce((acc, sale) => acc + (sale.final_total || 0), 0);
-  const totalCanceled = sales.filter(sale => sale.status === 'canceled').length;
+  const totalProfit = sales
+    .filter(sale => sale.status !== 'canceled')
+    .reduce((acc, sale) => acc + (sale.profit || 0), 0);
+  const averageSale = totalSales > 0 ? totalRevenue / totalSales : 0;
 
   return (
     <div className="w-full">
@@ -99,14 +97,17 @@ const SalesTabs: React.FC<SalesTabsProps> = ({
           <SalesStatistics 
             totalSales={totalSales}
             totalRevenue={totalRevenue}
-            totalCanceled={totalCanceled}
-            averageSale={totalSales > 0 ? totalRevenue / totalSales : 0}
+            totalProfit={totalProfit}
+            averageSale={averageSale}
             isLoading={isLoading}
           />
         </TabsContent>
 
         <TabsContent value="reports">
-          <SalesReportsTab sales={sales} isLoading={isLoading} />
+          <SalesReportsTab 
+            sales={sales} 
+            isLoading={isLoading} 
+          />
         </TabsContent>
       </Tabs>
     </div>
