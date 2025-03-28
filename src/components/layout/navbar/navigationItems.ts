@@ -1,7 +1,15 @@
 
-import { 
-  BarChart, Home, ShoppingCart, Package, Users, Settings, 
-  LineChart, TrendingUp, LayoutDashboard, Clipboard
+import {
+  BarChart,
+  ShoppingCart,
+  Package,
+  Users,
+  Settings,
+  Home,
+  CreditCard,
+  LineChart,
+  Truck,
+  UserCircle
 } from 'lucide-react';
 
 export const navigationItems = [
@@ -31,27 +39,7 @@ export const navigationItems = [
     ]
   },
   {
-    label: "Análises",
-    items: [
-      {
-        label: "Relatórios",
-        path: "/reports",
-        icon: BarChart
-      },
-      {
-        label: "Estoque",
-        path: "/inventory",
-        icon: Clipboard
-      },
-      {
-        label: "Financeiro",
-        path: "/financial",
-        icon: TrendingUp
-      }
-    ]
-  },
-  {
-    label: "Sistema",
+    label: "Configurações",
     items: [
       {
         label: "Configurações",

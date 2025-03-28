@@ -2,7 +2,7 @@
 import React, { ReactNode } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, Home, ShoppingCart, Plus } from "lucide-react";
 import { cn } from '@/lib/utils';
 import { useLocation, Link } from 'react-router-dom';
 import { navigationItems } from './navigationItems';
@@ -26,8 +26,22 @@ const MobileMenu = ({ className }: MobileMenuProps) => {
     <div className="fixed bottom-0 left-0 right-0 z-30 bg-background border-t lg:hidden py-2">
       <div className="flex items-center justify-around">
         <Link to="/" className="flex flex-col items-center p-2">
+          <Home className="h-5 w-5" />
           <span className="text-xs">Home</span>
         </Link>
+        
+        <Link to="/sales" className="flex flex-col items-center p-2">
+          <ShoppingCart className="h-5 w-5" />
+          <span className="text-xs">Vendas</span>
+        </Link>
+        
+        <Link to="/sales/new" className="flex flex-col items-center p-2">
+          <div className="bg-primary rounded-full p-2">
+            <Plus className="h-5 w-5 text-white" />
+          </div>
+          <span className="text-xs">Nova Venda</span>
+        </Link>
+        
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button
