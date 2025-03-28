@@ -1,32 +1,16 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PageTransition from '@/components/layout/PageTransition';
-import SalesForm from '@/components/sales/SalesForm';
-import { useSaleDetails } from '@/hooks/sales/useSaleDetails';
-import LoadingScreen from '@/components/ui/LoadingScreen';
 import { toast } from 'sonner';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from 'lucide-react';
 
 const NewSale = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { saleDetails, isLoading, error } = useSaleDetails(id ? parseInt(id) : undefined);
-  
-  // Handle error state
-  useEffect(() => {
-    if (error) {
-      toast.error(`Erro ao carregar dados da venda: ${error}`);
-      // Redirect to sales page after error
-      setTimeout(() => navigate('/sales'), 2000);
-    }
-  }, [error, navigate]);
-
   const isEditing = !!id;
   
-  if (isLoading && isEditing) {
-    return <LoadingScreen />;
-  }
-
   return (
     <PageTransition>
       <div className="min-h-screen pt-16">
@@ -37,12 +21,27 @@ const NewSale = () => {
             </h1>
             <p className="text-muted-foreground mt-1">
               {isEditing 
-                ? `Editando venda #${saleDetails?.sale?.sale_number || id}` 
+                ? `Editando venda #${id}` 
                 : 'Registre uma nova venda no sistema'}
             </p>
           </div>
           
-          <SalesForm initialData={isEditing ? saleDetails : undefined} />
+          <Card>
+            <CardHeader>
+              <CardTitle>Formulário de Venda</CardTitle>
+              <CardDescription>
+                {isEditing 
+                  ? 'Atualize os dados da venda' 
+                  : 'Preencha os campos para registrar uma nova venda'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+                Carregando formulário de venda...
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </PageTransition>

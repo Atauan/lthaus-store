@@ -4,17 +4,17 @@ import { SaleDetails } from './types';
 import { getSaleDetails as fetchSaleDetails } from './utils/saleDetailsUtils';
 import { toast } from 'sonner';
 
-export function useSaleDetails() {
+export function useSaleDetails(saleId?: number) {
   const [saleDetails, setSaleDetails] = useState<SaleDetails | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getSaleDetails = async (saleId: number) => {
+  const getSaleDetails = async (id: number) => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetchSaleDetails(saleId);
+      const response = await fetchSaleDetails(id);
       
       if (response.success) {
         setSaleDetails(response.data!);
@@ -32,6 +32,13 @@ export function useSaleDetails() {
       setIsLoading(false);
     }
   };
+  
+  // If saleId is provided, fetch sale details
+  useState(() => {
+    if (saleId) {
+      getSaleDetails(saleId);
+    }
+  });
 
   return {
     saleDetails,

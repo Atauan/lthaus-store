@@ -22,3 +22,9 @@ export const rateLimit = (key: string, maxRequests: number, timeWindowMs: number
   
   return false;
 };
+
+// Helper function for handling rate limits
+export const handleRequestRateLimit = (key: string): boolean => {
+  // Allow 10 requests per minute
+  return rateLimit(key, 10, 60 * 1000);
+};

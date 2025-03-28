@@ -25,7 +25,7 @@ export interface Product {
   category: string;
   brand: string;
   price: number;
-  cost: number; // Making cost required as per error messages
+  cost: number; // Making cost required to match existing usage
   stock: number;
   min_stock: number;
   image?: string;

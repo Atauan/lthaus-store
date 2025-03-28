@@ -1,101 +1,103 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Sale, SaleItem, SalePayment, SaleDetails } from '../types';
+import { Sale, SaleDetails } from '../types';
 import { toast } from 'sonner';
+import { getFromCache, saveToCache } from '@/utils/requestCache';
+import { handleRequestRateLimit } from '@/utils/rateLimiter';
 
-export async function getSaleDetails(saleId: number): Promise<{ success: boolean; data?: SaleDetails; error?: string }> {
+export const getSaleDetails = async (saleId: number): Promise<{ success: boolean; data?: SaleDetails; error?: string }> => {
   try {
-    // Get the sale data
-    const { data: saleData, error: saleError } = await supabase
+    // Check rate limit
+    if (!handleRequestRateLimit(`getSaleDetails_${saleId}`)) {
+      const cachedData = getFromCache<SaleDetails>(`sale_${saleId}`, 60 * 1000);
+      if (cachedData) {
+        return { success: true, data: cachedData };
+      }
+      return { success: false, error: 'Taxa de requisições excedida. Tente novamente em alguns instantes.' };
+    }
+
+    // Try to get from cache first
+    const cachedData = getFromCache<SaleDetails>(`sale_${saleId}`, 5 * 60 * 1000); // 5 minutes cache
+    if (cachedData) {
+      return { success: true, data: cachedData };
+    }
+
+    // Get sale details
+    const { data: sale, error: saleError } = await supabase
       .from('sales')
       .select('*')
       .eq('id', saleId)
       .single();
 
     if (saleError) {
-      throw new Error(saleError.message);
+      return { success: false, error: saleError.message };
     }
 
-    if (!saleData) {
-      return { 
-        success: false, 
-        error: 'Venda não encontrada' 
-      };
+    if (!sale) {
+      return { success: false, error: 'Venda não encontrada' };
     }
 
-    // Get the sale items
-    const { data: itemsData, error: itemsError } = await supabase
+    // Get sale items
+    const { data: items, error: itemsError } = await supabase
       .from('sale_items')
       .select('*')
       .eq('sale_id', saleId);
 
     if (itemsError) {
-      throw new Error(itemsError.message);
+      return { success: false, error: itemsError.message };
     }
 
-    // Get the sale payments
-    const { data: paymentsData, error: paymentsError } = await supabase
+    // Get payment methods
+    const { data: payments, error: paymentsError } = await supabase
       .from('sale_payments')
       .select('*')
       .eq('sale_id', saleId);
 
     if (paymentsError) {
-      throw new Error(paymentsError.message);
+      return { success: false, error: paymentsError.message };
     }
 
-    // Map database items to our SaleItem type
-    const saleItems: SaleItem[] = itemsData.map(item => ({
-      id: item.id,
-      sale_id: item.sale_id,
-      product_id: item.product_id,
-      name: item.name || 'Produto', // Set a default name
-      price: item.price,
-      cost: item.cost,
-      quantity: item.quantity,
-      type: item.type || 'product', // Set a default type
-      custom_price: item.custom_price || false,
-      created_at: item.created_at,
-      updated_at: item.updated_at || null,
-      user_id: item.user_id || null
-    }));
+    // Add product names to items by fetching products
+    const enhancedItems = await Promise.all(
+      items.map(async (item) => {
+        // If no product_id, it's a custom item (service) with no related product
+        if (!item.product_id) {
+          return {
+            ...item,
+            name: item.name || 'Item personalizado',
+            type: item.type || 'service',
+            custom_price: true
+          };
+        }
 
-    // Return combined data
-    return {
-      success: true,
-      data: {
-        sale: saleData as Sale,
-        items: saleItems,
-        payments: paymentsData as SalePayment[]
-      }
+        const { data: product } = await supabase
+          .from('products')
+          .select('name')
+          .eq('id', item.product_id)
+          .single();
+
+        return {
+          ...item,
+          name: product?.name || `Produto #${item.product_id}`,
+          type: 'product',
+          custom_price: false
+        };
+      })
+    );
+
+    const saleDetails: SaleDetails = {
+      sale: sale as Sale,
+      items: enhancedItems,
+      payments: payments || []
     };
+
+    // Save to cache
+    saveToCache(`sale_${saleId}`, saleDetails);
+
+    return { success: true, data: saleDetails };
   } catch (error: any) {
     console.error('Error fetching sale details:', error);
-    toast.error(`Erro ao buscar detalhes da venda: ${error.message}`);
-    return {
-      success: false,
-      error: error.message || 'Erro ao buscar detalhes da venda'
-    };
+    toast.error(`Erro ao carregar detalhes da venda: ${error.message}`);
+    return { success: false, error: error.message };
   }
-}
-
-export async function updateSaleStatus(
-  saleId: number, 
-  status: string
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    const { error } = await supabase
-      .from('sales')
-      .update({ status })
-      .eq('id', saleId);
-
-    if (error) throw error;
-
-    return { success: true };
-  } catch (error: any) {
-    console.error('Error updating sale status:', error);
-    return {
-      success: false,
-      error: error.message
-    };
-  }
-}
+};

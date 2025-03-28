@@ -1,128 +1,73 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, Home, PackageOpen, Users, Settings, Menu, X, LogOut } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { navigationItems } from './navigationItems';
 
-const MobileMenu = () => {
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
+import React, { ReactNode } from 'react';
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
+import { cn } from '@/lib/utils';
+import { useLocation, Link } from 'react-router-dom';
+import navigationItems from './navigationItems';
 
-  const navigateTo = (path: string) => {
-    setOpen(false);
-    navigate(path);
-  };
+interface MobileMenuProps {
+  className?: string;
+}
 
-  const navigationMappings = [
-    {
-      label: 'Dashboard',
-      icon: <Home className="h-5 w-5" />,
-      path: '/',
-      items: navigationItems[0].items.map(item => ({
-        path: item.href,
-        icon: <item.icon className="h-5 w-5" />,
-        label: item.title
-      }))
-    },
-    {
-      label: 'Vendas',
-      icon: <ShoppingCart className="h-5 w-5" />,
-      path: '/sales',
-      items: navigationItems[1].items.map(item => ({
-        path: item.href,
-        icon: <item.icon className="h-5 w-5" />,
-        label: item.title
-      }))
-    },
-    {
-      label: 'Produtos',
-      icon: <PackageOpen className="h-5 w-5" />,
-      path: '/products',
-      items: navigationItems[2].items.map(item => ({
-        path: item.href,
-        icon: <item.icon className="h-5 w-5" />,
-        label: item.title
-      }))
-    },
-    {
-      label: 'Clientes',
-      icon: <Users className="h-5 w-5" />,
-      path: '/customers',
-      items: []
-    },
-    {
-      label: 'Configurações',
-      icon: <Settings className="h-5 w-5" />,
-      path: '/settings',
-      items: []
+export default function MobileMenu({ className }: MobileMenuProps) {
+  const location = useLocation();
+  const [open, setOpen] = React.useState(false);
+
+  const isActivePath = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
     }
-  ];
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Menu className="h-5 w-5" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn('md:hidden', className)}
+          aria-label="Open main menu"
+        >
+          <Menu />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-80">
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between py-2">
-            <span className="font-bold text-lg">Menu</span>
-            <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-
-          <div className="py-4">
-            <Avatar className="h-12 w-12">
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-            <div className="mt-2">
-              <p className="font-semibold">User Name</p>
-              <p className="text-sm text-muted-foreground">user@example.com</p>
+      <SheetContent side="left" className="p-0">
+        <div className="grid gap-4 py-4">
+          <div className="px-3 py-1">
+            <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+              Menu
+            </h2>
+            <div className="space-y-1">
+              {navigationItems.map((group, i) => (
+                <div key={i} className="py-2">
+                  <h3 className="mb-2 px-4 text-sm font-medium">{group.label}</h3>
+                  <div className="space-y-1">
+                    {group.items.map((item, j) => (
+                      <Link
+                        key={j}
+                        to={item.path}
+                        onClick={() => setOpen(false)}
+                        className={cn(
+                          "group flex items-center rounded-md px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                          isActivePath(item.path) ? "bg-accent" : "transparent"
+                        )}
+                      >
+                        {typeof item.icon === 'function' 
+                          ? React.createElement(item.icon as any, { className: "mr-2 h-4 w-4" }) 
+                          : item.icon}
+                        <span>{item.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-
-          <Separator />
-
-          <div className="flex-grow py-4 space-y-2">
-            {navigationMappings.map((section, index) => (
-              <div key={index}>
-                <Button variant="ghost" className="w-full justify-start font-normal" onClick={() => navigateTo(section.path)}>
-                  {section.icon}
-                  <span className="ml-2">{section.label}</span>
-                </Button>
-                {section.items.map((item, itemIndex) => (
-                  <Button
-                    key={itemIndex}
-                    variant="ghost"
-                    className="w-full justify-start font-normal pl-8"
-                    onClick={() => navigateTo(item.path)}
-                  >
-                    {item.icon}
-                    <span className="ml-2">{item.label}</span>
-                  </Button>
-                ))}
-              </div>
-            ))}
-          </div>
-
-          <Separator />
-
-          <div className="py-4">
-            <Button variant="ghost" className="w-full justify-start font-normal">
-              <LogOut className="h-5 w-5" />
-              <span className="ml-2">Sair</span>
-            </Button>
           </div>
         </div>
       </SheetContent>
     </Sheet>
   );
-};
-
-export default MobileMenu;
+}
