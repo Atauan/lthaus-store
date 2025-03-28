@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Sale, SaleItem, SaleDetails, SalesStatistics, DateRange } from './sales/types';
 import { toast } from 'sonner';
+import { getSaleDetails } from './sales/utils/saleDetailsUtils';
 
 export type { Sale, SaleItem, SaleDetails, SalesStatistics };
 
@@ -36,9 +37,45 @@ export function useSales() {
     }
   };
 
-  const getSalesStatistics = useCallback(async (dateRange?: DateRange) => {
+  const getSalesStatistics = useCallback(async (dateRangeOrPeriod?: DateRange | string) => {
     try {
       setIsLoadingStatistics(true);
+      
+      // Handle string period like 'day', 'week', 'month', 'year'
+      let dateRange: DateRange = {};
+      
+      if (typeof dateRangeOrPeriod === 'string') {
+        const now = new Date();
+        dateRange.to = now;
+        
+        switch (dateRangeOrPeriod) {
+          case 'day':
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            dateRange.from = today;
+            break;
+          case 'week':
+            const lastWeek = new Date();
+            lastWeek.setDate(lastWeek.getDate() - 7);
+            dateRange.from = lastWeek;
+            break;
+          case 'month':
+            const lastMonth = new Date();
+            lastMonth.setMonth(lastMonth.getMonth() - 1);
+            dateRange.from = lastMonth;
+            break;
+          case 'year':
+            const lastYear = new Date();
+            lastYear.setFullYear(lastYear.getFullYear() - 1);
+            dateRange.from = lastYear;
+            break;
+          default:
+            // If not a recognized period, treat as a DateRange object
+            dateRange = dateRangeOrPeriod as DateRange;
+        }
+      } else if (dateRangeOrPeriod) {
+        dateRange = dateRangeOrPeriod;
+      }
       
       // Calculate date range if provided
       let query = supabase.from('sales').select('*');
@@ -111,7 +148,7 @@ export function useSales() {
   // Create a new sale
   const createSale = async (
     sale: Omit<Sale, 'id' | 'created_at' | 'updated_at'>,
-    items: Omit<SaleItem, 'id' | 'sale_id' | 'created_at'>[],
+    items: Omit<SaleItem, 'id' | 'created_at' | 'updated_at' | 'sale_id'>[],
     payments: { method: string; amount: number }[]
   ) => {
     try {
@@ -131,18 +168,33 @@ export function useSales() {
       
       const newSale = saleData[0] as Sale;
       
-      // Insert the sale items
+      // Insert the sale items, ensuring product_id is not optional
       const itemsWithSaleId = items.map(item => ({
-        ...item,
-        sale_id: newSale.id
+        sale_id: newSale.id,
+        price: item.price,
+        quantity: item.quantity,
+        product_id: item.product_id || 0, // Default to 0 if not provided
+        cost: item.cost || 0,
+        name: item.name,
+        type: item.type || 'product',
+        custom_price: item.custom_price || false
       }));
       
-      const { error: itemsError } = await supabase
-        .from('sale_items')
-        .insert(itemsWithSaleId);
-        
-      if (itemsError) {
-        throw itemsError;
+      // Use separate inserts for each item to avoid batch issues
+      for (const item of itemsWithSaleId) {
+        const { error: itemError } = await supabase
+          .from('sale_items')
+          .insert({
+            sale_id: item.sale_id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: item.price,
+            cost: item.cost
+          });
+          
+        if (itemError) {
+          console.error('Error inserting sale item:', itemError);
+        }
       }
       
       // Insert the payments
@@ -171,7 +223,7 @@ export function useSales() {
   
   useEffect(() => {
     fetchSales();
-    getSalesStatistics();
+    getSalesStatistics('month');
   }, [getSalesStatistics]);
 
   return {
@@ -183,6 +235,7 @@ export function useSales() {
     salesStatistics,
     getSalesStatistics,
     isLoadingStatistics,
-    periodSales
+    periodSales,
+    getSaleDetails
   };
 }

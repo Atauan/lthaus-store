@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { 
@@ -103,6 +104,7 @@ const SaleInfoSection: React.FC<SaleInfoSectionProps> = ({ form }) => {
         <div className="md:col-span-2">
           <FormLabel>Cliente</FormLabel>
           <CustomerSelector 
+            form={form}
             onSelectCustomer={handleSelectCustomer}
             selectedCustomer={watch('customerName') ? {
               id: '',

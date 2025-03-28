@@ -26,8 +26,9 @@ export async function fetchSales(dateRange?: DateRange, status?: string) {
       query = query.eq('status', status);
     }
     
-    // Execute query
-    const { data, error } = await query.order('sale_date', { ascending: false });
+    // Execute query with order
+    query = query.order('sale_date', { ascending: false });
+    const { data, error } = await query;
     
     if (error) {
       throw error;

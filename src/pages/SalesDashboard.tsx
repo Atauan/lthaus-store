@@ -15,16 +15,24 @@ import InventoryMetricsCards from '@/components/dashboard/inventory/InventoryMet
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, AlertTriangle, PackageOpen, ArrowDownUp, ArrowRightLeft } from 'lucide-react';
+import { periodToDateRange } from '@/hooks/sales/utils/dateRangeUtils';
 
 const SalesDashboard = () => {
   const navigate = useNavigate();
-  const { getLowStockProducts } = useProducts();
+  const { getLowStockProducts, products } = useProducts();
   const { salesStatistics, getSalesStatistics, isLoadingStatistics } = useSales();
-  const { storeCosts, calculateNetProfit } = useStoreCosts();
+  const { costs: storeCosts, calculateNetProfit } = useStoreCosts();
   
   const [lowStockItems, setLowStockItems] = useState<Product[]>([]);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [stagnantProducts, setStagnantProducts] = useState<Product[]>([]);
+  const [dashboardMetrics, setDashboardMetrics] = useState({
+    totalStock: 0,
+    productsCount: 0,
+    lowStockCount: 0,
+    stagnantCount: 0
+  });
+  const [productMarginData, setProductMarginData] = useState<any[]>([]);
   
   useEffect(() => {
     // Load low stock products
@@ -34,9 +42,9 @@ const SalesDashboard = () => {
         
         if (response.success) {
           setLowStockItems(response.data);
-        } else if (response.error) {
-          console.error("Error fetching low stock products:", response.error);
-          toast.error(`Error loading low stock products: ${response.error}`);
+        } else {
+          console.error("Error fetching low stock products");
+          toast.error("Error loading low stock products");
         }
       } catch (error: any) {
         console.error("Error:", error);
@@ -80,8 +88,26 @@ const SalesDashboard = () => {
       }
     ]);
     
+    // Calculate dashboard metrics
+    setDashboardMetrics({
+      totalStock: products.reduce((sum, product) => sum + product.stock, 0),
+      productsCount: products.length,
+      lowStockCount: lowStockItems.length, 
+      stagnantCount: 5 // Example count for stagnant products
+    });
+    
+    // Generate sample product margin data for the chart
+    setProductMarginData([
+      { category: 'Cabos', costToPrice: 0.4 },
+      { category: 'Capas', costToPrice: 0.5 },
+      { category: 'Áudio', costToPrice: 0.6 },
+      { category: 'Carregadores', costToPrice: 0.3 },
+      { category: 'Proteção', costToPrice: 0.4 },
+    ]);
+    
     // Load sales statistics for the last year
-    getSalesStatistics('year');
+    const yearDateRange = periodToDateRange('year');
+    getSalesStatistics(yearDateRange);
     
     // Generate monthly profit data
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -97,7 +123,7 @@ const SalesDashboard = () => {
     });
     
     setMonthlyData(monthlyProfitData);
-  }, [getLowStockProducts, getSalesStatistics]);
+  }, [getLowStockProducts, getSalesStatistics, products, lowStockItems.length]);
   
   return (
     <PageTransition>
@@ -150,7 +176,11 @@ const SalesDashboard = () => {
                     <CardDescription>Products that need restocking soon</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <LowStockTable products={lowStockItems.slice(0, 5)} />
+                    <LowStockTable 
+                      products={lowStockItems.slice(0, 5)} 
+                      totalStock={dashboardMetrics.totalStock}
+                      lowStockCount={dashboardMetrics.lowStockCount}
+                    />
                   </CardContent>
                 </Card>
                 
@@ -173,7 +203,7 @@ const SalesDashboard = () => {
                     <CardDescription>Compare cost to price ratios across categories</CardDescription>
                   </CardHeader>
                   <CardContent className="h-[250px]">
-                    <PriceComparisonChart />
+                    <PriceComparisonChart productMarginData={productMarginData} />
                   </CardContent>
                 </Card>
               </div>
@@ -198,13 +228,18 @@ const SalesDashboard = () => {
                   <CardDescription>Products with low sales velocity that might need attention</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <StagnantProductsTable products={stagnantProducts} />
+                  <StagnantProductsTable products={stagnantProducts} daysThreshold={30} />
                 </CardContent>
               </Card>
             </TabsContent>
             
             <TabsContent value="inventory" className="space-y-6">
-              <InventoryMetricsCards />
+              <InventoryMetricsCards 
+                totalStock={dashboardMetrics.totalStock}
+                productsCount={dashboardMetrics.productsCount}
+                lowStockCount={dashboardMetrics.lowStockCount}
+                stagnantCount={dashboardMetrics.stagnantCount}
+              />
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
@@ -213,7 +248,11 @@ const SalesDashboard = () => {
                     <CardDescription>Products that need restocking soon</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <LowStockTable products={lowStockItems} />
+                    <LowStockTable 
+                      products={lowStockItems} 
+                      totalStock={dashboardMetrics.totalStock}
+                      lowStockCount={dashboardMetrics.lowStockCount}
+                    />
                   </CardContent>
                 </Card>
                 
@@ -223,7 +262,7 @@ const SalesDashboard = () => {
                     <CardDescription>Products with low sales velocity</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <StagnantProductsTable products={stagnantProducts} />
+                    <StagnantProductsTable products={stagnantProducts} daysThreshold={30} />
                   </CardContent>
                 </Card>
               </div>

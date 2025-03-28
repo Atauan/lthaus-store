@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs';
 import PageTransition from '@/components/layout/PageTransition';
 import SalesReportsTab from '@/components/sales/SalesReportsTab';
 import { useSales } from '@/hooks/useSales';
+import { periodToDateRange } from '@/hooks/sales/utils/dateRangeUtils';
 
 export default function SalesReportsPage() {
   const [reportPeriod, setReportPeriod] = useState<'day' | 'week' | 'month' | 'year'>('month');
@@ -19,7 +21,9 @@ export default function SalesReportsPage() {
   // Load initial data
   useEffect(() => {
     refreshSales();
-    getSalesStatistics(reportPeriod);
+    // Convert period string to DateRange object
+    const dateRange = periodToDateRange(reportPeriod);
+    getSalesStatistics(dateRange);
   }, [reportPeriod, refreshSales, getSalesStatistics]);
 
   const handlePeriodChange = (value: string) => {
@@ -57,7 +61,10 @@ export default function SalesReportsPage() {
               <CardTitle>Dashboard de Vendas</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <SalesReportsTab />
+              <SalesReportsTab 
+                sales={sales} 
+                isLoading={salesLoading} 
+              />
             </CardContent>
           </Card>
         </main>

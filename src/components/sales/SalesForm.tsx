@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { SaleDetails } from '@/hooks/sales/types';
 import SaleFormContainer from './form/SaleFormContainer';
 import { SalesFormValues, SaleItem } from './types/salesTypes';
-import CustomerSelector from './CustomerSelector';
 import SaleInfoSection from './SaleInfoSection';
 import ItemsSection from './ItemsSection';
 import PaymentMethodsSection from './PaymentMethodsSection';
@@ -101,7 +100,6 @@ const SalesForm: React.FC<SalesFormProps> = ({ initialData }) => {
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <CustomerSelector form={form} />
           <SaleInfoSection form={form} />
           <ItemsSection 
             selectedItems={selectedItems} 

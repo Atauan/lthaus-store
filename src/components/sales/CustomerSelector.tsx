@@ -32,18 +32,25 @@ export type Customer = {
 };
 
 interface CustomerSelectorProps {
-  form: UseFormReturn<SalesFormValues>;
+  form?: UseFormReturn<SalesFormValues>;
+  onSelectCustomer?: (customer: Customer) => void;
+  selectedCustomer?: Customer;
 }
 
-const CustomerSelector: React.FC<CustomerSelectorProps> = ({ form }) => {
+const CustomerSelector: React.FC<CustomerSelectorProps> = ({ 
+  form, 
+  onSelectCustomer,
+  selectedCustomer 
+}) => {
   const [open, setOpen] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   
-  const { setValue, watch } = form;
-  const customerName = watch('customerName');
-  const customerContact = watch('customerContact');
+  const setValue = form?.setValue;
+  const watch = form?.watch;
+  const customerName = selectedCustomer?.name || watch?.('customerName') || '';
+  const customerContact = selectedCustomer?.phone || watch?.('customerContact') || '';
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -79,12 +86,16 @@ const CustomerSelector: React.FC<CustomerSelectorProps> = ({ form }) => {
   
   // Handler for when a customer is selected
   const handleSelectCustomer = (customer: Customer) => {
-    setValue('customerName', customer.name);
-    setValue('customerContact', customer.phone || '');
-    
-    // If delivery address fields exist and there's an address, set them
-    if (customer.address) {
-      setValue('deliveryAddress', `${customer.address}, ${customer.city || ''} - ${customer.state || ''} ${customer.zipcode || ''}`);
+    if (onSelectCustomer) {
+      onSelectCustomer(customer);
+    } else if (form && setValue) {
+      setValue('customerName', customer.name);
+      setValue('customerContact', customer.phone || '');
+      
+      // If delivery address fields exist and there's an address, set them
+      if (customer.address) {
+        setValue('deliveryAddress', `${customer.address}, ${customer.city || ''} - ${customer.state || ''} ${customer.zipcode || ''}`);
+      }
     }
     
     setOpen(false);
