@@ -6,7 +6,6 @@ import {
   Search, 
   Menu, 
   User,
-  ChevronDown
 } from 'lucide-react';
 import { 
   DropdownMenu,

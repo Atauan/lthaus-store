@@ -15,11 +15,14 @@ export const AppLayout = () => {
       <TopNav />
       
       {!isMobile && <Sidebar />}
-      {isMobile && <MobileMenu />}
       
-      <main className={`min-h-screen ${!isMobile ? 'lg:pl-64' : ''} pt-16`}>
-        <Outlet />
+      <main className="min-h-screen pt-16 pb-16 lg:pb-0 lg:pl-64 transition-all duration-300">
+        <div className="p-4 md:p-6">
+          <Outlet />
+        </div>
       </main>
+      
+      {isMobile && <MobileMenu />}
       
       <Toaster position="top-right" richColors />
     </div>

@@ -26,7 +26,7 @@ export function Sidebar({ isCollapsed }: SidebarNavProps) {
   const currentPath = location.pathname;
   
   return (
-    <div className="flex h-full w-full flex-col gap-4 bg-background fixed top-0 pt-16 bottom-0 overflow-y-auto z-20 lg:left-0 border-r">
+    <div className="hidden lg:flex h-full w-64 flex-col gap-4 bg-background fixed top-0 pt-16 bottom-0 overflow-y-auto z-20 left-0 border-r">
       <div className="flex-1 overflow-auto py-2">
         <nav className="grid items-start px-2 md:px-4 gap-1">
           {/* Dashboard */}
