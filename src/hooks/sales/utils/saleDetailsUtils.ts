@@ -1,60 +1,86 @@
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { SaleDetails, SaleItem } from '../types';
 
-export async function getSaleDetails(saleId: number): Promise<{ success: boolean; data?: SaleDetails; error?: any }> {
+import { supabase } from '@/integrations/supabase/client';
+import { SaleDetails } from '../types';
+import { getFromCache, saveToCache } from '@/utils/requestCache';
+import { handleRequestRateLimit } from '@/utils/rateLimiter';
+
+export async function getSaleDetails(saleId: number): Promise<{ success: boolean; data: SaleDetails | null; error: any }> {
   try {
-    const { data: saleData, error: saleError } = await supabase
+    // Check if rate limited
+    if (handleRequestRateLimit(`saleDetails-${saleId}`)) {
+      const cachedData = await getFromCache(`saleDetails-${saleId}`);
+      if (cachedData) {
+        console.log(`Using cached sale details for ID ${saleId} due to rate limiting`);
+        return { success: true, data: cachedData as SaleDetails, error: null };
+      } else {
+        return { success: false, data: null, error: { message: 'Rate limited. No cached data available.' } };
+      }
+    }
+
+    // Try to get from cache first
+    const cachedData = await getFromCache(`saleDetails-${saleId}`);
+    if (cachedData) {
+      console.log(`Using cached sale details for ID ${saleId}`);
+      return { success: true, data: cachedData as SaleDetails, error: null };
+    }
+
+    // Fetch sale details from database
+    const { data: sale, error: saleError } = await supabase
       .from('sales')
       .select('*')
       .eq('id', saleId)
       .single();
-      
-    if (saleError) throw saleError;
     
-    const { data: itemsData, error: itemsError } = await supabase
+    if (saleError) {
+      throw saleError;
+    }
+    
+    // Fetch sale items
+    const { data: items, error: itemsError } = await supabase
       .from('sale_items')
       .select('*')
       .eq('sale_id', saleId);
-      
-    if (itemsError) throw itemsError;
     
-    const { data: paymentsData, error: paymentsError } = await supabase
+    if (itemsError) {
+      throw itemsError;
+    }
+    
+    // Fetch payment methods
+    const { data: payments, error: paymentsError } = await supabase
       .from('sale_payments')
       .select('*')
       .eq('sale_id', saleId);
-      
-    if (paymentsError) throw paymentsError;
     
-    // Validate and normalize the status field
-    if (saleData.status && !['completed', 'revoked', 'pending'].includes(saleData.status)) {
-      console.warn(`Unknown sale status: ${saleData.status}, defaulting to 'completed'`);
-      saleData.status = 'completed';
+    if (paymentsError) {
+      throw paymentsError;
     }
     
-    // Mapear os dados dos itens para o formato esperado por SaleItem
-    const mappedItems: SaleItem[] = (itemsData || []).map(item => ({
-      id: item.id,
-      sale_id: item.sale_id,
-      product_id: item.product_id,
-      quantity: item.quantity,
-      price: item.price,
-      cost: item.cost,
-      created_at: item.created_at,
-      name: `Produto #${item.product_id}`, // Nome padrão
-      type: 'product' // Tipo padrão
-    }));
-    
-    return {
-      success: true,
-      data: {
-        sale: saleData,
-        items: mappedItems,
-        payments: paymentsData || []
-      }
+    const saleDetails: SaleDetails = {
+      sale,
+      items: items || [],
+      payments: payments || []
     };
+    
+    // Save to cache
+    saveToCache(`saleDetails-${saleId}`, saleDetails);
+    
+    return { success: true, data: saleDetails, error: null };
   } catch (error: any) {
-    toast.error(`Erro ao carregar detalhes da venda: ${error.message}`);
-    return { success: false, error };
+    console.error(`Error fetching sale details for ID ${saleId}:`, error);
+    
+    // Try to return cached data if available
+    const cachedData = await getFromCache(`saleDetails-${saleId}`);
+    if (cachedData) {
+      console.log(`Using cached sale details for ID ${saleId} after error`);
+      return { success: true, data: cachedData as SaleDetails, error: null };
+    }
+    
+    return { 
+      success: false, 
+      data: null, 
+      error: { 
+        message: error.message || 'Erro ao buscar detalhes da venda' 
+      } 
+    };
   }
 }
