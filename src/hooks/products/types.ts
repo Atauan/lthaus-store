@@ -12,6 +12,8 @@ export interface ProductFormValues {
   supplier?: string;
   productType: 'internal' | 'external';
   image?: File;
+  sku?: string;
+  barcode?: string;
 }
 
 export interface ProductImage {
@@ -34,6 +36,8 @@ export interface Product {
   created_at?: string;
   updated_at?: string;
   file?: File;
+  sku?: string;
+  barcode?: string;
 }
 
 export interface StockLog {
