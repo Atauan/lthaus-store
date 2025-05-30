@@ -1,61 +1,49 @@
 
-import { useEffect, useState } from 'react';
-import { Product } from '@/hooks/products/useProductTypes';
+import { useState } from 'react';
+import { Product } from '@/hooks/products/types';
 
-export function useEditProductDialog(
-  selectedProduct: Product | null,
-  editType: 'price' | 'profit' | 'stock' | 'cost' | 'full',
-  open: boolean,
-  onFullSave?: (updatedProduct: Product) => void,
-) {
-  const [fullEditProduct, setFullEditProduct] = useState<Product | null>(null);
-  const [localIsTransitioning, setLocalIsTransitioning] = useState(false);
+export function useEditProductDialog() {
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editType, setEditType] = useState<'price' | 'profit' | 'stock' | 'cost' | 'full'>('price');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [editValue, setEditValue] = useState('');
 
-  // Reset state when dialog opens or closes
-  useEffect(() => {
-    if (!open) {
-      // Add a small delay before cleaning up resources to ensure proper animation
-      setTimeout(() => {
-        setFullEditProduct(null);
-        setLocalIsTransitioning(false);
-      }, 300);
-    } else if (editType === 'full' && selectedProduct) {
-      setFullEditProduct({...selectedProduct});
+  const openEditDialog = (type: 'price' | 'profit' | 'stock' | 'cost' | 'full', product: Product) => {
+    setEditType(type);
+    setSelectedProduct(product);
+    
+    switch (type) {
+      case 'price':
+        setEditValue(product.price.toString());
+        break;
+      case 'stock':
+        setEditValue(product.stock.toString());
+        break;
+      case 'cost':
+        setEditValue((product.cost || 0).toString());
+        break;
+      case 'profit':
+        if (product.cost && product.cost > 0) {
+          const margin = ((product.price - product.cost) / product.cost) * 100;
+          setEditValue(margin.toFixed(2));
+        } else {
+          setEditValue('0');
+        }
+        break;
+      default:
+        setEditValue('');
     }
-  }, [open, editType, selectedProduct]);
-
-  const handleFullEditChange = (field: keyof Product, value: any) => {
-    if (fullEditProduct) {
-      setFullEditProduct({
-        ...fullEditProduct,
-        [field]: value
-      });
-    }
-  };
-
-  const handleFullSave = () => {
-    if (fullEditProduct && onFullSave) {
-      setLocalIsTransitioning(true);
-      
-      // Create a copy without the file property before saving
-      // as it might not be needed in the API call
-      const productToSave = { ...fullEditProduct };
-      if ('file' in productToSave) {
-        // The file property is only used for UI preview
-        // and should not be part of the saved product
-        const { file, ...rest } = productToSave;
-        onFullSave(rest as Product);
-      } else {
-        onFullSave(productToSave);
-      }
-    }
+    
+    setEditDialogOpen(true);
   };
 
   return {
-    fullEditProduct,
-    localIsTransitioning,
-    setLocalIsTransitioning,
-    handleFullEditChange,
-    handleFullSave
+    editDialogOpen,
+    setEditDialogOpen,
+    editType,
+    selectedProduct,
+    editValue,
+    setEditValue,
+    openEditDialog
   };
 }

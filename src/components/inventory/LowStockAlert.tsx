@@ -7,7 +7,7 @@ import {
   AlertTitle
 } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Product } from '@/hooks/products/useProductTypes';
+import { Product } from '@/hooks/products/types';
 
 interface LowStockAlertProps {
   lowStockProducts: Product[];

@@ -1,22 +1,16 @@
 
 import { useEffect } from 'react';
-import { Product } from '../useProductTypes';
+import { UseFormReturn } from 'react-hook-form';
+import { Product } from '../types';
 
-/**
- * Hook for handling initial form setup, particularly for edited products
- */
 export function useProductFormInit(
   isEditing: boolean,
-  editProduct?: Product,
-  setInitialProfitMargin?: (margin: number) => void
+  editProduct: Product | undefined,
+  setInitialProfitMargin: (product: Product) => void
 ) {
-  // Set initial profit margin when editing a product
   useEffect(() => {
-    if (isEditing && editProduct && editProduct.cost && editProduct.cost > 0 && setInitialProfitMargin) {
-      const initialMargin = ((editProduct.price - editProduct.cost) / editProduct.cost) * 100;
-      setInitialProfitMargin(initialMargin);
+    if (isEditing && editProduct) {
+      setInitialProfitMargin(editProduct);
     }
   }, [isEditing, editProduct, setInitialProfitMargin]);
-
-  return {};
 }

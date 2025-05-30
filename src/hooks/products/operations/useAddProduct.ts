@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Product } from '../useProductTypes';
+import { Product } from '../types';
 import { uploadProductImage } from './useImageUpload';
 
 export function useAddProduct() {
@@ -23,10 +23,18 @@ export function useAddProduct() {
         toast.dismiss();
       }
       
-      // Convert minStock to min_stock if it exists
+      // Create the complete product data object
       const productData = {
-        ...product,
-        image_url: imageUrl
+        name: product.name,
+        description: product.description,
+        category: product.category,
+        brand: product.brand,
+        price: product.price,
+        cost: product.cost,
+        stock: product.stock,
+        min_stock: product.min_stock,
+        image: product.image,
+        image_url: imageUrl || product.image_url
       };
       
       toast.loading('Adding product...');

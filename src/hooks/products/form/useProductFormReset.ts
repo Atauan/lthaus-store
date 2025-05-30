@@ -1,26 +1,17 @@
 
 import { UseFormReturn } from 'react-hook-form';
-import { ProductFormValues } from '../types';
-import { Product } from '../useProductTypes';
+import { Product } from '../types';
 
-/**
- * Hook for handling form reset functionality
- */
 export function useProductFormReset(
-  form: UseFormReturn<ProductFormValues>,
+  form: UseFormReturn<any>,
   isEditing: boolean,
-  editProduct?: Product,
-  clearImages?: () => void,
-  setInitialProfitMargin?: (margin: number) => void
+  editProduct: Product | undefined,
+  clearImages: () => void,
+  setInitialProfitMargin: (product?: Product) => void
 ) {
-  // Reset the form
   const handleResetForm = () => {
-    if (clearImages) {
-      clearImages();
-    }
-    
     if (isEditing && editProduct) {
-      // Reset to original product values
+      // Reset to original product data
       form.reset({
         name: editProduct.name,
         description: editProduct.description || '',
@@ -29,16 +20,12 @@ export function useProductFormReset(
         category: editProduct.category,
         brand: editProduct.brand,
         stock: editProduct.stock,
-        supplier: '',
+        minStock: editProduct.min_stock || 5,
         productType: 'external',
       });
-      
-      if (editProduct.cost && editProduct.cost > 0 && setInitialProfitMargin) {
-        const initialMargin = ((editProduct.price - editProduct.cost) / editProduct.cost) * 100;
-        setInitialProfitMargin(initialMargin);
-      }
+      setInitialProfitMargin(editProduct);
     } else {
-      // Reset to empty values for new product
+      // Reset to default values for new product
       form.reset({
         name: '',
         description: '',
@@ -47,9 +34,11 @@ export function useProductFormReset(
         category: '',
         brand: '',
         stock: 1,
-        supplier: '',
+        minStock: 5,
         productType: 'external',
       });
+      clearImages();
+      setInitialProfitMargin();
     }
   };
 

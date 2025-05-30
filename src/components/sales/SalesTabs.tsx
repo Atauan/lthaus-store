@@ -52,12 +52,14 @@ const SalesTabs: React.FC<SalesTabsProps> = ({
             </TabsList>
             
             <SalesSearchFilters 
-              searchQuery={searchQuery}
-              selectedDateRange={selectedDateRange}
-              selectedPayment={selectedPayment}
-              handleSearch={handleSearch}
-              setSelectedDateRange={setSelectedDateRange}
-              setSelectedPayment={setSelectedPayment}
+              timeRange={selectedDateRange}
+              setTimeRange={setSelectedDateRange}
+              paymentMethod={selectedPayment}
+              setPaymentMethod={setSelectedPayment}
+              minAmount=""
+              setMinAmount={() => {}}
+              maxAmount=""
+              setMaxAmount={() => {}}
             />
           </div>
         </div>

@@ -57,6 +57,11 @@ export default function Sales() {
     return periodSales.length * 2; // Estimating an average of 2 products per sale
   }, [periodSales]);
 
+  // Format date function
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
   // Pagination
   const totalPages = Math.ceil(filteredSales.length / pageSize);
   const paginatedSales = filteredSales.slice((page - 1) * pageSize, page * pageSize);

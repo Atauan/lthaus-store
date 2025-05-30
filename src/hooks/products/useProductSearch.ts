@@ -1,46 +1,44 @@
 
+import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { Product } from './useProductTypes';
+import { Product } from './types';
 
 export function useProductSearch() {
-  // Search products by name or description
-  const searchProducts = async (query: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .or(`name.ilike.%${query}%,description.ilike.%${query}%`);
-        
-      if (error) {
-        throw error;
-      }
-      
-      return { success: true, data: data as Product[] };
-    } catch (error: any) {
-      toast.error(`Erro ao pesquisar produtos: ${error.message}`);
-      return { success: false, error };
-    }
-  };
+  const searchProducts = useCallback(async (query: string): Promise<Product[]> => {
+    if (!query.trim()) return [];
 
-  // Get low stock products (less than 5 items)
-  const getLowStockProducts = async () => {
     try {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .lt('stock', 5);
-        
-      if (error) {
-        throw error;
-      }
-      
-      return { success: true, data: data as Product[] };
-    } catch (error: any) {
-      toast.error(`Erro ao buscar produtos com estoque baixo: ${error.message}`);
-      return { success: false, error };
+        .or(`name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%,brand.ilike.%${query}%`)
+        .order('name');
+
+      if (error) throw error;
+
+      return data || [];
+    } catch (error) {
+      console.error('Error searching products:', error);
+      return [];
     }
-  };
+  }, []);
+
+  const getLowStockProducts = useCallback(async (): Promise<Product[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .filter('stock', 'lte', 'min_stock')
+        .order('stock');
+
+      if (error) throw error;
+
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching low stock products:', error);
+      return [];
+    }
+  }, []);
 
   return {
     searchProducts,

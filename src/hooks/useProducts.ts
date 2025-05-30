@@ -6,8 +6,8 @@ import { useProductOperations } from './products/useProductOperations';
 import { useProductSearch } from './products/useProductSearch';
 
 // Re-export types from our types file
-export type { Product, StockLog, CostChangeLog } from './products/useProductTypes';
-export { categories, brands } from './products/useProductTypes';
+export type { Product, StockLog, CostChangeLog } from './products/types';
+export { categories, brands } from './products/types';
 
 export function useProducts() {
   // Use our smaller hooks

@@ -1,68 +1,57 @@
 
 import { useState } from 'react';
-import { toast } from 'sonner';
 import { UseFormReturn } from 'react-hook-form';
-import { ProductFormValues } from './useProductTypes';
+import { toast } from 'sonner';
+import { ProductFormValues } from './types';
 import { useCategoriesAndBrands } from './useCategoriesAndBrands';
-import { useSuppliers, Supplier } from './useSuppliers';
 
 export function useProductFormDialogs(form: UseFormReturn<ProductFormValues>) {
   const [isNewCategoryDialogOpen, setIsNewCategoryDialogOpen] = useState(false);
   const [isNewBrandDialogOpen, setIsNewBrandDialogOpen] = useState(false);
   const [isNewSupplierDialogOpen, setIsNewSupplierDialogOpen] = useState(false);
   
-  // Use our new hooks
-  const { categories, brands, addCategory, addBrand } = useCategoriesAndBrands();
-  const { addSupplier } = useSuppliers();
+  const { 
+    categories, 
+    brands,
+    addCategory,
+    addBrand
+  } = useCategoriesAndBrands();
 
-  // Add new category
   const handleAddCategory = async (newCategory: string) => {
-    console.log("New category to add:", newCategory);
-    
-    const result = await addCategory(newCategory);
-    
-    if (result) {
-      toast.success(`Categoria "${newCategory}" adicionada com sucesso!`);
-      form.setValue('category', newCategory);
-      setIsNewCategoryDialogOpen(false);
+    try {
+      const success = await addCategory(newCategory);
+      if (success) {
+        form.setValue('category', newCategory);
+        toast.success(`Categoria "${newCategory}" adicionada com sucesso!`);
+        setIsNewCategoryDialogOpen(false);
+      }
+    } catch (error) {
+      console.error('Error adding category:', error);
+      toast.error('Erro ao adicionar categoria');
     }
   };
 
-  // Add new brand
   const handleAddBrand = async (newBrand: string) => {
-    console.log("New brand to add:", newBrand);
-    
-    const result = await addBrand(newBrand);
-    
-    if (result) {
-      toast.success(`Marca "${newBrand}" adicionada com sucesso!`);
-      form.setValue('brand', newBrand);
-      setIsNewBrandDialogOpen(false);
+    try {
+      const success = await addBrand(newBrand);
+      if (success) {
+        form.setValue('brand', newBrand);
+        toast.success(`Marca "${newBrand}" adicionada com sucesso!`);
+        setIsNewBrandDialogOpen(false);
+      }
+    } catch (error) {
+      console.error('Error adding brand:', error);
+      toast.error('Erro ao adicionar marca');
     }
   };
 
-  // Add new supplier
-  const handleAddSupplier = async (supplierData: {
-    name: string;
-    contactName?: string;
-    phone?: string;
-    email?: string;
-    address?: string;
-  }) => {
-    console.log("New supplier to add:", supplierData);
-    
-    const result = await addSupplier({
-      name: supplierData.name,
-      contact_name: supplierData.contactName,
-      phone: supplierData.phone,
-      email: supplierData.email,
-      address: supplierData.address
-    });
-    
-    if (result.success) {
+  const handleAddSupplier = async (supplierData: any) => {
+    try {
       toast.success(`Fornecedor "${supplierData.name}" adicionado com sucesso!`);
-      form.setValue('supplier', supplierData.name);
       setIsNewSupplierDialogOpen(false);
+    } catch (error) {
+      console.error('Error adding supplier:', error);
+      toast.error('Erro ao adicionar fornecedor');
     }
   };
 

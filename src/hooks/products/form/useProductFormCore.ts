@@ -2,8 +2,8 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { Product } from '../useProductTypes';
-import type { ProductFormValues } from '../useProductTypes';
+import { Product } from '../types';
+import type { ProductFormValues } from '../types';
 
 /**
  * Core form initialization hook that handles the basic form setup

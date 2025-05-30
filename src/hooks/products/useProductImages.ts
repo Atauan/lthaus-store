@@ -1,48 +1,37 @@
 
 import { useState } from 'react';
-import { ProductImage } from './useProductTypes';
+import { ProductImage } from './types';
 
 export function useProductImages() {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-  // Handle image uploads
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
       
-      // Limit to 5 images maximum
-      const newImages = [...selectedImages, ...filesArray].slice(0, 5);
-      setSelectedImages(newImages);
-
-      // Generate preview URLs
-      const newPreviewUrls = newImages.map(file => URL.createObjectURL(file));
-      
-      // Revoke old URLs to prevent memory leaks
+      // Clean up old object URLs
       previewUrls.forEach(url => URL.revokeObjectURL(url));
       
+      const newPreviewUrls = filesArray.map(file => URL.createObjectURL(file));
+      
+      setSelectedImages(filesArray);
       setPreviewUrls(newPreviewUrls);
     }
   };
 
-  // Remove image
   const removeImage = (index: number) => {
-    const newImages = [...selectedImages];
-    newImages.splice(index, 1);
-    setSelectedImages(newImages);
-
-    // Revoke the URL being removed
+    // Clean up the object URL
     URL.revokeObjectURL(previewUrls[index]);
     
-    const newPreviewUrls = [...previewUrls];
-    newPreviewUrls.splice(index, 1);
-    setPreviewUrls(newPreviewUrls);
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Clear all images and release resources
   const clearImages = () => {
-    // Revoke all preview URLs
+    // Clean up all object URLs
     previewUrls.forEach(url => URL.revokeObjectURL(url));
+    
     setSelectedImages([]);
     setPreviewUrls([]);
   };

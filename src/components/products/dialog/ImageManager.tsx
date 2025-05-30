@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Upload } from 'lucide-react';
 import ImagePreview from './ImagePreview';
-import { Product } from '@/hooks/products/useProductTypes';
+import { Product } from '@/hooks/products/types';
 
 interface ImageManagerProps {
   product: Product;

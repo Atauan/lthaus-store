@@ -1,94 +1,83 @@
 
-import { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
+import { NavigateFunction } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
-import { ProductFormValues, Product } from '../useProductTypes';
+import { Product } from '../types';
 
-type ProductOperations = {
-  addProduct: (product: any, imageFile?: File) => Promise<any>;
-  updateProduct: (product: Product, imageFile?: File) => Promise<any>;
-};
+interface ProductOperations {
+  addProduct: (product: any, imageFile?: File) => Promise<{ success: boolean; error?: any }>;
+  updateProduct: (product: Product, imageFile?: File) => Promise<{ success: boolean; error?: any }>;
+}
 
-/**
- * Hook for handling form submission logic
- */
 export function useProductFormSubmit(
-  form: UseFormReturn<ProductFormValues>,
+  form: UseFormReturn<any>,
   isEditing: boolean,
   editProduct: Product | undefined,
   selectedImages: File[],
-  { addProduct, updateProduct }: ProductOperations,
-  navigate: ReturnType<typeof useNavigate>,
-  setIsSubmitting: (isSubmitting: boolean) => void
+  productOperations: ProductOperations,
+  navigate: NavigateFunction,
+  setIsSubmitting: (submitting: boolean) => void
 ) {
-  // Handle form submission
-  const onSubmit = async (data: ProductFormValues) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    const formData = form.getValues();
+    const imageFile = selectedImages.length > 0 ? selectedImages[0] : undefined;
+    
+    // Validate required fields
+    if (!formData.name || !formData.category || !formData.brand) {
+      toast.error('Por favor, preencha todos os campos obrigatórios');
+      return;
+    }
+
+    if (formData.salePrice <= 0) {
+      toast.error('O preço de venda deve ser maior que zero');
+      return;
+    }
+
+    if (formData.stock < 0) {
+      toast.error('O estoque não pode ser negativo');
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      setIsSubmitting(true);
-      
-      // Map form data to product structure
       const productData = {
-        name: data.name,
-        description: data.description,
-        category: data.category,
-        brand: data.brand,
-        price: data.salePrice,
-        cost: data.costPrice > 0 ? data.costPrice : null,
-        stock: data.stock,
-        min_stock: data.minStock // Include min_stock field
+        name: formData.name,
+        description: formData.description || '',
+        category: formData.category,
+        brand: formData.brand,
+        price: Number(formData.salePrice),
+        cost: Number(formData.costPrice) || 0,
+        stock: Number(formData.stock),
+        min_stock: Number(formData.minStock) || 5,
+        image: '',
+        image_url: ''
       };
-      
-      // Get the image file from the first selected image if available
-      const imageFile = selectedImages.length > 0 ? selectedImages[0] : undefined;
-      
+
       let result;
       
       if (isEditing && editProduct) {
-        // Update existing product
         const updatedProduct = {
-          ...productData,
-          id: editProduct.id,
-          // Keep existing image if not uploading a new one
-          image: editProduct.image,
-          image_url: editProduct.image_url
+          ...editProduct,
+          ...productData
         };
-        
-        result = await updateProduct(updatedProduct, imageFile);
-        
-        if (result.success) {
-          toast.success("Produto atualizado com sucesso!");
-          
-          // Redirect after 2 seconds
-          setTimeout(() => {
-            navigate('/products');
-          }, 2000);
-        } else {
-          toast.error(`Erro ao atualizar produto: ${result.error?.message || 'Erro desconhecido'}`);
-        }
+        result = await productOperations.updateProduct(updatedProduct, imageFile);
       } else {
-        // Add new product
-        result = await addProduct(productData, imageFile);
-        
-        if (result.success) {
-          toast.success("Produto adicionado com sucesso!");
-          
-          // Redirect after 2 seconds
-          setTimeout(() => {
-            navigate('/products');
-          }, 2000);
-        } else {
-          toast.error(`Erro ao adicionar produto: ${result.error?.message || 'Erro desconhecido'}`);
-        }
+        result = await productOperations.addProduct(productData, imageFile);
       }
-    } catch (error: any) {
-      toast.error(`Erro ao ${isEditing ? 'atualizar' : 'adicionar'} produto: ${error.message}`);
+
+      if (result.success) {
+        navigate('/products');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast.error('Erro ao salvar produto');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return {
-    onSubmit: form.handleSubmit(onSubmit)
-  };
+  return { onSubmit };
 }
