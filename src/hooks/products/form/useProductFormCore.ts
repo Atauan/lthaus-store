@@ -23,8 +23,8 @@ export function useProductFormCore(editProduct?: Product, isEditing = false) {
           category: editProduct.category,
           brand: editProduct.brand,
           stock: editProduct.stock,
-          minStock: editProduct.min_stock || 5, // Use existing min_stock or default to 5
-          productType: 'external', // Default to external (for sale to customers)
+          minStock: editProduct.min_stock || 5,
+          productType: 'external',
         } 
       : {
           name: '',
@@ -34,7 +34,7 @@ export function useProductFormCore(editProduct?: Product, isEditing = false) {
           category: '',
           brand: '',
           stock: 1,
-          minStock: 5, // Default minimum stock value
+          minStock: 5,
           productType: 'external',
         },
   });

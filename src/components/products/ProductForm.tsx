@@ -13,7 +13,7 @@ import PricingSection from './FormSections/PricingSection';
 import ClassificationSection from './FormSections/ClassificationSection';
 import ImagesSection from './FormSections/ImagesSection';
 import FormButtons from './FormSections/FormButtons';
-import { Product } from '@/hooks/products/useProductTypes';
+import { Product } from '@/hooks/products/types';
 
 interface ProductFormProps {
   product?: Product;

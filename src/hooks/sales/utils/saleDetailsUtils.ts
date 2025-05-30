@@ -1,55 +1,55 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { SaleDetails, SaleItem } from '../types';
 
-export async function getSaleDetails(saleId: number): Promise<{ success: boolean; data?: SaleDetails; error?: any }> {
+export async function getSaleDetails(saleId: number) {
   try {
-    const { data: saleData, error: saleError } = await supabase
+    console.log('Fetching sale details for ID:', saleId);
+    
+    const { data: sale, error: saleError } = await supabase
       .from('sales')
       .select('*')
       .eq('id', saleId)
       .single();
-      
-    if (saleError) throw saleError;
-    
-    const { data: itemsData, error: itemsError } = await supabase
+
+    if (saleError) {
+      console.error('Error fetching sale:', saleError);
+      throw saleError;
+    }
+
+    const { data: items, error: itemsError } = await supabase
       .from('sale_items')
-      .select('*')
+      .select(`
+        *,
+        products (
+          name,
+          category,
+          brand
+        )
+      `)
       .eq('sale_id', saleId);
-      
-    if (itemsError) throw itemsError;
-    
-    const { data: paymentsData, error: paymentsError } = await supabase
+
+    if (itemsError) {
+      console.error('Error fetching sale items:', itemsError);
+      throw itemsError;
+    }
+
+    const { data: payments, error: paymentsError } = await supabase
       .from('sale_payments')
       .select('*')
       .eq('sale_id', saleId);
-      
-    if (paymentsError) throw paymentsError;
-    
-    // Mapear os dados dos itens para o formato esperado por SaleItem
-    const mappedItems: SaleItem[] = (itemsData || []).map(item => ({
-      id: item.id,
-      sale_id: item.sale_id,
-      product_id: item.product_id,
-      quantity: item.quantity,
-      price: item.price,
-      cost: item.cost,
-      created_at: item.created_at,
-      name: `Produto #${item.product_id}`, // Nome padrão
-      type: 'product' // Tipo padrão
-    }));
-    
+
+    if (paymentsError) {
+      console.error('Error fetching sale payments:', paymentsError);
+      throw paymentsError;
+    }
+
     return {
-      success: true,
-      data: {
-        sale: saleData,
-        items: mappedItems,
-        payments: paymentsData || []
-      }
+      sale,
+      items: items || [],
+      payments: payments || []
     };
-  } catch (error: any) {
-    toast.error(`Erro ao carregar detalhes da venda: ${error.message}`);
-    return { success: false, error };
+  } catch (error) {
+    console.error('Error in getSaleDetails:', error);
+    throw error;
   }
 }

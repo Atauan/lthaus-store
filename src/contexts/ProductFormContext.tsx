@@ -1,8 +1,7 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Product } from '@/hooks/products/useProductTypes';
-import { ProductFormValues } from '@/hooks/products/types';
+import { Product, ProductFormValues } from '@/hooks/products/types';
 import { useProductForm } from '@/hooks/useProductForm';
 import { Supplier } from '@/hooks/products/useSuppliers';
 import { useNavigate } from 'react-router-dom';

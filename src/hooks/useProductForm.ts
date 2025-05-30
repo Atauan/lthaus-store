@@ -1,5 +1,5 @@
 
-import { Product } from './products/useProductTypes';
+import { Product, ProductFormValues } from './products/types';
 import { useProducts } from './useProducts';
 import { useProductPricing } from './products/useProductPricing';
 import { useProductImages } from './products/useProductImages';
@@ -12,7 +12,7 @@ import { useProductFormSubmit } from './products/form/useProductFormSubmit';
 import { useProductFormInit } from './products/form/useProductFormInit';
 
 // Re-export the type with the 'export type' syntax
-export type { ProductFormValues } from './products/useProductTypes';
+export type { ProductFormValues } from './products/types';
 
 export function useProductForm(editProduct?: Product, isEditing = false) {
   // Use the core form hook to set up the form
