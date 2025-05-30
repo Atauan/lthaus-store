@@ -4,27 +4,32 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, FileDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-
-type Sale = {
-  id: number;
-  date: string;
-  customer: string;
-  items: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
-  paymentMethod: string;
-  total: number;
-};
+import { Sale } from "@/hooks/sales/types";
 
 interface SalesTableProps {
   sales: Sale[];
-  formatDate: (dateString: string) => string;
   isLoading?: boolean;
 }
 
-const SalesTable = ({ sales, formatDate, isLoading = false }: SalesTableProps) => {
+const SalesTable = ({ sales, isLoading = false }: SalesTableProps) => {
+  // Format date function
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
+  // Format payment method for display
+  const formatPaymentMethod = (method: string) => {
+    const methodMap: { [key: string]: string } = {
+      'pix': 'PIX',
+      'credit_card': 'Cartão de Crédito',
+      'debit_card': 'Cartão de Débito',
+      'cash': 'Dinheiro',
+      'bank_transfer': 'Transferência'
+    };
+    return methodMap[method] || method;
+  };
+
   if (isLoading) {
     return (
       <div className="p-6">
@@ -52,11 +57,12 @@ const SalesTable = ({ sales, formatDate, isLoading = false }: SalesTableProps) =
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">ID</TableHead>
+            <TableHead className="w-[100px]">Número</TableHead>
             <TableHead>Data</TableHead>
             <TableHead>Cliente</TableHead>
-            <TableHead>Itens</TableHead>
+            <TableHead>Canal</TableHead>
             <TableHead>Pagamento</TableHead>
+            <TableHead className="text-right">Subtotal</TableHead>
             <TableHead className="text-right">Total</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
@@ -64,21 +70,24 @@ const SalesTable = ({ sales, formatDate, isLoading = false }: SalesTableProps) =
         <TableBody>
           {sales.map((sale) => (
             <TableRow key={sale.id}>
-              <TableCell className="font-medium">{sale.id}</TableCell>
-              <TableCell>{formatDate(sale.date)}</TableCell>
-              <TableCell>{sale.customer}</TableCell>
+              <TableCell className="font-medium">#{sale.sale_number}</TableCell>
+              <TableCell>{formatDate(sale.sale_date)}</TableCell>
+              <TableCell>{sale.customer_name || 'Venda Balcão'}</TableCell>
               <TableCell>
-                {sale.items.map((item, index) => (
-                  <Badge key={index} variant="outline" className="mr-1 mb-1">
-                    {item.quantity}x {item.name}
-                  </Badge>
-                ))}
+                <Badge variant="outline">
+                  {sale.sale_channel || 'Loja'}
+                </Badge>
               </TableCell>
               <TableCell>
-                <Badge variant="secondary">{sale.paymentMethod}</Badge>
+                <Badge variant="secondary">
+                  {formatPaymentMethod(sale.payment_method)}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-right">
+                R$ {sale.subtotal.toFixed(2)}
               </TableCell>
               <TableCell className="text-right font-medium">
-                R$ {sale.total.toFixed(2)}
+                R$ {sale.final_total.toFixed(2)}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">

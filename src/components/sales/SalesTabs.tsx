@@ -4,19 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SalesSearchFilters from './SalesSearchFilters';
 import SalesTable from './SalesTable';
 import SalesReportsTab from './SalesReportsTab';
-
-type Sale = {
-  id: number;
-  date: string;
-  customer: string;
-  items: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
-  paymentMethod: string;
-  total: number;
-};
+import { Sale } from '@/hooks/sales/types';
 
 interface SalesTabsProps {
   searchQuery: string;
@@ -27,7 +15,6 @@ interface SalesTabsProps {
   setSelectedPayment: (value: string) => void;
   filteredSales: Sale[];
   loading?: boolean;
-  formatDate: (dateString: string) => string;
 }
 
 const SalesTabs: React.FC<SalesTabsProps> = ({
@@ -38,8 +25,7 @@ const SalesTabs: React.FC<SalesTabsProps> = ({
   setSelectedDateRange,
   setSelectedPayment,
   filteredSales,
-  loading = false,
-  formatDate
+  loading = false
 }) => {
   return (
     <div className="bg-white rounded-lg shadow-soft overflow-hidden animate-scale-in mb-8">
@@ -65,7 +51,7 @@ const SalesTabs: React.FC<SalesTabsProps> = ({
         </div>
         
         <TabsContent value="list" className="mt-0">
-          <SalesTable sales={filteredSales} formatDate={formatDate} isLoading={loading} />
+          <SalesTable sales={filteredSales} isLoading={loading} />
         </TabsContent>
         
         <TabsContent value="reports" className="p-6">

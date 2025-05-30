@@ -16,7 +16,6 @@ import SalesStatistics from '@/components/sales/SalesStatistics';
 import { useSalesData } from '@/hooks/sales/useSalesData';
 import { useSalesFiltering } from '@/hooks/sales/useSalesFiltering';
 import { useSalesStatistics } from '@/hooks/sales/useSalesStatistics';
-import { Sale } from '@/hooks/sales/types';
 import Navbar from '@/components/layout/Navbar';
 
 export default function Sales() {
@@ -57,11 +56,6 @@ export default function Sales() {
   const totalProductsSold = useMemo(() => {
     return periodSales.length * 2; // Estimating an average of 2 products per sale
   }, [periodSales]);
-
-  // Format date function
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
 
   // Pagination
   const totalPages = Math.ceil(filteredSales.length / pageSize);
