@@ -1,14 +1,19 @@
 
-import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Product } from '@/hooks/products/types';
-import { brands, categories } from '@/hooks/products/types';
-import { Loader2 } from 'lucide-react';
-import ProductImageUpload from './ProductImageUpload';
+import React from 'react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Product, categories, brands } from '@/hooks/useProducts';
+import ImageManager from './ImageManager';
 
 interface FullEditFormProps {
   product: Product;
@@ -23,165 +28,141 @@ const FullEditForm: React.FC<FullEditFormProps> = ({
   onSave,
   onCancel
 }) => {
-  const [isSaving, setIsSaving] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  const handleChange = (field: keyof Product, value: any) => {
-    onProductChange(field, value);
-  };
-
-  const handleImageChange = (file: File | null) => {
-    setSelectedFile(file);
-    if (file) {
-      onProductChange('file', file);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    onSave();
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="name">Nome do Produto</Label>
-          <Input
-            id="name"
-            value={product.name}
-            onChange={(e) => handleChange('name', e.target.value)}
-            required
+    <>
+      <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
+        <div className="grid grid-cols-1 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Nome do Produto</Label>
+            <Input
+              id="name"
+              value={product.name}
+              onChange={(e) => onProductChange('name', e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="description">Descrição</Label>
+            <Textarea
+              id="description"
+              value={product.description || ''}
+              onChange={(e) => onProductChange('description', e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="category">Categoria</Label>
+              <Select
+                value={product.category}
+                onValueChange={(value) => onProductChange('category', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.filter(c => c !== 'Todas').map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="brand">Marca</Label>
+              <Select
+                value={product.brand}
+                onValueChange={(value) => onProductChange('brand', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma marca" />
+                </SelectTrigger>
+                <SelectContent>
+                  {brands.filter(b => b !== 'Todas').map((brand) => (
+                    <SelectItem key={brand} value={brand}>
+                      {brand}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="cost">Preço de Custo (R$)</Label>
+              <Input
+                id="cost"
+                type="number"
+                step="0.01"
+                min="0"
+                value={product.cost || 0}
+                onChange={(e) => onProductChange('cost', parseFloat(e.target.value) || 0)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="price">Preço de Venda (R$)</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                min="0"
+                value={product.price}
+                onChange={(e) => onProductChange('price', parseFloat(e.target.value) || 0)}
+              />
+              
+              {product.cost && product.cost > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  Margem: {(((product.price - product.cost) / product.cost) * 100).toFixed(0)}%
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="stock">Estoque</Label>
+              <Input
+                id="stock"
+                type="number"
+                step="1"
+                min="0"
+                value={product.stock}
+                onChange={(e) => onProductChange('stock', parseInt(e.target.value) || 0)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="min_stock">Estoque Mínimo</Label>
+              <Input
+                id="min_stock"
+                type="number"
+                step="1"
+                min="1"
+                value={product.min_stock || 5}
+                onChange={(e) => onProductChange('min_stock', parseInt(e.target.value) || 5)}
+              />
+              <div className="text-xs text-muted-foreground">
+                Você receberá alertas quando o estoque estiver abaixo deste valor
+              </div>
+            </div>
+          </div>
+
+          <ImageManager
+            product={product}
+            onProductChange={onProductChange}
           />
         </div>
-        
-        <div>
-          <Label htmlFor="price">Preço (R$)</Label>
-          <Input
-            id="price"
-            type="number"
-            step="0.01"
-            min="0"
-            value={product.price}
-            onChange={(e) => handleChange('price', parseFloat(e.target.value))}
-            required
-          />
-        </div>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="cost">Custo (R$)</Label>
-          <Input
-            id="cost"
-            type="number"
-            step="0.01"
-            min="0"
-            value={product.cost || 0}
-            onChange={(e) => handleChange('cost', parseFloat(e.target.value))}
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="stock">Estoque</Label>
-          <Input
-            id="stock"
-            type="number"
-            min="0"
-            value={product.stock}
-            onChange={(e) => handleChange('stock', parseInt(e.target.value))}
-            required
-          />
-        </div>
-      </div>
-      
-      <div>
-        <Label htmlFor="description">Descrição</Label>
-        <Textarea
-          id="description"
-          value={product.description || ''}
-          onChange={(e) => handleChange('description', e.target.value)}
-          rows={3}
-        />
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="category">Categoria</Label>
-          <Select 
-            value={product.category} 
-            onValueChange={(value) => handleChange('category', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione uma categoria" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories
-                .filter(cat => cat !== 'Todas')
-                .map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div>
-          <Label htmlFor="brand">Marca</Label>
-          <Select 
-            value={product.brand} 
-            onValueChange={(value) => handleChange('brand', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione uma marca" />
-            </SelectTrigger>
-            <SelectContent>
-              {brands
-                .filter(brand => brand !== 'Todas')
-                .map((brand) => (
-                  <SelectItem key={brand} value={brand}>
-                    {brand}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      
-      <div>
-        <Label>Imagem do Produto</Label>
-        <ProductImageUpload 
-          currentImageUrl={product.image_url}
-          onFileChange={handleImageChange}
-        />
-      </div>
-      
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isSaving}
-        >
-          Cancelar
-        </Button>
-        <Button
-          type="submit"
-          disabled={isSaving}
-        >
-          {isSaving ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Salvando...
-            </>
-          ) : (
-            'Salvar Alterações'
-          )}
-        </Button>
-      </div>
-    </form>
+      <DialogFooter>
+        <Button variant="outline" onClick={onCancel} className="border-white">Cancelar</Button>
+        <Button onClick={onSave}>Salvar Alterações</Button>
+      </DialogFooter>
+    </>
   );
 };
 

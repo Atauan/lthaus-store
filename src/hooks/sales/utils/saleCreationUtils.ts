@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -6,7 +7,7 @@ const currentDateTimeString = () => new Date().toISOString();
 
 export const createNewSale = async (saleData: any) => {
   try {
-    // Create a new sale entry with null user_id
+    // Create a new sale entry
     const saleResult = await supabase
       .from('sales')
       .insert({
@@ -23,7 +24,7 @@ export const createNewSale = async (saleData: any) => {
         notes: saleData.notes,
         delivery_address: saleData.delivery_address,
         delivery_fee: saleData.delivery_fee || 0,
-        user_id: null // Explicitly setting user_id to null
+        user_id: saleData.user_id || '00000000-0000-0000-0000-000000000000'
       })
       .select('id')
       .single();

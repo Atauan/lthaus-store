@@ -1,5 +1,4 @@
 
-// Product-related types
 export interface ProductFormValues {
   name: string;
   description: string;
@@ -8,12 +7,10 @@ export interface ProductFormValues {
   category: string;
   brand: string;
   stock: number;
-  minStock: number;
+  minStock: number; // Added minimum stock field
   supplier?: string;
   productType: 'internal' | 'external';
   image?: File;
-  sku?: string;
-  barcode?: string;
 }
 
 export interface ProductImage {
@@ -28,16 +25,14 @@ export interface Product {
   category: string;
   brand: string;
   price: number;
-  cost: number;
+  cost?: number;
   stock: number;
-  min_stock: number;
+  min_stock: number; // Database field name
   image?: string;
   image_url?: string;
   created_at?: string;
   updated_at?: string;
-  file?: File;
-  sku?: string;
-  barcode?: string;
+  file?: File; // Add file property for temporary storage during editing
 }
 
 export interface StockLog {
@@ -50,7 +45,7 @@ export interface StockLog {
   reference_id?: string;
   notes?: string;
   created_at: string;
-  product_name?: string;
+  product_name?: string; // For UI display
 }
 
 export interface CostChangeLog {
@@ -61,7 +56,7 @@ export interface CostChangeLog {
   change_percentage: number;
   notes?: string;
   created_at: string;
-  product_name?: string;
+  product_name?: string; // For UI display
 }
 
 export const categories = ['Todas', 'Cabos', 'Capas', 'Áudio', 'Carregadores', 'Proteção', 'Acessórios'];

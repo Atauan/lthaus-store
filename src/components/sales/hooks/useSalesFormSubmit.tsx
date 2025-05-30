@@ -57,7 +57,7 @@ export function useSalesFormSubmit() {
       otherChannel: '',
       paymentMethods: [{ method: 'pix', amount: 0 }],
       discount: 0,
-      discountType: 'percentage' as const,
+      discountType: 'percentage',
       notes: '',
       deliveryAddress: '',
       deliveryFee: 0,

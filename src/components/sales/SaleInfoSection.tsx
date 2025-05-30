@@ -26,25 +26,13 @@ import {
 } from '@/components/ui/form';
 import { saleChannels } from './data/sampleData';
 import { SalesFormValues } from './types/salesTypes';
-import CustomerSelector, { Customer } from './CustomerSelector';
 
 interface SaleInfoSectionProps {
   form: UseFormReturn<SalesFormValues>;
 }
 
 const SaleInfoSection: React.FC<SaleInfoSectionProps> = ({ form }) => {
-  const { control, setValue, watch } = form;
-  
-  // Handler for when a customer is selected
-  const handleSelectCustomer = (customer: Customer) => {
-    setValue('customerName', customer.name);
-    setValue('customerContact', customer.phone || '');
-    
-    // If delivery address fields exist and there's an address, set them
-    if (customer.address) {
-      setValue('deliveryAddress', `${customer.address}, ${customer.city || ''} - ${customer.state || ''} ${customer.zipcode || ''}`);
-    }
-  };
+  const { control } = form;
   
   return (
     <div className="bg-white rounded-lg shadow-soft p-6">
@@ -101,25 +89,12 @@ const SaleInfoSection: React.FC<SaleInfoSectionProps> = ({ form }) => {
           />
         )}
       
-        <div className="md:col-span-2">
-          <FormLabel>Cliente</FormLabel>
-          <CustomerSelector 
-            form={form}
-            onSelectCustomer={handleSelectCustomer}
-            selectedCustomer={watch('customerName') ? {
-              id: '',
-              name: watch('customerName'),
-              phone: watch('customerContact'),
-            } : undefined}
-          />
-        </div>
-        
         <FormField
           control={control}
           name="customerName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome do Cliente</FormLabel>
+              <FormLabel>Nome do Cliente (opcional)</FormLabel>
               <FormControl>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -135,7 +110,7 @@ const SaleInfoSection: React.FC<SaleInfoSectionProps> = ({ form }) => {
           name="customerContact"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Contato do Cliente</FormLabel>
+              <FormLabel>Contato do Cliente (opcional)</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />

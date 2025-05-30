@@ -1,130 +1,23 @@
+
+import React from 'react';
 import {
-  BarChart3,
-  Building2,
-  Calendar,
-  CreditCard,
-  Gauge,
-  LayoutDashboard,
-  ListChecks,
+  Home,
   Package,
-  Settings,
-  ShoppingBag,
-  User,
+  Truck,
   Users,
-} from "lucide-react";
+  Store,
+  BarChart2,
+  Settings,
+  ShoppingCart
+} from 'lucide-react';
 
-export const navigationItems = [
-  {
-    title: "Painel",
-    items: [
-      {
-        title: "Dashboard",
-        href: "/",
-        icon: LayoutDashboard,
-      },
-    ],
-  },
-  {
-    title: "Vendas",
-    items: [
-      {
-        title: "Dashboard de Vendas",
-        href: "/sales-dashboard",
-        icon: Gauge,
-      },
-      {
-        title: "Nova Venda",
-        href: "/sales/new",
-        icon: ShoppingBag,
-      },
-      {
-        title: "Lista de Vendas",
-        href: "/sales",
-        icon: ListChecks,
-      },
-    ],
-  },
-  {
-    title: "Produtos",
-    items: [
-      {
-        title: "Lista de Produtos",
-        href: "/products",
-        icon: Package,
-      },
-    ],
-  },
-  {
-    title: "Clientes",
-    items: [
-      {
-        title: "Lista de Clientes",
-        href: "/customers",
-        icon: Users,
-      },
-      {
-        title: "Novo Cliente",
-        href: "/customers/new",
-        icon: User,
-      },
-    ],
-  },
-  {
-    title: "Financeiro",
-    items: [
-      {
-        title: "Contas a Pagar",
-        href: "/financial/bills-to-pay",
-        icon: CreditCard,
-      },
-      {
-        title: "Contas a Receber",
-        href: "/financial/bills-to-receive",
-        icon: CreditCard,
-      },
-    ],
-  },
-  {
-    title: "Loja",
-    items: [
-      {
-        title: "Informações da Loja",
-        href: "/store",
-        icon: Building2,
-      },
-    ],
-  },
-  {
-    title: "Agendamentos",
-    items: [
-      {
-        title: "Lista de Agendamentos",
-        href: "/schedules",
-        icon: Calendar,
-      },
-    ],
-  },
-  {
-    title: "Relatórios",
-    items: [
-      {
-        title: "Relatórios de Vendas",
-        href: "/reports",
-        icon: BarChart3,
-      },
-    ],
-  },
-  {
-    title: "Configurações",
-    items: [
-      {
-        title: "Configurações da Loja",
-        href: "/settings",
-        icon: Settings,
-      },
-    ],
-  },
+export const NavigationItems = [
+  { path: '/', icon: <Home className="h-5 w-5" />, label: 'Dashboard' },
+  { path: '/products', icon: <Package className="h-5 w-5" />, label: 'Produtos' },
+  { path: '/inventory', icon: <BarChart2 className="h-5 w-5" />, label: 'Estoque' },
+  { path: '/sales', icon: <ShoppingCart className="h-5 w-5" />, label: 'Vendas' },
+  { path: '/sales/new', icon: <Store className="h-5 w-5" />, label: 'Nova Venda' },
+  { path: '/suppliers', icon: <Truck className="h-5 w-5" />, label: 'Fornecedores' },
+  { path: '/users', icon: <Users className="h-5 w-5" />, label: 'Usuários' },
+  { path: '/settings', icon: <Settings className="h-5 w-5" />, label: 'Configurações' },
 ];
-
-// Export the navigation items as NavigationCategories
-export const NavigationCategories = navigationItems;

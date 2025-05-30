@@ -11,8 +11,7 @@ import { useNavigate } from 'react-router-dom';
 interface SaleFormContainerProps {
   form: UseFormReturn<SalesFormValues>;
   onSubmit: () => void;
-  children?: React.ReactNode;
-  initialData?: any;
+  children: React.ReactNode;
 }
 
 const SaleFormContainer: React.FC<SaleFormContainerProps> = ({

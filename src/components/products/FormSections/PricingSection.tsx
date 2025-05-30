@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BadgePercent } from 'lucide-react';
 import { Input } from '@/components/ui/input';

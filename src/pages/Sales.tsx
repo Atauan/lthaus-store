@@ -1,166 +1,179 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import PageTransition from '@/components/layout/PageTransition';
-import { useSales } from '@/hooks/useSales';
+import React, { useState, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Calendar, CreditCard, Download, DollarSign, Search, ShoppingCart, Users, X } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PageTransition from '@/components/layout/PageTransition';
 
-const Sales = () => {
+import SalesHeader from '@/components/sales/SalesHeader';
+import SalesTable from '@/components/sales/SalesTable';
+import SalesSearchFilters from '@/components/sales/SalesSearchFilters';
+import SalesReportsTab from '@/components/sales/SalesReportsTab';
+import SalesStatistics from '@/components/sales/SalesStatistics';
+
+import { useSalesData } from '@/hooks/sales/useSalesData';
+import { useSalesFiltering } from '@/hooks/sales/useSalesFiltering';
+import { useSalesStatistics } from '@/hooks/sales/useSalesStatistics';
+import Navbar from '@/components/layout/Navbar';
+
+export default function Sales() {
   const navigate = useNavigate();
-  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
-  const [selectedSaleId, setSelectedSaleId] = useState<number | null>(null);
-  const [saleDetailsForReceipt, setSaleDetailsForReceipt] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState('vendas');
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
+  // Fetch sales data
+  const { sales, loading, refresh } = useSalesData();
+  
+  // Filtering
   const {
-    sales,
-    loading,
-  } = useSales();
+    searchTerm,
+    setSearchTerm,
+    timeRange,
+    setTimeRange,
+    paymentMethod,
+    setPaymentMethod,
+    minAmount,
+    setMinAmount,
+    maxAmount,
+    setMaxAmount,
+    filteredSales,
+    showFilters,
+    setShowFilters
+  } = useSalesFiltering(sales);
 
-  const [hasMore, setHasMore] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  // Sales statistics
+  const { 
+    salesStatistics, 
+    periodSales,
+    isLoadingStatistics 
+  } = useSalesStatistics(sales);
 
-  // We'll use this to determine if there are more sales to load
-  useEffect(() => {
-    if (sales && sales.length) {
-      setHasMore(sales.length > currentPage * itemsPerPage);
-    }
-  }, [sales, currentPage]);
+  // Calculate estimated number of products sold
+  // Since we don't have direct access to items, use a fixed value per sale
+  const totalProductsSold = useMemo(() => {
+    return periodSales.length * 2; // Estimating an average of 2 products per sale
+  }, [periodSales]);
 
-  const loadMore = () => {
-    if (hasMore) {
-      setCurrentPage(prev => prev + 1);
+  // Pagination
+  const totalPages = Math.ceil(filteredSales.length / pageSize);
+  const paginatedSales = filteredSales.slice((page - 1) * pageSize, page * pageSize);
+
+  // Go to prev page
+  const goToPrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
     }
   };
 
-  const handleNewSale = () => {
-    navigate('/sales/new');
+  // Go to next page
+  const goToNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+    }
   };
-
-  if (loading) {
-    return (
-      <PageTransition>
-        <div className="min-h-screen pt-16">
-          <div className="container mx-auto px-4 pb-10 flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2 text-lg">Carregando vendas...</span>
-          </div>
-        </div>
-      </PageTransition>
-    );
-  }
 
   return (
-    <PageTransition>
-      <div className="min-h-screen pt-16">
-        <div className="container mx-auto px-4 pb-10">
-          <div className="mb-6 flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Vendas</h1>
-              <p className="text-muted-foreground mt-1">Gerencie suas vendas e acompanhe o desempenho</p>
-            </div>
-            <Button onClick={handleNewSale} className="flex items-center gap-2">
-              <ShoppingCart className="h-4 w-4" />
-              Nova Venda
-            </Button>
-          </div>
-          
-          <Tabs defaultValue="sales">
-            <TabsList className="mb-4">
-              <TabsTrigger value="sales">Vendas</TabsTrigger>
-              <TabsTrigger value="reports">Relatórios</TabsTrigger>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <main className="container mx-auto px-4 pt-20 pb-10 lg:ml-64 lg:pl-8">
+        <PageTransition>
+          <SalesHeader
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            showFilters={showFilters}
+            setShowFilters={setShowFilters}
+            refresh={refresh}
+          />
+
+          {showFilters && (
+            <SalesSearchFilters 
+              timeRange={timeRange}
+              setTimeRange={setTimeRange}
+              paymentMethod={paymentMethod}
+              setPaymentMethod={setPaymentMethod}
+              minAmount={minAmount}
+              setMinAmount={setMinAmount}
+              maxAmount={maxAmount}
+              setMaxAmount={setMaxAmount}
+            />
+          )}
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
+            <TabsList className="w-full max-w-md mx-auto mb-6">
+              <TabsTrigger value="vendas" className="flex-1">
+                Vendas
+              </TabsTrigger>
+              <TabsTrigger value="relatorios" className="flex-1">
+                Relatórios
+              </TabsTrigger>
             </TabsList>
-            
-            <TabsContent value="sales">
-              {sales && sales.length > 0 ? (
-                <div className="overflow-hidden rounded-lg border">
-                  <table className="w-full">
-                    <thead className="bg-muted/50">
-                      <tr className="text-left">
-                        <th className="py-3 px-4 text-xs font-medium text-muted-foreground">Número</th>
-                        <th className="py-3 px-4 text-xs font-medium text-muted-foreground">Data</th>
-                        <th className="py-3 px-4 text-xs font-medium text-muted-foreground">Cliente</th>
-                        <th className="py-3 px-4 text-xs font-medium text-muted-foreground">Pagamento</th>
-                        <th className="py-3 px-4 text-xs font-medium text-muted-foreground">Total</th>
-                        <th className="py-3 px-4 text-xs font-medium text-muted-foreground">Status</th>
-                        <th className="py-3 px-4 text-xs font-medium text-muted-foreground">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sales.slice(0, currentPage * itemsPerPage).map((sale) => (
-                        <tr key={sale.id} className="border-t">
-                          <td className="py-3 px-4">{sale.sale_number}</td>
-                          <td className="py-3 px-4">{new Date(sale.sale_date).toLocaleDateString()}</td>
-                          <td className="py-3 px-4">{sale.customer_name || 'Cliente não informado'}</td>
-                          <td className="py-3 px-4">{sale.payment_method}</td>
-                          <td className="py-3 px-4">R$ {sale.final_total.toFixed(2)}</td>
-                          <td className="py-3 px-4">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              sale.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                              sale.status === 'cancelled' ? 'bg-red-100 text-red-800' : 
-                              'bg-blue-100 text-blue-800'
-                            }`}>
-                              {sale.status === 'completed' ? 'Concluída' : 
-                               sale.status === 'cancelled' ? 'Cancelada' : 
-                               'Pendente'}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm" onClick={() => navigate(`/sales/edit/${sale.id}`)}>
-                                Editar
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  
-                  {hasMore && (
-                    <div className="flex justify-center p-4 border-t">
-                      <Button variant="outline" onClick={loadMore}>
-                        Carregar mais
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Card>
-                  <CardContent className="flex flex-col items-center justify-center h-64">
-                    <ShoppingCart className="h-12 w-12 text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground text-center mb-4">
-                      Nenhuma venda encontrada.
-                    </p>
-                    <Button onClick={handleNewSale}>
-                      Registrar primeira venda
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="reports">
+
+            <TabsContent value="vendas" className="space-y-6">
+              <SalesStatistics 
+                totalSales={salesStatistics.totalSales}
+                productsSold={totalProductsSold}
+                totalRevenue={salesStatistics.totalRevenue}
+                isLoading={isLoadingStatistics}
+              />
+              
               <Card>
-                <CardHeader>
-                  <CardTitle>Relatórios de Vendas</CardTitle>
-                  <CardDescription>Analise o desempenho da sua loja</CardDescription>
+                <CardHeader className="pb-0">
+                  <CardTitle className="text-lg font-medium text-gray-700">
+                    Histórico de Vendas
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p>Funcionalidade de relatórios em breve...</p>
+                  <SalesTable 
+                    sales={paginatedSales}
+                    isLoading={loading}
+                  />
+                  
+                  {/* Pagination */}
+                  {filteredSales.length > 0 && totalPages > 1 && (
+                    <div className="flex justify-between items-center mt-4">
+                      <div className="text-sm text-gray-500">
+                        Página {page} de {totalPages}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={goToPrevPage}
+                          disabled={page === 1}
+                          className="px-3 py-1 h-8"
+                        >
+                          Anterior
+                        </Button>
+                        <Button
+                          onClick={goToNextPage}
+                          disabled={page === totalPages}
+                          className="px-3 py-1 h-8"
+                        >
+                          Próxima
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    </PageTransition>
-  );
-};
 
-export default Sales;
+            <TabsContent value="relatorios">
+              <SalesReportsTab />
+            </TabsContent>
+          </Tabs>
+
+          <div className="fixed bottom-6 right-6">
+            <Button
+              onClick={() => navigate('/sales/new')}
+              className="rounded-full h-14 w-14 bg-primary hover:bg-primary/90 shadow-lg"
+            >
+              <Plus className="h-6 w-6" />
+            </Button>
+          </div>
+        </PageTransition>
+      </main>
+    </div>
+  );
+}

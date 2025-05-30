@@ -1,3 +1,4 @@
+
 // Types for product-related functionality
 export interface ProductFormValues {
   name: string;

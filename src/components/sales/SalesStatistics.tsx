@@ -1,83 +1,59 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, ShoppingCart, TrendingUp, BarChart3 } from 'lucide-react';
-import { formatCurrency } from '@/hooks/products/utils/pricingUtils';
-import { Loader2 } from 'lucide-react';
+import { BarChart3, ArrowUpRight, CreditCard } from 'lucide-react';
+import GlassCard from '@/components/ui/custom/GlassCard';
+import { SalesStatistics as SalesStatsType } from '@/hooks/sales/types';
 
-interface SalesStatisticsProps {
+export interface SalesStatisticsProps {
   totalSales: number;
+  productsSold: number;
   totalRevenue: number;
-  totalProfit: number;
-  averageSale: number;
-  isLoading: boolean;
+  isLoading?: boolean;
 }
 
-const SalesStatistics: React.FC<SalesStatisticsProps> = ({
-  totalSales,
+const SalesStatistics: React.FC<SalesStatisticsProps> = ({ 
+  totalSales, 
+  productsSold, 
   totalRevenue,
-  totalProfit,
-  averageSale,
-  isLoading
+  isLoading = false
 }) => {
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Carregando estatísticas...</span>
-      </div>
-    );
-  }
-
-  const stats = [
-    {
-      title: "Total de Vendas",
-      value: totalSales,
-      description: "Número total de vendas realizadas",
-      icon: <ShoppingCart className="h-5 w-5 text-purple-600" />,
-      format: (value: number) => value.toString(),
-      color: "bg-purple-50"
-    },
-    {
-      title: "Receita Total",
-      value: totalRevenue,
-      description: "Valor total das vendas realizadas",
-      icon: <DollarSign className="h-5 w-5 text-green-600" />,
-      format: formatCurrency,
-      color: "bg-green-50"
-    },
-    {
-      title: "Lucro Total",
-      value: totalProfit,
-      description: "Lucro total das vendas",
-      icon: <TrendingUp className="h-5 w-5 text-blue-600" />,
-      format: formatCurrency,
-      color: "bg-blue-50"
-    },
-    {
-      title: "Ticket Médio",
-      value: averageSale,
-      description: "Valor médio por venda",
-      icon: <BarChart3 className="h-5 w-5 text-orange-600" />,
-      format: formatCurrency,
-      color: "bg-orange-50"
-    }
-  ];
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-      {stats.map((stat, index) => (
-        <Card key={index}>
-          <CardHeader className={`flex flex-row items-center justify-between p-4 ${stat.color}`}>
-            <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-            <div className="rounded-full p-2 bg-white/90">{stat.icon}</div>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="text-2xl font-bold">{stat.format(stat.value)}</div>
-            <CardDescription>{stat.description}</CardDescription>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <GlassCard className="animate-scale-in">
+        <div className="flex justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Total de Vendas</p>
+            <h3 className="text-2xl font-bold mt-1">{isLoading ? '-' : totalSales}</h3>
+          </div>
+          <div className="p-2 rounded-full bg-primary/10">
+            <BarChart3 className="h-5 w-5 text-primary" />
+          </div>
+        </div>
+      </GlassCard>
+      
+      <GlassCard className="animate-scale-in">
+        <div className="flex justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Produtos Vendidos</p>
+            <h3 className="text-2xl font-bold mt-1">{isLoading ? '-' : productsSold}</h3>
+          </div>
+          <div className="p-2 rounded-full bg-primary/10">
+            <ArrowUpRight className="h-5 w-5 text-primary" />
+          </div>
+        </div>
+      </GlassCard>
+      
+      <GlassCard className="animate-scale-in">
+        <div className="flex justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Receita Total</p>
+            <h3 className="text-2xl font-bold mt-1">R$ {isLoading ? '-' : totalRevenue.toFixed(2)}</h3>
+          </div>
+          <div className="p-2 rounded-full bg-primary/10">
+            <CreditCard className="h-5 w-5 text-primary" />
+          </div>
+        </div>
+      </GlassCard>
     </div>
   );
 };

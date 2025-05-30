@@ -1,151 +1,158 @@
 
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { SaleDetails } from '@/hooks/sales/types';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { SalesFormValues, SaleItem } from './types/salesTypes';
-import { useNavigate } from 'react-router-dom';
-import { CheckCircle } from 'lucide-react';
-import { calculateSubtotal, calculateProfit, calculateFinalTotal } from './utils/salesUtils';
+import { SaleItem, SalesFormValues } from './types/salesTypes';
+import { calculateSubtotal, calculateProfit } from '@/hooks/sales/utils/saleCalculations';
+import SaleInfoSection from './SaleInfoSection';
+import ItemsSection from './ItemsSection';
+import SalesSummary from './SalesSummary';
+import PaymentMethodsSection from './PaymentMethodsSection';
+import SaleReceiptModal from './SaleReceiptModal';
+import QuickActionsSidebar from './QuickActionsSidebar';
+import DeliverySection from './DeliverySection';
+import AddTemporaryProductDialog from './AddTemporaryProductDialog';
+import SaleFormHeader from './form/SaleFormHeader';
+import SaleFormContainer from './form/SaleFormContainer';
+import { useSalesFormSubmit } from './hooks/useSalesFormSubmit';
 
-interface SalesFormProps {
-  initialData?: SaleDetails | null;
-}
-
-const defaultFormValues: SalesFormValues = {
-  customerName: '',
-  customerContact: '',
-  saleChannel: 'store',
-  paymentMethods: [{ method: 'cash', amount: 0 }],
-  discount: 0,
-  discountType: 'percentage',
-  notes: '',
-};
-
-const SalesForm: React.FC<SalesFormProps> = ({ initialData }) => {
-  const navigate = useNavigate();
+const SalesForm = () => {
   const [selectedItems, setSelectedItems] = useState<SaleItem[]>([]);
-  const [subtotal, setSubtotal] = useState(0);
-  const [profit, setProfit] = useState(0);
-  const [finalTotal, setFinalTotal] = useState(0);
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  
+  const {
+    saleNumber,
+    saleData,
+    isReceiptModalOpen,
+    savingInProgress,
+    setIsReceiptModalOpen,
+    onSubmit,
+    handleNewSale,
+    handleFinishSale
+  } = useSalesFormSubmit();
   
   const form = useForm<SalesFormValues>({
-    defaultValues: defaultFormValues
+    defaultValues: {
+      customerName: '',
+      customerContact: '',
+      saleChannel: 'store',
+      otherChannel: '',
+      paymentMethods: [{ method: 'pix', amount: 0 }],
+      discount: 0,
+      discountType: 'percentage',
+      notes: '',
+      deliveryAddress: '',
+      deliveryFee: 0,
+    },
   });
 
-  // Initialize form with data if editing
+  // Make sure the form is initialized
   useEffect(() => {
-    if (initialData) {
-      // Set form values from initialData
-      const sale = initialData.sale;
-      const formValues = {
-        customerName: sale.customer_name || '',
-        customerContact: sale.customer_contact || '',
-        saleChannel: sale.sale_channel || 'store',
-        paymentMethods: initialData.payments.map(p => ({
-          method: p.method,
-          amount: p.amount
-        })),
-        discount: sale.discount || 0,
-        discountType: 'percentage' as const, // Default to percentage
-        notes: sale.notes || '',
-        deliveryAddress: sale.delivery_address || '',
-        deliveryFee: sale.delivery_fee || 0
-      };
-      
-      form.reset(formValues);
-      setSelectedItems(initialData.items);
+    // Force re-render after form initialization
+    if (form) {
+      form.reset(form.getValues());
     }
-  }, [initialData, form]);
+  }, []);
 
-  // Calculate totals whenever items or discount changes
-  useEffect(() => {
-    const itemsTotal = calculateSubtotal(selectedItems);
-    setSubtotal(itemsTotal);
-    
-    const calculatedProfit = calculateProfit(selectedItems);
-    setProfit(calculatedProfit);
-    
-    // Apply discount
-    const discount = form.watch('discount') || 0;
-    const discountType = form.watch('discountType');
-    const deliveryFee = form.watch('deliveryFee') || 0;
-    
-    const calculatedTotal = calculateFinalTotal(itemsTotal, discountType, discount, deliveryFee);
-    setFinalTotal(calculatedTotal);
-  }, [selectedItems, form.watch(['discount', 'discountType', 'deliveryFee'])]);
+  const subtotal = calculateSubtotal(selectedItems);
+  const profit = calculateProfit(selectedItems);
+  const deliveryFee = form.watch('deliveryFee') || 0;
 
-  const handleSubmit = (values: SalesFormValues) => {
-    // This is just a placeholder - in a real implementation, this would call
-    // the appropriate functions to save the sale
-    console.log('Form values:', values);
-    console.log('Selected items:', selectedItems);
-    console.log('Subtotal:', subtotal);
-    console.log('Profit:', profit);
-    console.log('Final total:', finalTotal);
+  const getFinalTotal = () => {
+    return calculateFinalTotal(
+      subtotal, 
+      form.watch('discountType'), 
+      form.watch('discount'),
+      deliveryFee
+    );
+  };
+  
+  const calculateFinalTotal = (subtotal: number, discountType: 'percentage' | 'fixed', discount: number, deliveryFee: number = 0) => {
+    const discountValue = discountType === 'percentage' 
+      ? subtotal * (discount / 100)
+      : discount;
     
-    // Navigate back to sales list
-    navigate('/sales');
+    return Math.max(0, subtotal - discountValue + deliveryFee);
   };
 
-  // Temporary placeholder component for ItemsSection
-  const ItemsSection = () => (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-semibold mb-4">Items Section Placeholder</h2>
-      <p>This is where the items selection would go.</p>
-    </div>
-  );
+  const handleFormSubmit = () => {
+    onSubmit(form.getValues(), selectedItems, subtotal, profit, getFinalTotal);
+  };
 
-  // Temporary placeholder component for DeliverySection
-  const DeliverySection = () => (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-semibold mb-4">Delivery Section Placeholder</h2>
-      <p>This is where delivery information would go.</p>
-    </div>
-  );
+  const handleNewSaleAction = () => {
+    const newFormValues = handleNewSale();
+    form.reset(newFormValues);
+    setSelectedItems([]);
+  };
 
-  // Temporary placeholder component for PaymentMethodsSection
-  const PaymentMethodsSection = () => (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-semibold mb-4">Payment Methods Placeholder</h2>
-      <p>This is where payment methods would go.</p>
-    </div>
-  );
+  const handleAddTemporaryProduct = (item: SaleItem) => {
+    setSelectedItems([...selectedItems, item]);
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto px-4 pb-10 pt-16 lg:pl-64">
+      <SaleFormHeader 
+        saleNumber={saleNumber}
+        onAddTemporaryItem={() => setIsAddProductOpen(true)}
+        onSubmit={form.handleSubmit(handleFormSubmit)}
+      />
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <ItemsSection />
-          <DeliverySection />
+          <SaleFormContainer 
+            form={form} 
+            onSubmit={handleFormSubmit}
+          >
+            <SaleInfoSection form={form} />
+            
+            <ItemsSection 
+              selectedItems={selectedItems} 
+              setSelectedItems={setSelectedItems} 
+            />
+            
+            <DeliverySection form={form} saleChannel={form.watch('saleChannel')} />
+            
+            <SalesSummary 
+              subtotal={subtotal}
+              profit={profit}
+              form={form}
+              calculateFinalTotal={getFinalTotal}
+              deliveryFee={deliveryFee}
+            />
+            
+            <PaymentMethodsSection 
+              form={form} 
+              total={getFinalTotal()}
+            />
+          </SaleFormContainer>
         </div>
         
-        <div className="space-y-6">
-          <PaymentMethodsSection />
+        <div className="lg:col-span-1">
+          <QuickActionsSidebar
+            subtotal={subtotal}
+            profit={profit}
+            form={form}
+            calculateFinalTotal={getFinalTotal}
+            onNewSale={handleNewSaleAction}
+          />
         </div>
       </div>
       
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Observações (opcional)</label>
-          <Textarea 
-            placeholder="Observações sobre a venda..." 
-            className="resize-none" 
-            {...form.register('notes')} 
-          />
-        </div>
-        
-        <div className="flex justify-end gap-3 pt-4">
-          <Button variant="outline" type="button" onClick={() => navigate('/sales')}>
-            Cancelar
-          </Button>
-          <Button type="submit">
-            <CheckCircle className="mr-2 h-4 w-4" />
-            Finalizar Venda
-          </Button>
-        </div>
-      </form>
+      {saleData && (
+        <SaleReceiptModal
+          isOpen={isReceiptModalOpen}
+          onClose={() => setIsReceiptModalOpen(false)}
+          saleData={saleData}
+          onNewSale={handleNewSaleAction}
+          onFinish={handleFinishSale}
+          savingInProgress={savingInProgress}
+        />
+      )}
+      
+      <AddTemporaryProductDialog
+        isOpen={isAddProductOpen}
+        onClose={() => setIsAddProductOpen(false)}
+        onAddItem={handleAddTemporaryProduct}
+      />
     </div>
   );
 };

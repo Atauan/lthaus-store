@@ -4,7 +4,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { Product } from '@/hooks/products/types';
+import { Product } from '@/hooks/useProducts';
 import SimpleEditForm from './dialog/SimpleEditForm';
 import FullEditForm from './dialog/FullEditForm';
 import DialogTitleSection from './dialog/DialogTitleSection';
@@ -82,7 +82,7 @@ const EditProductDialog = ({
         
         {editType === 'full' && fullEditProduct ? (
           <FullEditForm
-            product={fullEditProduct as Product}
+            product={fullEditProduct}
             onProductChange={handleFullEditChange}
             onSave={handleFullSave}
             onCancel={handleClose}

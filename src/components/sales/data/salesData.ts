@@ -1,3 +1,4 @@
+
 export type SaleItem = {
   name: string;
   quantity: number;

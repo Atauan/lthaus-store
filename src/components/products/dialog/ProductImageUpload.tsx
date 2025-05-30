@@ -1,88 +1,69 @@
 
-import React, { useState, useRef } from 'react';
-import { Button } from "@/components/ui/button";
-import { Upload, X, Image } from "lucide-react";
+import React from 'react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Upload } from 'lucide-react';
+import ImagePreview from './ImagePreview';
 
 interface ProductImageUploadProps {
-  currentImageUrl?: string | null;
-  onFileChange: (file: File | null) => void;
+  previewUrl: string | null;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onUrlChange: (url: string) => void;
+  onClearImage: () => void;
+  productName: string;
+  imageUrl: string;
 }
 
 const ProductImageUpload: React.FC<ProductImageUploadProps> = ({
-  currentImageUrl,
-  onFileChange
+  previewUrl,
+  onFileChange,
+  onUrlChange,
+  onClearImage,
+  productName,
+  imageUrl
 }) => {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files && e.target.files[0];
-    
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      onFileChange(file);
-    }
-  };
-
-  const handleClearImage = () => {
-    setPreviewUrl(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-    onFileChange(null);
-  };
-
   return (
     <div className="space-y-2">
-      <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-md">
-        {previewUrl ? (
-          <div className="relative w-full">
-            <img 
-              src={previewUrl} 
-              alt="Product preview" 
-              className="mx-auto max-h-40 object-contain"
-            />
-            <Button
-              type="button"
-              variant="destructive"
-              size="icon"
-              className="absolute top-0 right-0 h-6 w-6 rounded-full"
-              onClick={handleClearImage}
+      <Label className="mb-1 block">Imagem do Produto</Label>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="image-url" className="text-sm text-muted-foreground">Inserir URL da imagem</Label>
+          <Input
+            id="image-url"
+            type="text"
+            value={imageUrl || ''}
+            onChange={(e) => onUrlChange(e.target.value)}
+            placeholder="https://exemplo.com/imagem.jpg"
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="image-file" className="text-sm text-muted-foreground">Ou fazer upload do dispositivo</Label>
+          <div className="flex items-center">
+            <label 
+              htmlFor="image-file"
+              className="flex items-center justify-center gap-2 w-full h-9 px-4 py-2 bg-muted hover:bg-muted/80 text-sm font-medium rounded-md cursor-pointer transition-colors"
             >
-              <X className="h-4 w-4" />
-            </Button>
+              <Upload className="h-4 w-4" />
+              Selecionar arquivo
+              <input 
+                id="image-file" 
+                type="file" 
+                accept="image/*" 
+                onChange={onFileChange}
+                className="hidden" 
+              />
+            </label>
           </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-4">
-            <Image className="h-10 w-10 text-muted-foreground" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              Nenhuma imagem selecionada
-            </p>
-          </div>
-        )}
-        
-        <input 
-          ref={fileInputRef}
-          type="file" 
-          accept="image/*" 
-          className="hidden"
-          onChange={handleFileSelect}
-        />
-        
-        <Button
-          type="button"
-          variant="outline"
-          className="mt-2"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <Upload className="mr-2 h-4 w-4" />
-          {previewUrl ? 'Trocar imagem' : 'Selecionar imagem'}
-        </Button>
+        </div>
       </div>
+      
+      <ImagePreview 
+        previewUrl={previewUrl}
+        productName={productName}
+        onClearImage={onClearImage}
+      />
     </div>
   );
 };

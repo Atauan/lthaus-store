@@ -1,178 +1,193 @@
 
 import React from 'react';
-import { UseFormReturn, useFieldArray } from 'react-hook-form';
-import { SalesFormValues } from './types/salesTypes';
-import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { UseFormReturn } from 'react-hook-form';
+import { 
+  CreditCard, 
+  Smartphone, 
+  Banknote, 
+  FileText,
+  Plus,
+  X
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, CreditCard, Banknote, QrCode } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import SalesSummary from './SalesSummary';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/components/ui/form';
+import { SalesFormValues } from './types/salesTypes';
 
 interface PaymentMethodsSectionProps {
   form: UseFormReturn<SalesFormValues>;
-  finalTotal: number;
+  total: number;
 }
 
-const paymentMethods = [
-  { id: 'cash', name: 'Dinheiro', icon: <Banknote className="h-4 w-4 mr-2" /> },
-  { id: 'credit_card', name: 'Cartão de Crédito', icon: <CreditCard className="h-4 w-4 mr-2" /> },
-  { id: 'debit_card', name: 'Cartão de Débito', icon: <CreditCard className="h-4 w-4 mr-2" /> },
-  { id: 'pix', name: 'PIX', icon: <QrCode className="h-4 w-4 mr-2" /> },
-];
-
-const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({ form, finalTotal }) => {
-  const { control, watch, setValue } = form;
+const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({ form, total }) => {
+  const { control, watch, setValue, getValues } = form;
+  const paymentMethods = watch('paymentMethods');
   
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'paymentMethods'
-  });
+  const paymentOptions = [
+    { id: 'pix', name: 'PIX', icon: <Smartphone className="h-4 w-4" /> },
+    { id: 'debito', name: 'Cartão de Débito', icon: <CreditCard className="h-4 w-4" /> },
+    { id: 'credito', name: 'Cartão de Crédito', icon: <CreditCard className="h-4 w-4" /> },
+    { id: 'dinheiro', name: 'Dinheiro', icon: <Banknote className="h-4 w-4" /> },
+    { id: 'outro', name: 'Outro', icon: <FileText className="h-4 w-4" /> },
+  ];
   
-  const watchedPaymentMethods = watch('paymentMethods');
-  const currentTotal = watchedPaymentMethods.reduce((sum, method) => sum + (method.amount || 0), 0);
-  const remainingAmount = finalTotal - currentTotal;
-  
-  const handleAddPaymentMethod = () => {
-    append({ method: 'cash', amount: 0 });
+  const addPaymentMethod = () => {
+    const currentPayments = getValues('paymentMethods');
+    setValue('paymentMethods', [
+      ...currentPayments,
+      { method: 'pix', amount: 0 }
+    ]);
   };
   
-  const handleSetFullAmount = (index: number) => {
-    const methods = [...watchedPaymentMethods];
-    methods[index] = { ...methods[index], amount: remainingAmount + (methods[index].amount || 0) };
-    setValue('paymentMethods', methods);
+  const removePaymentMethod = (index: number) => {
+    const currentPayments = getValues('paymentMethods');
+    if (currentPayments.length > 1) {
+      setValue('paymentMethods', currentPayments.filter((_, i) => i !== index));
+    }
   };
+  
+  const calculateTotalPaid = () => {
+    return paymentMethods.reduce((sum: number, payment: any) => sum + Number(payment.amount || 0), 0);
+  };
+  
+  const handleAmountChange = (index: number, value: string) => {
+    const numericValue = parseFloat(value || '0');
+    const newPaymentMethods = [...paymentMethods];
+    newPaymentMethods[index].amount = numericValue;
+    setValue('paymentMethods', newPaymentMethods);
+  };
+  
+  const remainingTotal = total - calculateTotalPaid();
   
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-soft p-6">
-        <h2 className="text-xl font-semibold mb-4">Formas de Pagamento</h2>
-        
-        <div className="space-y-4">
-          {fields.map((field, index) => (
-            <div key={field.id} className="flex flex-col space-y-2 p-3 border rounded-md">
-              <div className="flex justify-between items-center">
-                <FormField
-                  control={control}
-                  name={`paymentMethods.${index}.method`}
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormControl>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Método de pagamento" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {paymentMethods.map((method) => (
-                              <SelectItem key={method.id} value={method.id}>
-                                <div className="flex items-center">
-                                  {method.icon}
-                                  <span>{method.name}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                
-                {fields.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => remove(index)}
-                    className="ml-2"
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                )}
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <FormField
-                  control={control}
-                  name={`paymentMethods.${index}.amount`}
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <div className="relative flex-1">
-                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">R$</span>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              className="pl-9"
-                              value={field.value}
-                              onChange={(e) => {
-                                const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-                                field.onChange(value);
-                              }}
-                            />
-                          </div>
-                        </FormControl>
-                        
-                        {remainingAmount !== 0 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSetFullAmount(index)}
-                            className="whitespace-nowrap"
-                          >
-                            {remainingAmount > 0 ? `+ R$ ${remainingAmount.toFixed(2)}` : `- R$ ${Math.abs(remainingAmount).toFixed(2)}`}
-                          </Button>
-                        )}
-                      </div>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-          ))}
-          
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleAddPaymentMethod}
-            className="w-full"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Adicionar Forma de Pagamento
-          </Button>
-          
-          <div className={cn(
-            "mt-4 p-3 rounded-md font-medium text-center",
-            remainingAmount === 0 
-              ? "bg-green-100 text-green-800" 
-              : "bg-amber-100 text-amber-800"
-          )}>
-            {remainingAmount === 0 ? (
-              <span>Pagamento completo</span>
-            ) : remainingAmount > 0 ? (
-              <span>Faltam R$ {remainingAmount.toFixed(2)}</span>
-            ) : (
-              <span>Excesso de R$ {Math.abs(remainingAmount).toFixed(2)}</span>
-            )}
-          </div>
-        </div>
+    <div className="bg-white rounded-lg shadow-soft p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Formas de Pagamento</h2>
+        <Button 
+          type="button" 
+          variant="outline" 
+          size="sm"
+          onClick={addPaymentMethod}
+          disabled={paymentMethods.length >= 3}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Adicionar Método
+        </Button>
       </div>
       
-      <SalesSummary
-        subtotal={watch('discount') ? finalTotal + (watch('discountType') === 'percentage' ? (finalTotal * watch('discount') / 100) : watch('discount')) - (watch('deliveryFee') || 0) : finalTotal - (watch('deliveryFee') || 0)}
-        profit={0} // This should be calculated and passed from parent
-        form={form}
-        calculateFinalTotal={() => finalTotal}
-        deliveryFee={watch('deliveryFee') || 0}
-      />
+      <div className="space-y-4">
+        {paymentMethods.map((payment: any, index: number) => (
+          <div key={index} className="flex gap-4 items-end">
+            <FormField
+              control={control}
+              name={`paymentMethods.${index}.method`}
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel className={index > 0 ? 'sr-only' : undefined}>
+                    Método de Pagamento
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a forma de pagamento" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectGroup>
+                        {paymentOptions.map((option) => (
+                          <SelectItem key={option.id} value={option.id}>
+                            <div className="flex items-center gap-2">
+                              {option.icon}
+                              <span>{option.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+            
+            <FormItem className="w-40">
+              <FormLabel className={index > 0 ? 'sr-only' : undefined}>
+                Valor
+              </FormLabel>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                  R$
+                </span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className="pl-9"
+                  value={payment.amount || ''}
+                  onChange={(e) => handleAmountChange(index, e.target.value)}
+                />
+              </div>
+            </FormItem>
+            
+            {index > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-destructive hover:text-destructive"
+                onClick={() => removePaymentMethod(index)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        ))}
+        
+        {paymentMethods.length > 0 && (
+          <div className="flex justify-between pt-4 border-t text-sm">
+            <span>Total Pago:</span>
+            <span className={`font-semibold ${Math.abs(remainingTotal) < 0.01 ? 'text-green-600' : ''}`}>
+              R$ {calculateTotalPaid().toFixed(2)}
+            </span>
+          </div>
+        )}
+        
+        {remainingTotal > 0.01 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-2 text-sm">
+            <p>
+              <span className="font-medium">Falta: </span>
+              <span className="font-semibold">R$ {remainingTotal.toFixed(2)}</span>
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              O valor total dos pagamentos deve ser igual ao valor final da venda.
+            </p>
+          </div>
+        )}
+        
+        {remainingTotal < -0.01 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-2 text-sm">
+            <p>
+              <span className="font-medium">Troco: </span>
+              <span className="font-semibold">R$ {Math.abs(remainingTotal).toFixed(2)}</span>
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

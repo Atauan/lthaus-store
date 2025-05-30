@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -76,13 +77,11 @@
   html {
     font-family: 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
-    @apply scroll-smooth;
   }
   
   body {
     @apply bg-background text-foreground;
     @apply transition-colors duration-300;
-    @apply overflow-x-hidden;
   }
 
   input, select, textarea {
@@ -91,12 +90,6 @@
 
   .border-primary-blue {
     @apply border-primary/20 dark:border-primary/30;
-  }
-  
-  button, 
-  a, 
-  [role="button"] {
-    @apply touch-manipulation;
   }
 }
 
@@ -136,22 +129,5 @@
   
   .text-balance {
     text-wrap: balance;
-  }
-  
-  .touch-manipulation {
-    touch-action: manipulation;
-  }
-  
-  .no-tap-highlight {
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  .responsive-container {
-    @apply px-3 sm:px-4 md:px-6;
-  }
-  
-  .mobile-scroll {
-    @apply overflow-auto overscroll-contain;
-    -webkit-overflow-scrolling: touch;
   }
 }

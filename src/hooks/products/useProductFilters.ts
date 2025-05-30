@@ -1,33 +1,20 @@
 
-import { useState, useEffect } from 'react';
-import { Product } from './types';
+import { useState } from 'react';
+import { Product } from './useProductTypes';
 
 export function useProductFilters(products: Product[]) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todas');
   const [selectedBrand, setSelectedBrand] = useState('Todas');
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
-  // Filter products based on search query, category, and brand
-  useEffect(() => {
-    const filtered = products.filter(product => {
-      // Filter by search query (name, id, or description)
-      const matchesSearch = !searchQuery 
-        || product.name.toLowerCase().includes(searchQuery.toLowerCase())
-        || product.id.toString().includes(searchQuery)
-        || (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-      // Filter by category
-      const matchesCategory = selectedCategory === 'Todas' || product.category === selectedCategory;
-      
-      // Filter by brand
-      const matchesBrand = selectedBrand === 'Todas' || product.brand === selectedBrand;
-      
-      return matchesSearch && matchesCategory && matchesBrand;
-    });
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                        (product.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
+    const matchesCategory = selectedCategory === 'Todas' || product.category === selectedCategory;
+    const matchesBrand = selectedBrand === 'Todas' || product.brand === selectedBrand;
     
-    setFilteredProducts(filtered);
-  }, [products, searchQuery, selectedCategory, selectedBrand]);
+    return matchesSearch && matchesCategory && matchesBrand;
+  });
 
   return {
     filteredProducts,

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Sale, DateRange } from './types';
 import { useFilterSales } from './useFilterSales';

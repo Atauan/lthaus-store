@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from "sonner";
-import { Product } from './products/types';
+import { Product } from '@/hooks/useProducts';
 
 export function useProductEditing(
   updateProduct: (product: Product, imageFile?: File) => Promise<{ success: boolean; error?: Error }>,

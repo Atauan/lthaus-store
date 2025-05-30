@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { Sale, SaleItem, SalePayment } from './types';
 import { createNewSale } from './utils/saleCreationUtils';

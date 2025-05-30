@@ -1,4 +1,8 @@
-export function mapSaleFormToDatabase(saleData: any) {
+
+export function mapSaleFormToDatabase(
+  saleData: any,
+  userId?: string
+) {
   // Map form data to database schema
   return {
     sale: {
@@ -15,22 +19,22 @@ export function mapSaleFormToDatabase(saleData: any) {
       sale_date: saleData.date,
       delivery_address: saleData.deliveryAddress || null,
       delivery_fee: saleData.deliveryFee || 0,
-      // No user_id field needed anymore
+      user_id: userId
     },
     items: saleData.items.map((item: any) => ({
-      product_id: item.id || null, // Make product_id nullable to prevent foreign key constraint issues
+      product_id: item.id,
       name: item.name,
       price: item.price,
       cost: item.cost,
       quantity: item.quantity,
       type: item.type,
-      custom_price: item.custom_price || false
-      // No user_id field needed anymore
+      custom_price: item.custom_price || false,
+      user_id: userId
     })),
     payments: saleData.paymentMethods.map((payment: any) => ({
       method: payment.method,
-      amount: payment.amount
-      // No user_id field needed anymore
+      amount: payment.amount,
+      user_id: userId
     }))
   };
 }

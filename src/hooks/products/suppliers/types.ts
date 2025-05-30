@@ -1,3 +1,4 @@
+
 // Types for supplier-related functionality
 export interface Supplier {
   id: number;

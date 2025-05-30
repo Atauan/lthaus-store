@@ -5,7 +5,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Product } from '@/hooks/products/types';
+import { Product } from '@/hooks/useProducts';
 
 interface DialogTitleSectionProps {
   editType: 'price' | 'profit' | 'stock' | 'cost' | 'full';

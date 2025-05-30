@@ -1,68 +1,96 @@
 
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { StockLog, CostChangeLog } from './types';
 import { toast } from 'sonner';
+import { StockLog, CostChangeLog } from './useProductTypes';
 
 export function useProductLogs() {
   const [stockLogs, setStockLogs] = useState<StockLog[]>([]);
   const [costChangeLogs, setCostChangeLogs] = useState<CostChangeLog[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch stock logs with product names
+  // Fetch stock logs
   const fetchStockLogs = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // First get all stock logs
+      const { data: logsData, error: logsError } = await supabase
         .from('stock_logs')
-        .select(`
-          *,
-          products:product_id (name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Format data to include product_name
-      const formattedLogs: StockLog[] = data.map(log => ({
+        
+      if (logsError) throw logsError;
+      
+      // Get product names for display
+      const productIds = [...new Set(logsData.map(log => log.product_id))];
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select('id, name')
+        .in('id', productIds);
+        
+      if (productsError) throw productsError;
+      
+      // Create a map of product IDs to names
+      const productMap = Object.fromEntries(
+        productsData.map(product => [product.id, product.name])
+      );
+      
+      // Combine the data
+      const logsWithProductNames = logsData.map(log => ({
         ...log,
-        product_name: log.products?.name || 'Produto Desconhecido'
+        product_name: productMap[log.product_id] || 'Produto Desconhecido'
       }));
-
-      setStockLogs(formattedLogs);
-      return formattedLogs;
+      
+      setStockLogs(logsWithProductNames);
+      
+      return logsWithProductNames;
     } catch (error: any) {
-      toast.error(`Erro ao carregar logs de estoque: ${error.message}`);
+      toast.error(`Erro ao carregar histórico de estoque: ${error.message}`);
       return [];
     } finally {
       setLoading(false);
     }
   }, []);
-
-  // Fetch cost change logs with product names
+  
+  // Fetch cost change logs
   const fetchCostChangeLogs = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // First get all cost change logs
+      const { data: logsData, error: logsError } = await supabase
         .from('cost_change_logs')
-        .select(`
-          *,
-          products:product_id (name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Format data to include product_name
-      const formattedLogs: CostChangeLog[] = data.map(log => ({
+        
+      if (logsError) throw logsError;
+      
+      // Get product names for display
+      const productIds = [...new Set(logsData.map(log => log.product_id))];
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select('id, name')
+        .in('id', productIds);
+        
+      if (productsError) throw productsError;
+      
+      // Create a map of product IDs to names
+      const productMap = Object.fromEntries(
+        productsData.map(product => [product.id, product.name])
+      );
+      
+      // Combine the data
+      const logsWithProductNames = logsData.map(log => ({
         ...log,
-        product_name: log.products?.name || 'Produto Desconhecido'
+        product_name: productMap[log.product_id] || 'Produto Desconhecido'
       }));
-
-      setCostChangeLogs(formattedLogs);
-      return formattedLogs;
+      
+      setCostChangeLogs(logsWithProductNames);
+      
+      return logsWithProductNames;
     } catch (error: any) {
-      toast.error(`Erro ao carregar logs de alteração de custo: ${error.message}`);
+      toast.error(`Erro ao carregar histórico de alterações de custo: ${error.message}`);
       return [];
     } finally {
       setLoading(false);

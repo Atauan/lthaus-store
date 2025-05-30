@@ -1,88 +1,73 @@
-import React, { createContext, useContext } from 'react';
-import { UserProfile, AuthContextType } from '@/types/auth';
+
+import React, { createContext, useContext, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { UserProfile, AuthContextType, UserRole } from '@/types/auth';
 import { toast } from 'sonner';
 
-// Create a default user for development with proper User type structure
+// Create a default user for development with proper UUID format
 const defaultDevUser: UserProfile = {
-  id: 'dev-user-id',
+  id: '00000000-0000-0000-0000-000000000000', // Valid UUID format
   first_name: 'Developer',
   last_name: 'User',
-  role: 'admin',
+  role: 'admin', // Give admin role for development
   created_at: new Date().toISOString(),
 };
 
-// Create a default session for development with proper Session type structure
+// Create a default session for development
 const defaultDevSession = {
-  access_token: 'fake-token',
-  refresh_token: 'fake-refresh-token',
-  expires_in: 3600,
-  token_type: 'bearer',
   user: {
-    id: 'dev-user-id',
+    id: defaultDevUser.id,
     email: 'dev@gmail.com',
-    app_metadata: {
-      provider: 'email',
-      providers: ['email']
-    },
-    user_metadata: {
-      first_name: 'Developer',
-      last_name: 'User'
-    },
-    aud: 'authenticated',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    role: 'admin',
-    identities: [],
-    confirmed_at: new Date().toISOString(),
-    email_confirmed_at: new Date().toISOString(),
-    last_sign_in_at: new Date().toISOString(),
-    phone: null
   }
 };
 
 const AuthContext = createContext<AuthContextType>({
-  user: defaultDevUser,
-  session: defaultDevSession,
-  loading: false,
+  user: null,
+  session: null,
+  loading: true,
   error: null,
-  signIn: async () => ({ data: null, error: null }),
-  signUp: async () => ({ data: null, error: null }),
-  signOut: async () => ({ error: null }),
-  requestPasswordReset: async () => ({ error: null }),
-  updatePassword: async () => ({ error: null }),
+  signIn: async () => {},
+  signUp: async () => {},
+  signOut: async () => {},
+  requestPasswordReset: async () => {},
+  updatePassword: async () => {},
   clearError: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Always provide the development user - now that authentication is not required
+  const [user] = useState<UserProfile | null>(defaultDevUser);
+  const [session] = useState<any | null>(defaultDevSession);
+  const [isLoading] = useState(false);
+  const [loading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
   // Mock authentication functions for development
   const signIn = async () => {
     toast.success('Login realizado com sucesso! (modo desenvolvimento)');
-    return { data: defaultDevSession, error: null };
   };
 
   const signUp = async () => {
     toast.success('Conta criada com sucesso! (modo desenvolvimento)');
-    return { data: defaultDevSession, error: null };
   };
 
   const signOut = async () => {
     toast.info('Logout realizado (modo desenvolvimento)');
-    return { error: null };
   };
 
   const requestPasswordReset = async () => {
     toast.success('Instruções de recuperação de senha enviadas! (modo desenvolvimento)');
-    return { error: null };
   };
 
   const updatePassword = async () => {
     toast.success('Senha atualizada com sucesso! (modo desenvolvimento)');
-    return { error: null };
   };
 
-  const clearError = () => {};
+  const clearError = () => {
+    setError(null);
+  };
 
   const updateProfile = async () => {
     toast.success('Perfil atualizado com sucesso! (modo desenvolvimento)');
@@ -118,11 +103,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const value = {
-    user: defaultDevUser,
-    session: defaultDevSession,
-    loading: false,
-    error: null,
-    isLoading: false,
+    user,
+    session,
+    loading,
+    error,
+    isLoading,
     signIn,
     signUp,
     signOut,

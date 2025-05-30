@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -13,12 +14,6 @@ export interface SalesSearchFiltersProps {
   setMinAmount: (amount: string) => void;
   maxAmount: string;
   setMaxAmount: (amount: string) => void;
-  searchQuery?: string;
-  handleSearch?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  selectedDateRange?: string;
-  setSelectedDateRange?: (value: string) => void;
-  selectedPayment?: string;
-  setSelectedPayment?: (value: string) => void;
 }
 
 const SalesSearchFilters: React.FC<SalesSearchFiltersProps> = ({
@@ -29,39 +24,15 @@ const SalesSearchFilters: React.FC<SalesSearchFiltersProps> = ({
   minAmount,
   setMinAmount,
   maxAmount,
-  setMaxAmount,
-  searchQuery,
-  handleSearch,
-  selectedDateRange,
-  setSelectedDateRange,
-  selectedPayment,
-  setSelectedPayment
+  setMaxAmount
 }) => {
-  // Use the appropriate props based on which ones are provided
-  const dateRangeValue = selectedDateRange || timeRange;
-  const dateRangeSetter = setSelectedDateRange || setTimeRange;
-  const paymentValue = selectedPayment || paymentMethod;
-  const paymentSetter = setSelectedPayment || setPaymentMethod;
-
   return (
     <Card className="mb-6">
       <CardContent className="pt-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {searchQuery !== undefined && handleSearch && (
-            <div className="space-y-2">
-              <Label htmlFor="search">Buscar</Label>
-              <Input
-                id="search"
-                placeholder="Buscar vendas..."
-                value={searchQuery}
-                onChange={handleSearch}
-              />
-            </div>
-          )}
-          
           <div className="space-y-2">
             <Label htmlFor="time-range">Período</Label>
-            <Select value={dateRangeValue} onValueChange={dateRangeSetter}>
+            <Select value={timeRange} onValueChange={setTimeRange}>
               <SelectTrigger id="time-range">
                 <SelectValue placeholder="Selecionar período" />
               </SelectTrigger>
@@ -77,7 +48,7 @@ const SalesSearchFilters: React.FC<SalesSearchFiltersProps> = ({
           
           <div className="space-y-2">
             <Label htmlFor="payment-method">Método de Pagamento</Label>
-            <Select value={paymentValue} onValueChange={paymentSetter}>
+            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
               <SelectTrigger id="payment-method">
                 <SelectValue placeholder="Selecionar método" />
               </SelectTrigger>
