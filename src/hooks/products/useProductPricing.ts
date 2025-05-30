@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { ProductFormValues } from './types';
+import { ProductFormValues, Product } from './types';
 import { 
   calculateSalePrice, 
   calculateProfit, 
@@ -24,8 +24,11 @@ export function useProductPricing(form: UseFormReturn<ProductFormValues>) {
   }, [watchCostPrice, profitMargin, form]);
 
   // Set initial profit margin (used when editing a product)
-  const setInitialProfitMargin = (margin: number) => {
-    setProfitMargin(parseFloat(margin.toFixed(0)));
+  const setInitialProfitMargin = (product: Product) => {
+    if (product.cost && product.cost > 0) {
+      const margin = calculateMarginPercentage(product.price, product.cost);
+      setProfitMargin(parseFloat(margin.toFixed(0)));
+    }
   };
 
   // Handle margin slider change

@@ -2,15 +2,37 @@
 import { useState } from 'react';
 import { Product } from '@/hooks/products/types';
 
-export function useEditProductDialog() {
+export function useEditProductDialog(
+  selectedProduct?: Product | null,
+  editType?: 'price' | 'profit' | 'stock' | 'cost' | 'full',
+  open?: boolean,
+  onFullSave?: (updatedProduct: Product) => void
+) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editType, setEditType] = useState<'price' | 'profit' | 'stock' | 'cost' | 'full'>('price');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [editTypeState, setEditType] = useState<'price' | 'profit' | 'stock' | 'cost' | 'full'>('price');
+  const [selectedProductState, setSelectedProduct] = useState<Product | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [fullEditProduct, setFullEditProduct] = useState<Product | null>(null);
+  const [localIsTransitioning, setLocalIsTransitioning] = useState(false);
+
+  // Use props if provided, otherwise use internal state
+  const currentEditType = editType || editTypeState;
+  const currentSelectedProduct = selectedProduct || selectedProductState;
+
+  // Initialize full edit product when selectedProduct changes
+  useState(() => {
+    if (currentSelectedProduct && currentEditType === 'full') {
+      setFullEditProduct({ ...currentSelectedProduct });
+    }
+  });
 
   const openEditDialog = (type: 'price' | 'profit' | 'stock' | 'cost' | 'full', product: Product) => {
     setEditType(type);
     setSelectedProduct(product);
+    
+    if (type === 'full') {
+      setFullEditProduct({ ...product });
+    }
     
     switch (type) {
       case 'price':
@@ -37,13 +59,28 @@ export function useEditProductDialog() {
     setEditDialogOpen(true);
   };
 
+  const handleFullEditChange = (updatedProduct: Product) => {
+    setFullEditProduct(updatedProduct);
+  };
+
+  const handleFullSave = () => {
+    if (fullEditProduct && onFullSave) {
+      onFullSave(fullEditProduct);
+    }
+  };
+
   return {
     editDialogOpen,
     setEditDialogOpen,
-    editType,
-    selectedProduct,
+    editType: currentEditType,
+    selectedProduct: currentSelectedProduct,
     editValue,
     setEditValue,
-    openEditDialog
+    openEditDialog,
+    fullEditProduct,
+    localIsTransitioning,
+    setLocalIsTransitioning,
+    handleFullEditChange,
+    handleFullSave
   };
 }
