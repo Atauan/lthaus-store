@@ -16,6 +16,7 @@ import SalesStatistics from '@/components/sales/SalesStatistics';
 import { useSalesData } from '@/hooks/sales/useSalesData';
 import { useSalesFiltering } from '@/hooks/sales/useSalesFiltering';
 import { useSalesStatistics } from '@/hooks/sales/useSalesStatistics';
+import { Sale } from '@/hooks/sales/types';
 import Navbar from '@/components/layout/Navbar';
 
 export default function Sales() {

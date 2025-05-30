@@ -59,8 +59,13 @@ export function useEditProductDialog(
     setEditDialogOpen(true);
   };
 
-  const handleFullEditChange = (updatedProduct: Product) => {
-    setFullEditProduct(updatedProduct);
+  const handleFullEditChange = (field: keyof Product, value: any) => {
+    if (fullEditProduct) {
+      setFullEditProduct({
+        ...fullEditProduct,
+        [field]: value
+      });
+    }
   };
 
   const handleFullSave = () => {
