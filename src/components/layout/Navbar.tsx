@@ -1,34 +1,24 @@
 
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { TopNav } from './navbar/TopNav';
-import { Sidebar } from './navbar/Sidebar';
-import { useMediaQuery } from '../../hooks/use-mobile'; // Assuming you have a hook like this or similar logic
+// Sidebar component is removed
 
 export default function Navbar() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const isMobile = useMediaQuery('(max-width: 1023px)'); // lg breakpoint in Tailwind
+  // The toggleSidebar logic and state (sidebarOpen, isMobile) are no longer needed here
+  // as MobileMenu (inside TopNav) now handles its own Sheet display.
+  // TopNav might still need a dummy toggleSidebar prop if MobileMenu expects it,
+  // or MobileMenu's props should be updated if it no longer needs toggleSidebar.
+  // For now, let's assume TopNav/MobileMenu are self-contained or toggleSidebar is vestigial.
 
-  const toggleSidebar = useCallback(() => {
-    if (isMobile) { // Only allow toggle on mobile
-      setSidebarOpen(prev => !prev);
-    }
-  }, [isMobile]);
+  // A dummy function if TopNav still expects toggleSidebar for some reason,
+  // though it ideally shouldn't if MobileMenu is self-contained with Sheet.
+  const dummyToggleSidebar = () => {};
 
   return (
     <>
-      {/* Pass toggleSidebar to TopNav for the MobileMenu button */}
-      <TopNav toggleSidebar={toggleSidebar} />
-      {/* Pass isOpen and toggleSidebar to Sidebar */}
-      <Sidebar isOpen={isMobile ? sidebarOpen : true} toggleSidebar={isMobile ? toggleSidebar : undefined} />
-
-      {/* Optional: Overlay for closing sidebar on mobile when clicking outside */}
-      {isMobile && sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/30 z-30 lg:hidden"
-          onClick={toggleSidebar}
-          aria-hidden="true"
-        />
-      )}
+      <TopNav toggleSidebar={dummyToggleSidebar} />
+      {/* Sidebar component removed from here */}
+      {/* Overlay logic also removed as it was tied to the old Sidebar implementation */}
     </>
   );
 }

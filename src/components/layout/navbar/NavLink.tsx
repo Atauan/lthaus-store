@@ -13,24 +13,34 @@ interface NavLinkProps {
 
 export function NavLink({ path, icon, label, isMobile = false, onClick }: NavLinkProps) {
   const location = useLocation();
-  // Make isActive more robust for nested routes if necessary
   const isActive = location.pathname === path || (path !== "/" && location.pathname.startsWith(path) && path.length > 1);
 
+  // Base classes
+  let linkClasses = "flex items-center gap-2 px-3 py-2 rounded-md transition-colors text-sm";
+
+  if (isMobile) {
+    // Classes for mobile (e.g., inside a Sheet)
+    linkClasses += isActive
+      ? ' bg-primary text-primary-foreground'
+      : ' hover:bg-accent hover:text-accent-foreground text-foreground';
+    linkClasses += ' w-full text-base py-3'; // Ensure full width for mobile list items
+  } else {
+    // Classes for TopNav (non-mobile)
+    // For TopNav, active state might be just a color change or underline, not a background
+    linkClasses += isActive
+      ? ' text-primary font-semibold' // Example: primary color text and bold for active TopNav link
+      : ' hover:text-primary text-muted-foreground'; // Example: lighter text, hover to primary
+    // Remove icon on very small screens within topnav if needed, or ensure it's small
+    // The label might be hidden on some screen sizes for TopNav items if space is an issue
+  }
 
   return (
     <Link
       to={path}
-      onClick={onClick} // Added onClick handler
-      className={`
-        flex items-center gap-3 px-3 py-2 rounded-md transition-colors
-        ${isActive
-          ? 'bg-primary text-white'
-          : 'hover:bg-gray-100 text-gray-700'
-        }
-        ${isMobile ? 'text-base py-3' : ''}
-      `}
+      onClick={onClick}
+      className={linkClasses}
     >
-      {icon}
+      {icon && React.cloneElement(icon as React.ReactElement, { className: "h-4 w-4" })} {/* Ensure icons are small */}
       <span>{label}</span>
     </Link>
   );
