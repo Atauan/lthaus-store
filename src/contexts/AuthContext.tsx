@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile, AuthContextType, UserRole } from '@/types/auth';
@@ -26,6 +25,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   error: null,
+  isDevMode: true,
   signIn: async () => {},
   signUp: async () => {},
   signOut: async () => {},
@@ -43,6 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading] = useState(false);
   const [loading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const isDevMode = true; // Explicitly set development mode
 
   // Mock authentication functions for development
   const signIn = async () => {
@@ -108,6 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     error,
     isLoading,
+    isDevMode,
     signIn,
     signUp,
     signOut,

@@ -1,4 +1,3 @@
-
 import { Session, User } from '@supabase/supabase-js';
 
 export type UserRole = 'admin' | 'manager' | 'salesperson';
@@ -25,6 +24,7 @@ export interface AuthContextType extends AuthState {
   requestPasswordReset: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   clearError: () => void;
+  isDevMode: boolean;
   // Additional functions for UserManagement
   updateProfile?: (data: Partial<UserProfile>) => Promise<{error: any | null}>;
   updateUserRole?: (userId: string, role: UserRole) => Promise<{error: any | null}>;

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Sale } from './types';
@@ -6,7 +5,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function useSalesData() {
-  const { session } = useAuth();
+  const { session, isDevMode } = useAuth();
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,10 +32,8 @@ export function useSalesData() {
   };
   
   useEffect(() => {
-    if (session) {
-      fetchSales();
-    } else {
-      // Load mock data when not authenticated
+    if (isDevMode) {
+      // Load mock data when in development mode
       setSales([
         {
           id: 1,
@@ -79,8 +76,13 @@ export function useSalesData() {
         }
       ]);
       setLoading(false);
+    } else if (session) {
+      // Only fetch real data if not in dev mode and session exists
+      fetchSales();
+    } else {
+      setLoading(false);
     }
-  }, [session]);
+  }, [session, isDevMode]);
 
   return {
     sales,
