@@ -8,15 +8,19 @@ interface NavLinkProps {
   icon: React.ReactNode;
   label: string;
   isMobile?: boolean;
+  onClick?: () => void; // Added onClick prop for closing sidebar on mobile
 }
 
-export function NavLink({ path, icon, label, isMobile = false }: NavLinkProps) {
+export function NavLink({ path, icon, label, isMobile = false, onClick }: NavLinkProps) {
   const location = useLocation();
-  const isActive = location.pathname === path;
+  // Make isActive more robust for nested routes if necessary
+  const isActive = location.pathname === path || (path !== "/" && location.pathname.startsWith(path) && path.length > 1);
+
 
   return (
     <Link
       to={path}
+      onClick={onClick} // Added onClick handler
       className={`
         flex items-center gap-3 px-3 py-2 rounded-md transition-colors
         ${isActive
